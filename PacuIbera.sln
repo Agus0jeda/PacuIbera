@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36603.0 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PacuIbera", "PacuIbera\PacuIbera.csproj", "{04BC9E48-8087-4DEF-8F8C-BE2B03348C2C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{04BC9E48-8087-4DEF-8F8C-BE2B03348C2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04BC9E48-8087-4DEF-8F8C-BE2B03348C2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04BC9E48-8087-4DEF-8F8C-BE2B03348C2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04BC9E48-8087-4DEF-8F8C-BE2B03348C2C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CCAA5DC3-9B17-4521-B29F-46B3D7336511}
+	EndGlobalSection
+EndGlobal
