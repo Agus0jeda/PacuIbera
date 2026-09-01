@@ -8,14 +8,17 @@ using System.Windows.Forms;
 
 namespace PacuIbera.UI.Common
 {
-    public partial class LoginForm : Form
+    public partial class PacuIbera_IniciarSesion : Form
     {
-        public LoginForm()
+        public PacuIbera_IniciarSesion()
         {
             InitializeComponent();
 
 
             this.BackColor = ColorTranslator.FromHtml("#88E788");
+
+            // fecha actual con formato local (día/mes/año)
+            lblFecha.Text = DateTime.Now.ToString("dd/MM/yyyy");
         }
 
         private void btnIngresar_Click(object sender, EventArgs e)
@@ -55,5 +58,7 @@ namespace PacuIbera.UI.Common
         {
             Application.Exit();
         }
+
+        
     }
 }

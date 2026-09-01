@@ -11,7 +11,7 @@ namespace PacuIbera
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            Application.Run(new PacuIbera.UI.Common.LoginForm());
+            Application.Run(new PacuIbera.UI.Common.PacuIbera_IniciarSesion());
         }
     }
 }
