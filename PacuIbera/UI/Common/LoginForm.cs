@@ -23,36 +23,32 @@ namespace PacuIbera.UI.Common
 
         private void btnIngresar_Click(object sender, EventArgs e)
         {
-            try
+            if (txtUsuario.Text == "admin" && txtClave.Text == "123456")
             {
-                string dniUsuario = txtUsuario.Text.Trim();
-                string clave = txtClave.Text.Trim();
+                this.Hide(); // Escondemos el login rápidamente
 
-                if (string.IsNullOrEmpty(dniUsuario) || string.IsNullOrEmpty(clave))
-                {
-                    MessageBox.Show("Por favor, completá tu DNI y contraseña.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
+                // TODO: Más adelante Agustín conectará esto a la BD para saber si ya hay caja abierta
+                bool cajaAbiertaHoy = false;
 
-                // aca simulamos por ahora la validación de usuario, en un futuro se debería consultar a la base de datos
-                if (dniUsuario == "123456" && clave == "admin")
+                if (cajaAbiertaHoy)
                 {
+                    // Si ya abrieron la caja hoy, vamos directo al sistema
                     MainForm ventanaPrincipal = new MainForm();
                     ventanaPrincipal.FormClosed += (s, args) => this.Close();
-                    this.Hide();
                     ventanaPrincipal.Show();
                 }
                 else
                 {
-                    MessageBox.Show("DNI o contraseña incorrectos.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    // Es el primer ingreso, forzamos la apertura de caja
+                    AperturaCajaForm formCaja = new AperturaCajaForm();
+
+                    // Si el usuario cierra la apertura de caja con la X, matamos la app
+                    formCaja.FormClosed += (s, args) => this.Close();
+                    formCaja.Show();
                 }
             }
-            catch (Exception ex)
-            {
-                // Si la base de datos falla o hay cualquier error crítico, lo atrapamos acá
-                MessageBox.Show($"Ocurrió un error inesperado al intentar iniciar sesión: {ex.Message}", "Error Crítico", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+        
+        }   
 
         private void btnSalir_Click(object sender, EventArgs e)
         {
