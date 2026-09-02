@@ -12,7 +12,7 @@ namespace PacuIbera.UI.Common
     {
         public PacuIbera_IniciarSesion()
         {
-            InitializeComponent();
+            InitializeComponent(GetBtnSalir1(), GetBtnSalir2(), GetBtnIngresar1(), GetBtnIngresar2());
 
 
             this.BackColor = ColorTranslator.FromHtml("#88E788");

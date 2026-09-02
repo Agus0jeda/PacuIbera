@@ -20,13 +20,33 @@
             base.Dispose(disposing);
         }
 
+        private Button GetBtnSalir1()
+        {
+            return btnSalir;
+        }
+
+        private Button GetBtnSalir2()
+        {
+            return btnSalir;
+        }
+
+        private Button GetBtnIngresar1()
+        {
+            return btnIngresar;
+        }
+
+        private Button GetBtnIngresar2()
+        {
+            return btnIngresar;
+        }
+
         #region Windows Form Designer generated code
 
         /// <summary>
         /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
         /// </summary>
-        private void InitializeComponent()
+        private void InitializeComponent(Button btnSalir1, Button btnSalir2, Button btnIngresar1, Button btnIngresar2)
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PacuIbera_IniciarSesion));
             txtUsuario = new TextBox();
@@ -65,22 +85,19 @@
             btnIngresar.Cursor = Cursors.Hand;
             btnIngresar.FlatAppearance.BorderColor = Color.Lime;
             btnIngresar.FlatStyle = FlatStyle.Flat;
-            btnIngresar.Location = new Point(231, 290);
+            
             btnIngresar.Name = "btnIngresar";
             btnIngresar.Size = new Size(75, 23);
             btnIngresar.TabIndex = 2;
             btnIngresar.Text = "Ingresar";
-            btnIngresar.UseVisualStyleBackColor = true;
+           
             btnIngresar.Click += btnIngresar_Click;
-            // 
-            // btnSalir
-            // 
-            btnSalir.Cursor = Cursors.Hand;
+          
             btnSalir.FlatAppearance.BorderColor = Color.Lime;
             btnSalir.FlatStyle = FlatStyle.Flat;
             btnSalir.Location = new Point(140, 290);
             btnSalir.Name = "btnSalir";
-            btnSalir.Size = new Size(75, 23);
+           
             btnSalir.TabIndex = 3;
             btnSalir.Text = "Salir";
             btnSalir.UseVisualStyleBackColor = true;

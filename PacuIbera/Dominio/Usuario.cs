@@ -7,10 +7,10 @@ namespace PacuIbera.Dominio
     public class Usuario
     {
         public int Id { get; set; }
-        public string Nombre { get; set; }
-        public string Apellido { get; set; }
-        public string DNI { get; set; }
-        public string ClaveHash { get; set; }
+        public required string Nombre { get; set; }
+        public required string Apellido { get; set; }
+        public required string DNI { get; set; }
+        public required string ClaveHash { get; set; }
 
         public int RolId { get; set; }
         public int? ProvinciaId { get; set; }
