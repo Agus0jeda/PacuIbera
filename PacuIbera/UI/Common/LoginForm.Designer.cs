@@ -2,15 +2,8 @@
 {
     partial class PacuIbera_IniciarSesion
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -20,33 +13,9 @@
             base.Dispose(disposing);
         }
 
-        private Button GetBtnSalir1()
-        {
-            return btnSalir;
-        }
-
-        private Button GetBtnSalir2()
-        {
-            return btnSalir;
-        }
-
-        private Button GetBtnIngresar1()
-        {
-            return btnIngresar;
-        }
-
-        private Button GetBtnIngresar2()
-        {
-            return btnIngresar;
-        }
-
         #region Windows Form Designer generated code
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent(Button btnSalir1, Button btnSalir2, Button btnIngresar1, Button btnIngresar2)
+        private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PacuIbera_IniciarSesion));
             txtUsuario = new TextBox();
@@ -65,7 +34,7 @@
             // 
             txtUsuario.BorderStyle = BorderStyle.FixedSingle;
             txtUsuario.Font = new Font("Segoe UI", 9.75F);
-            txtUsuario.Location = new Point(167, 167);
+            txtUsuario.Location = new Point(165, 167);
             txtUsuario.Name = "txtUsuario";
             txtUsuario.Size = new Size(128, 25);
             txtUsuario.TabIndex = 0;
@@ -74,7 +43,7 @@
             // 
             txtClave.BorderStyle = BorderStyle.FixedSingle;
             txtClave.Font = new Font("Segoe UI", 9.75F);
-            txtClave.Location = new Point(166, 221);
+            txtClave.Location = new Point(165, 221);
             txtClave.Name = "txtClave";
             txtClave.Size = new Size(128, 25);
             txtClave.TabIndex = 1;
@@ -85,19 +54,21 @@
             btnIngresar.Cursor = Cursors.Hand;
             btnIngresar.FlatAppearance.BorderColor = Color.Lime;
             btnIngresar.FlatStyle = FlatStyle.Flat;
-            
+            btnIngresar.Location = new Point(245, 290);
             btnIngresar.Name = "btnIngresar";
             btnIngresar.Size = new Size(75, 23);
             btnIngresar.TabIndex = 2;
             btnIngresar.Text = "Ingresar";
-           
+            btnIngresar.UseVisualStyleBackColor = true;
             btnIngresar.Click += btnIngresar_Click;
-          
+            // 
+            // btnSalir
+            // 
             btnSalir.FlatAppearance.BorderColor = Color.Lime;
             btnSalir.FlatStyle = FlatStyle.Flat;
-            btnSalir.Location = new Point(140, 290);
+            btnSalir.Location = new Point(129, 290);
             btnSalir.Name = "btnSalir";
-           
+            btnSalir.Size = new Size(75, 23);
             btnSalir.TabIndex = 3;
             btnSalir.Text = "Salir";
             btnSalir.UseVisualStyleBackColor = true;
@@ -106,7 +77,7 @@
             // txt
             // 
             txt.AutoSize = true;
-            txt.Location = new Point(81, 177);
+            txt.Location = new Point(67, 177);
             txt.Name = "txt";
             txt.Size = new Size(47, 15);
             txt.TabIndex = 4;
@@ -115,7 +86,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(74, 231);
+            label1.Location = new Point(67, 231);
             label1.Name = "label1";
             label1.Size = new Size(67, 15);
             label1.TabIndex = 5;
@@ -124,7 +95,7 @@
             // Logo
             // 
             Logo.Image = (Image)resources.GetObject("Logo.Image");
-            Logo.Location = new Point(151, -10);
+            Logo.Location = new Point(152, -10);
             Logo.Name = "Logo";
             Logo.Size = new Size(155, 130);
             Logo.SizeMode = PictureBoxSizeMode.Zoom;

@@ -16,12 +16,12 @@ namespace PacuIbera.UI.Common
 
         }
 
-        private void pnlNavegacion_Paint(object sender, PaintEventArgs e)
+        private void PnlNavegacion_Paint(object sender, PaintEventArgs e)
         {
 
         }
 
-        private void pnlContenedor_Paint(object sender, PaintEventArgs e)
+        private void PnlContenedor_Paint(object sender, PaintEventArgs e)
         {
 
         }
@@ -29,23 +29,24 @@ namespace PacuIbera.UI.Common
         private void MainForm_Load(object sender, EventArgs e)
         {
             pnlEncabezado.BackColor = ColorTranslator.FromHtml("#88E788");
+            pnlContenedor.BackColor = ColorTranslator.FromHtml("#88E788");
+
 
             pnlNavegacion.BackColor = ColorTranslator.FromHtml("#5CB85C");
-
-            pnlContenedor.BackColor = ColorTranslator.FromHtml("#5CB85C");
         }
 
         // Variable para llevar el control de qué pantalla está abierta
         private Form? formularioActivo = null;
 
-        // Función  para incrustar ventanas en tu panel central
-        private void AbrirFormularioEnPanel(Form nuevoFormulario)
+        private Form? GetFormularioActivo1()
         {
-            // Si ya hay una pantalla abierta, la cerramos para no acumular memoria
-            if (formularioActivo != null)
-            {
-                formularioActivo.Close();
-            }
+            return formularioActivo;
+        }
+
+        // Función  para incrustar ventanas en tu panel central
+        private void AbrirFormularioEnPanel(Form nuevoFormulario, Form? formularioActivo1)
+        {
+            formularioActivo1?.Close();
 
             formularioActivo = nuevoFormulario;
 
@@ -62,9 +63,9 @@ namespace PacuIbera.UI.Common
             nuevoFormulario.Show();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void btnPanel_Click_Click(object sender, EventArgs e)
         {
-            AbrirFormularioEnPanel(new DashboardForm());
+            AbrirFormularioEnPanel(new DashboardForm(), GetFormularioActivo1());
         }
     }
 }

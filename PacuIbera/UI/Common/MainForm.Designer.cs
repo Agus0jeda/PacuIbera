@@ -30,14 +30,12 @@
         {
             pnlEncabezado = new Panel();
             pnlContenedor = new Panel();
-            panel1 = new Panel();
             pnlNavegacion = new Panel();
             button5 = new Button();
             button4 = new Button();
             button3 = new Button();
             button2 = new Button();
-            button1 = new Button();
-            pnlContenedor.SuspendLayout();
+            btnPanel_Click = new Button();
             pnlNavegacion.SuspendLayout();
             SuspendLayout();
             // 
@@ -52,24 +50,13 @@
             // 
             // pnlContenedor
             // 
-            pnlContenedor.Controls.Add(panel1);
-            pnlContenedor.Controls.Add(pnlNavegacion);
             pnlContenedor.Dock = DockStyle.Fill;
-            pnlContenedor.Location = new Point(0, 136);
+            pnlContenedor.Location = new Point(0, 236);
             pnlContenedor.Name = "pnlContenedor";
             pnlContenedor.Padding = new Padding(40);
-            pnlContenedor.Size = new Size(532, 402);
+            pnlContenedor.Size = new Size(532, 302);
             pnlContenedor.TabIndex = 2;
-            pnlContenedor.Paint += pnlContenedor_Paint;
-            // 
-            // panel1
-            // 
-            panel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            panel1.BackColor = Color.FromArgb(128, 255, 128);
-            panel1.Location = new Point(73, 159);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(370, 162);
-            panel1.TabIndex = 1;
+            pnlContenedor.Paint += PnlContenedor_Paint;
             // 
             // pnlNavegacion
             // 
@@ -77,13 +64,12 @@
             pnlNavegacion.Controls.Add(button4);
             pnlNavegacion.Controls.Add(button3);
             pnlNavegacion.Controls.Add(button2);
-            pnlNavegacion.Controls.Add(button1);
+            pnlNavegacion.Controls.Add(btnPanel_Click);
             pnlNavegacion.Dock = DockStyle.Top;
-            pnlNavegacion.Location = new Point(40, 40);
+            pnlNavegacion.Location = new Point(0, 136);
             pnlNavegacion.Name = "pnlNavegacion";
-            pnlNavegacion.Size = new Size(452, 100);
-            pnlNavegacion.TabIndex = 0;
-            pnlNavegacion.Paint += pnlNavegacion_Paint;
+            pnlNavegacion.Size = new Size(532, 100);
+            pnlNavegacion.TabIndex = 3;
             // 
             // button5
             // 
@@ -137,19 +123,19 @@
             button2.Text = "Ventas";
             button2.UseVisualStyleBackColor = true;
             // 
-            // button1
+            // btnPanel_Click
             // 
-            button1.FlatAppearance.BorderSize = 0;
-            button1.FlatStyle = FlatStyle.Flat;
-            button1.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
-            button1.ForeColor = Color.White;
-            button1.Location = new Point(48, 36);
-            button1.Name = "button1";
-            button1.Size = new Size(101, 35);
-            button1.TabIndex = 0;
-            button1.Text = "Panel";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
+            btnPanel_Click.FlatAppearance.BorderSize = 0;
+            btnPanel_Click.FlatStyle = FlatStyle.Flat;
+            btnPanel_Click.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
+            btnPanel_Click.ForeColor = Color.White;
+            btnPanel_Click.Location = new Point(48, 36);
+            btnPanel_Click.Name = "btnPanel_Click";
+            btnPanel_Click.Size = new Size(101, 35);
+            btnPanel_Click.TabIndex = 0;
+            btnPanel_Click.Text = "Panel";
+            btnPanel_Click.UseVisualStyleBackColor = true;
+            btnPanel_Click.Click += btnPanel_Click_Click;
             // 
             // MainForm
             // 
@@ -157,12 +143,12 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(532, 538);
             Controls.Add(pnlContenedor);
+            Controls.Add(pnlNavegacion);
             Controls.Add(pnlEncabezado);
             Name = "MainForm";
             Text = "Pacú Iberá - Sistema de Gestión";
             WindowState = FormWindowState.Maximized;
             Load += MainForm_Load;
-            pnlContenedor.ResumeLayout(false);
             pnlNavegacion.ResumeLayout(false);
             ResumeLayout(false);
         }
@@ -175,7 +161,6 @@
         private Button button4;
         private Button button3;
         private Button button2;
-        private Button button1;
-        private Panel panel1;
+        private Button btnPanel_Click;
     }
 }
