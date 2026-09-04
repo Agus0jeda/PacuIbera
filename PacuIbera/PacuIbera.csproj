@@ -9,8 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Datos\" />
-    <Folder Include="Infra\" />
+    <Compile Remove="Infra\**" />
+    <EmbeddedResource Remove="Infra\**" />
+    <None Remove="Infra\**" />
   </ItemGroup>
 
   <ItemGroup>
