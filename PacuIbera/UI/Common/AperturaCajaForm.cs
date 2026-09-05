@@ -34,14 +34,25 @@ namespace PacuIbera.UI.Common
             // falta la tabla inicio de caja en la bdd
             MessageBox.Show($"¡Caja abierta con éxito! Saldo inicial: ${montoInicial}", "Apertura de Caja", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            // creamos y abrimos el Menú Principal
-            MainForm ventanaPrincipal = new MainForm();
+            //// creamos y abrimos el Menú Principal
+            //MainForm ventanaPrincipal = new MainForm();
+            //Nuevo Menu Principal
+            PrincipalForm ventanaPrincipal = new PrincipalForm();
 
             // le decimos a la app que se cierre por completo si el usuario cierra el Menú Principal
             ventanaPrincipal.FormClosed += (s, args) => Application.Exit();
 
             this.Hide(); // Escondemos esta ventana de caja
             ventanaPrincipal.Show();
+
+
+            
+
+        }
+
+        private void AperturaCajaForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

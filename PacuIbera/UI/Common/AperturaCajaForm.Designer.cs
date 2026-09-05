@@ -42,7 +42,7 @@
             label1.Location = new Point(142, 152);
             label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
-            label1.Size = new Size(228, 21);
+            label1.Size = new Size(288, 28);
             label1.TabIndex = 0;
             label1.Text = "Monto de apertura en caja: $";
             label1.TextAlign = ContentAlignment.TopCenter;
@@ -51,7 +51,7 @@
             // 
             txtMonto.Location = new Point(195, 214);
             txtMonto.Name = "txtMonto";
-            txtMonto.Size = new Size(122, 29);
+            txtMonto.Size = new Size(122, 34);
             txtMonto.TabIndex = 1;
             // 
             // pictureBox1
@@ -76,7 +76,7 @@
             // 
             // AperturaCajaForm
             // 
-            AutoScaleDimensions = new SizeF(10F, 21F);
+            AutoScaleDimensions = new SizeF(12F, 28F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(484, 450);
             Controls.Add(button1);
@@ -87,6 +87,7 @@
             Margin = new Padding(4);
             Name = "AperturaCajaForm";
             Text = "Apertura de caja";
+            Load += AperturaCajaForm_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
             PerformLayout();

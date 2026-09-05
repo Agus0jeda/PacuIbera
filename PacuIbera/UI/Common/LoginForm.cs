@@ -47,14 +47,17 @@ namespace PacuIbera.UI.Common
                     formCaja.Show();
                 }
             }
-        
-        }   
+
+        }
 
         private void btnSalir_Click(object sender, EventArgs e)
         {
             Application.Exit();
         }
 
-        
+        private void PacuIbera_IniciarSesion_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }
