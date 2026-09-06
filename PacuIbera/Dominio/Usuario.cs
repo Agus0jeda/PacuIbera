@@ -13,6 +13,7 @@ namespace PacuIbera.Dominio
         public required string ClaveHash { get; set; }
 
         public int RolId { get; set; }
+        public string Direccion { get; set; }
         public int? ProvinciaId { get; set; }
         public int? LocalidadId { get; set; }
         public bool Activo { get; set; }

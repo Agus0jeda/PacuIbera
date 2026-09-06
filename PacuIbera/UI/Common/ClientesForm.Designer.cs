@@ -30,16 +30,22 @@
         {
             components = new System.ComponentModel.Container();
             nuevoCliente = new Panel();
-            panel1 = new Panel();
-            label1 = new Label();
-            label2 = new Label();
-            textBox1 = new TextBox();
-            textBox2 = new TextBox();
-            textBox3 = new TextBox();
-            textBox4 = new TextBox();
-            textBox5 = new TextBox();
-            GUARDAR = new Button();
+            lblLocCliente = new Label();
+            lblProvCliente = new Label();
+            lblDniCliente = new Label();
+            lblApellidoCliente = new Label();
+            lblNombreCliente = new Label();
             btnCancelarCliente = new Button();
+            GUARDAR = new Button();
+            txtProvCliente = new TextBox();
+            txtLocCliente = new TextBox();
+            txtApellidoCliente = new TextBox();
+            txtDniCliente = new TextBox();
+            txtNombreCliente = new TextBox();
+            lblNuevoCliente = new Label();
+            panel1 = new Panel();
+            btnCerrar = new Label();
+            lblTituloCliente = new Label();
             dataGridView1 = new DataGridView();
             id = new DataGridViewTextBoxColumn();
             Nombre = new DataGridViewTextBoxColumn();
@@ -50,6 +56,8 @@
             Rol = new DataGridViewTextBoxColumn();
             Estado = new DataGridViewTextBoxColumn();
             usuarioDatosBindingSource = new BindingSource(components);
+            lblDireccionCliente = new Label();
+            txtDireccionCliente = new TextBox();
             nuevoCliente.SuspendLayout();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
@@ -59,107 +67,80 @@
             // nuevoCliente
             // 
             nuevoCliente.BackColor = Color.WhiteSmoke;
+            nuevoCliente.Controls.Add(lblDireccionCliente);
+            nuevoCliente.Controls.Add(txtDireccionCliente);
+            nuevoCliente.Controls.Add(lblLocCliente);
+            nuevoCliente.Controls.Add(lblProvCliente);
+            nuevoCliente.Controls.Add(lblDniCliente);
+            nuevoCliente.Controls.Add(lblApellidoCliente);
+            nuevoCliente.Controls.Add(lblNombreCliente);
             nuevoCliente.Controls.Add(btnCancelarCliente);
             nuevoCliente.Controls.Add(GUARDAR);
-            nuevoCliente.Controls.Add(textBox5);
-            nuevoCliente.Controls.Add(textBox4);
-            nuevoCliente.Controls.Add(textBox3);
-            nuevoCliente.Controls.Add(textBox2);
-            nuevoCliente.Controls.Add(textBox1);
-            nuevoCliente.Controls.Add(label2);
+            nuevoCliente.Controls.Add(txtProvCliente);
+            nuevoCliente.Controls.Add(txtLocCliente);
+            nuevoCliente.Controls.Add(txtApellidoCliente);
+            nuevoCliente.Controls.Add(txtDniCliente);
+            nuevoCliente.Controls.Add(txtNombreCliente);
+            nuevoCliente.Controls.Add(lblNuevoCliente);
             nuevoCliente.Dock = DockStyle.Left;
+            nuevoCliente.Font = new Font("SansSerif", 12F);
             nuevoCliente.Location = new Point(0, 0);
             nuevoCliente.Name = "nuevoCliente";
-            nuevoCliente.Size = new Size(250, 534);
+            nuevoCliente.Size = new Size(350, 534);
             nuevoCliente.TabIndex = 0;
+            nuevoCliente.Paint += this.nuevoCliente_Paint;
             // 
-            // panel1
+            // lblLocCliente
             // 
-            panel1.Controls.Add(label1);
-            panel1.Dock = DockStyle.Top;
-            panel1.Location = new Point(250, 0);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(747, 50);
-            panel1.TabIndex = 1;
+            lblLocCliente.AutoSize = true;
+            lblLocCliente.Font = new Font("SansSerif", 9F);
+            lblLocCliente.Location = new Point(22, 385);
+            lblLocCliente.Name = "lblLocCliente";
+            lblLocCliente.Size = new Size(78, 17);
+            lblLocCliente.TabIndex = 17;
+            lblLocCliente.Text = "Localidad :";
             // 
-            // label1
+            // lblProvCliente
             // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Microsoft Sans Serif", 12F);
-            label1.Location = new Point(313, 9);
-            label1.Name = "label1";
-            label1.Size = new Size(110, 25);
-            label1.TabIndex = 0;
-            label1.Text = "CLIENTES";
+            lblProvCliente.AutoSize = true;
+            lblProvCliente.Font = new Font("SansSerif", 9F);
+            lblProvCliente.Location = new Point(22, 333);
+            lblProvCliente.Name = "lblProvCliente";
+            lblProvCliente.Size = new Size(77, 17);
+            lblProvCliente.TabIndex = 16;
+            lblProvCliente.Text = "Provincia :";
+            lblProvCliente.Click += this.lblProvCliente_Click;
             // 
-            // label2
+            // lblDniCliente
             // 
-            label2.AutoSize = true;
-            label2.Font = new Font("Microsoft Sans Serif", 12F);
-            label2.Location = new Point(56, 49);
-            label2.Name = "label2";
-            label2.Size = new Size(135, 25);
-            label2.TabIndex = 0;
-            label2.Text = "Nuevo Cliente";
+            lblDniCliente.AutoSize = true;
+            lblDniCliente.Font = new Font("SansSerif", 9F);
+            lblDniCliente.Location = new Point(22, 245);
+            lblDniCliente.Name = "lblDniCliente";
+            lblDniCliente.Size = new Size(42, 17);
+            lblDniCliente.TabIndex = 15;
+            lblDniCliente.Text = "DNI :";
             // 
-            // textBox1
+            // lblApellidoCliente
             // 
-            textBox1.Font = new Font("Microsoft Sans Serif", 9F);
-            textBox1.Location = new Point(12, 98);
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(220, 24);
-            textBox1.TabIndex = 6;
-            textBox1.Text = "Nombre";
+            lblApellidoCliente.AutoSize = true;
+            lblApellidoCliente.Font = new Font("SansSerif", 9F);
+            lblApellidoCliente.Location = new Point(22, 202);
+            lblApellidoCliente.Name = "lblApellidoCliente";
+            lblApellidoCliente.Size = new Size(67, 17);
+            lblApellidoCliente.TabIndex = 14;
+            lblApellidoCliente.Text = "Apellido :";
             // 
-            // textBox2
+            // lblNombreCliente
             // 
-            textBox2.Font = new Font("Microsoft Sans Serif", 9F);
-            textBox2.Location = new Point(12, 191);
-            textBox2.Name = "textBox2";
-            textBox2.Size = new Size(220, 24);
-            textBox2.TabIndex = 7;
-            textBox2.Text = "DNI";
-            // 
-            // textBox3
-            // 
-            textBox3.Font = new Font("Microsoft Sans Serif", 9F);
-            textBox3.Location = new Point(12, 144);
-            textBox3.Name = "textBox3";
-            textBox3.Size = new Size(220, 24);
-            textBox3.TabIndex = 8;
-            textBox3.Text = "Apellido";
-            // 
-            // textBox4
-            // 
-            textBox4.Font = new Font("Microsoft Sans Serif", 9F);
-            textBox4.Location = new Point(12, 286);
-            textBox4.Name = "textBox4";
-            textBox4.Size = new Size(220, 24);
-            textBox4.TabIndex = 9;
-            textBox4.Text = "Localidad";
-            // 
-            // textBox5
-            // 
-            textBox5.Font = new Font("Microsoft Sans Serif", 9F);
-            textBox5.Location = new Point(12, 236);
-            textBox5.Name = "textBox5";
-            textBox5.Size = new Size(220, 24);
-            textBox5.TabIndex = 10;
-            textBox5.Text = "Provincia";
-            // 
-            // GUARDAR
-            // 
-            GUARDAR.BackColor = Color.LightGreen;
-            GUARDAR.FlatAppearance.BorderSize = 0;
-            GUARDAR.FlatAppearance.MouseOverBackColor = Color.FromArgb(192, 255, 192);
-            GUARDAR.FlatStyle = FlatStyle.Flat;
-            GUARDAR.Font = new Font("Microsoft Sans Serif", 9F);
-            GUARDAR.Location = new Point(56, 374);
-            GUARDAR.Name = "GUARDAR";
-            GUARDAR.Size = new Size(110, 40);
-            GUARDAR.TabIndex = 11;
-            GUARDAR.Text = "GUARDAR";
-            GUARDAR.UseVisualStyleBackColor = false;
+            lblNombreCliente.AutoSize = true;
+            lblNombreCliente.Font = new Font("SansSerif", 9F);
+            lblNombreCliente.Location = new Point(22, 154);
+            lblNombreCliente.Name = "lblNombreCliente";
+            lblNombreCliente.Size = new Size(68, 17);
+            lblNombreCliente.TabIndex = 13;
+            lblNombreCliente.Text = "Nombre :";
+            lblNombreCliente.Click += label3_Click;
             // 
             // btnCancelarCliente
             // 
@@ -169,12 +150,121 @@
             btnCancelarCliente.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 192, 192);
             btnCancelarCliente.FlatStyle = FlatStyle.Flat;
             btnCancelarCliente.Font = new Font("Microsoft Sans Serif", 9F);
-            btnCancelarCliente.Location = new Point(56, 430);
+            btnCancelarCliente.Location = new Point(211, 462);
             btnCancelarCliente.Name = "btnCancelarCliente";
             btnCancelarCliente.Size = new Size(110, 40);
             btnCancelarCliente.TabIndex = 12;
             btnCancelarCliente.Text = "CANCELAR";
             btnCancelarCliente.UseVisualStyleBackColor = false;
+            // 
+            // GUARDAR
+            // 
+            GUARDAR.BackColor = Color.LightGreen;
+            GUARDAR.FlatAppearance.BorderSize = 0;
+            GUARDAR.FlatAppearance.MouseOverBackColor = Color.FromArgb(192, 255, 192);
+            GUARDAR.FlatStyle = FlatStyle.Flat;
+            GUARDAR.Font = new Font("Microsoft Sans Serif", 9F);
+            GUARDAR.Location = new Point(22, 462);
+            GUARDAR.Name = "GUARDAR";
+            GUARDAR.Size = new Size(110, 40);
+            GUARDAR.TabIndex = 11;
+            GUARDAR.Text = "GUARDAR";
+            GUARDAR.UseVisualStyleBackColor = false;
+            // 
+            // txtProvCliente
+            // 
+            txtProvCliente.CharacterCasing = CharacterCasing.Upper;
+            txtProvCliente.Font = new Font("Microsoft Sans Serif", 9F);
+            txtProvCliente.Location = new Point(99, 329);
+            txtProvCliente.MaxLength = 100;
+            txtProvCliente.Name = "txtProvCliente";
+            txtProvCliente.Size = new Size(222, 24);
+            txtProvCliente.TabIndex = 10;
+            txtProvCliente.TextChanged += this.txtProvCliente_TextChanged;
+            // 
+            // txtLocCliente
+            // 
+            txtLocCliente.CharacterCasing = CharacterCasing.Upper;
+            txtLocCliente.Font = new Font("Microsoft Sans Serif", 9F);
+            txtLocCliente.Location = new Point(99, 381);
+            txtLocCliente.Name = "txtLocCliente";
+            txtLocCliente.Size = new Size(222, 24);
+            txtLocCliente.TabIndex = 9;
+            // 
+            // txtApellidoCliente
+            // 
+            txtApellidoCliente.CharacterCasing = CharacterCasing.Upper;
+            txtApellidoCliente.Font = new Font("Microsoft Sans Serif", 9F);
+            txtApellidoCliente.Location = new Point(99, 198);
+            txtApellidoCliente.MaxLength = 100;
+            txtApellidoCliente.Name = "txtApellidoCliente";
+            txtApellidoCliente.Size = new Size(222, 24);
+            txtApellidoCliente.TabIndex = 8;
+            // 
+            // txtDniCliente
+            // 
+            txtDniCliente.CharacterCasing = CharacterCasing.Upper;
+            txtDniCliente.Font = new Font("Microsoft Sans Serif", 9F);
+            txtDniCliente.Location = new Point(99, 241);
+            txtDniCliente.MaxLength = 100;
+            txtDniCliente.Name = "txtDniCliente";
+            txtDniCliente.Size = new Size(222, 24);
+            txtDniCliente.TabIndex = 7;
+            // 
+            // txtNombreCliente
+            // 
+            txtNombreCliente.CharacterCasing = CharacterCasing.Upper;
+            txtNombreCliente.Font = new Font("Microsoft Sans Serif", 9F);
+            txtNombreCliente.Location = new Point(99, 150);
+            txtNombreCliente.MaxLength = 100;
+            txtNombreCliente.Name = "txtNombreCliente";
+            txtNombreCliente.Size = new Size(222, 24);
+            txtNombreCliente.TabIndex = 6;
+            txtNombreCliente.TextChanged += textBox1_TextChanged;
+            // 
+            // lblNuevoCliente
+            // 
+            lblNuevoCliente.AutoSize = true;
+            lblNuevoCliente.Font = new Font("SansSerif", 12F);
+            lblNuevoCliente.Location = new Point(99, 70);
+            lblNuevoCliente.Name = "lblNuevoCliente";
+            lblNuevoCliente.Size = new Size(134, 23);
+            lblNuevoCliente.TabIndex = 0;
+            lblNuevoCliente.Text = "Nuevo Cliente";
+            // 
+            // panel1
+            // 
+            panel1.Controls.Add(btnCerrar);
+            panel1.Controls.Add(lblTituloCliente);
+            panel1.Dock = DockStyle.Top;
+            panel1.Location = new Point(350, 0);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(647, 70);
+            panel1.TabIndex = 1;
+            // 
+            // btnCerrar
+            // 
+            btnCerrar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnCerrar.AutoSize = true;
+            btnCerrar.Cursor = Cursors.Hand;
+            btnCerrar.Font = new Font("Segoe UI", 11F);
+            btnCerrar.ForeColor = SystemColors.ControlDarkDark;
+            btnCerrar.Location = new Point(612, 9);
+            btnCerrar.Name = "btnCerrar";
+            btnCerrar.Size = new Size(23, 25);
+            btnCerrar.TabIndex = 9;
+            btnCerrar.Text = "X";
+            btnCerrar.Click += btnCerrar_Click;
+            // 
+            // lblTituloCliente
+            // 
+            lblTituloCliente.AutoSize = true;
+            lblTituloCliente.Font = new Font("SansSerif", 12F);
+            lblTituloCliente.Location = new Point(257, 20);
+            lblTituloCliente.Name = "lblTituloCliente";
+            lblTituloCliente.Size = new Size(106, 23);
+            lblTituloCliente.TabIndex = 0;
+            lblTituloCliente.Text = "CLIENTES";
             // 
             // dataGridView1
             // 
@@ -183,10 +273,10 @@
             dataGridView1.Columns.AddRange(new DataGridViewColumn[] { id, Nombre, Column1, DNI, Provincia, Localidad, Rol, Estado });
             dataGridView1.DataSource = usuarioDatosBindingSource;
             dataGridView1.Dock = DockStyle.Fill;
-            dataGridView1.Location = new Point(250, 50);
+            dataGridView1.Location = new Point(350, 70);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.RowHeadersWidth = 51;
-            dataGridView1.Size = new Size(747, 484);
+            dataGridView1.Size = new Size(647, 464);
             dataGridView1.TabIndex = 2;
             dataGridView1.CellContentClick += dataGridView1_CellContentClick;
             // 
@@ -250,6 +340,27 @@
             // 
             usuarioDatosBindingSource.DataSource = typeof(Datos.UsuarioDatos);
             // 
+            // lblDireccionCliente
+            // 
+            lblDireccionCliente.AutoSize = true;
+            lblDireccionCliente.Font = new Font("SansSerif", 9F);
+            lblDireccionCliente.Location = new Point(22, 291);
+            lblDireccionCliente.Name = "lblDireccionCliente";
+            lblDireccionCliente.Size = new Size(78, 17);
+            lblDireccionCliente.TabIndex = 18;
+            lblDireccionCliente.Text = "Direccion :";
+            // 
+            // txtDireccionCliente
+            // 
+            txtDireccionCliente.CharacterCasing = CharacterCasing.Upper;
+            txtDireccionCliente.Font = new Font("Microsoft Sans Serif", 9F);
+            txtDireccionCliente.Location = new Point(99, 287);
+            txtDireccionCliente.MaxLength = 100;
+            txtDireccionCliente.Multiline = true;
+            txtDireccionCliente.Name = "txtDireccionCliente";
+            txtDireccionCliente.Size = new Size(222, 27);
+            txtDireccionCliente.TabIndex = 17;
+            // 
             // ClientesForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -274,13 +385,13 @@
 
         private Panel nuevoCliente;
         private Panel panel1;
-        private Label label1;
-        private TextBox textBox5;
-        private TextBox textBox4;
-        private TextBox textBox3;
-        private TextBox textBox2;
-        private TextBox textBox1;
-        private Label label2;
+        private Label lblTituloCliente;
+        private TextBox txtProvCliente;
+        private TextBox txtLocCliente;
+        private TextBox txtApellidoCliente;
+        private TextBox txtDniCliente;
+        private TextBox txtNombreCliente;
+        private Label lblNuevoCliente;
         private Button btnCancelarCliente;
         private Button GUARDAR;
         private DataGridView dataGridView1;
@@ -293,5 +404,13 @@
         private DataGridViewTextBoxColumn Rol;
         private DataGridViewTextBoxColumn Estado;
         private BindingSource usuarioDatosBindingSource;
+        private Label lblLocCliente;
+        private Label lblProvCliente;
+        private Label lblDniCliente;
+        private Label lblApellidoCliente;
+        private Label lblNombreCliente;
+        private Label btnCerrar;
+        private Label lblDireccionCliente;
+        private TextBox txtDireccionCliente;
     }
 }

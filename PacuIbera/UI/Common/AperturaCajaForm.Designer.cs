@@ -39,36 +39,38 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(142, 152);
+            label1.Font = new Font("Microsoft Sans Serif", 12F);
+            label1.Location = new Point(110, 211);
             label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
-            label1.Size = new Size(288, 28);
+            label1.Size = new Size(261, 25);
             label1.TabIndex = 0;
             label1.Text = "Monto de apertura en caja: $";
             label1.TextAlign = ContentAlignment.TopCenter;
             // 
             // txtMonto
             // 
-            txtMonto.Location = new Point(195, 214);
+            txtMonto.Location = new Point(153, 257);
             txtMonto.Name = "txtMonto";
-            txtMonto.Size = new Size(122, 34);
+            txtMonto.Size = new Size(175, 34);
             txtMonto.TabIndex = 1;
             // 
             // pictureBox1
             // 
             pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.Location = new Point(185, 12);
+            pictureBox1.Location = new Point(153, 12);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(142, 124);
+            pictureBox1.Size = new Size(175, 175);
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBox1.TabIndex = 2;
             pictureBox1.TabStop = false;
             // 
             // button1
             // 
-            button1.Location = new Point(174, 281);
+            button1.Font = new Font("Microsoft Sans Serif", 12F);
+            button1.Location = new Point(153, 332);
             button1.Name = "button1";
-            button1.Size = new Size(164, 31);
+            button1.Size = new Size(175, 35);
             button1.TabIndex = 3;
             button1.Text = "Abrir turno \r\n";
             button1.UseVisualStyleBackColor = true;
@@ -84,6 +86,7 @@
             Controls.Add(txtMonto);
             Controls.Add(label1);
             Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            FormBorderStyle = FormBorderStyle.None;
             Margin = new Padding(4);
             Name = "AperturaCajaForm";
             Text = "Apertura de caja";

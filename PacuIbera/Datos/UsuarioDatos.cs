@@ -17,6 +17,8 @@ namespace Datos
                 cmd.Parameters.AddWithValue("@Nombre", nombre);
                 cmd.Parameters.AddWithValue("@Apellido", apellido);
                 cmd.Parameters.AddWithValue("@DNI", dni);
+                //falta la direccion, telefono, fecha nacimiento y email
+
                 cmd.Parameters.AddWithValue("@ClaveHash", claveHasheada);
 
                 // Estos IDs vendrán de los ComboBox de tu Formulario
