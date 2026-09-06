@@ -1,53 +1,66 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
+using PacuIbera.Dominio;
+using Negocio;
+using Datos; // Para usar CajaDatos
 
 namespace PacuIbera.UI.Common
 {
     public partial class PacuIbera_IniciarSesion : Form
     {
+        private UsuarioNegocio usuarioNegocio = new UsuarioNegocio();
+
         public PacuIbera_IniciarSesion()
         {
             InitializeComponent();
-
-
             this.BackColor = ColorTranslator.FromHtml("#88E788");
-
-            // fecha actual con formato local (día/mes/año)
             lblFecha.Text = DateTime.Now.ToString("dd/MM/yyyy");
         }
 
         private void btnIngresar_Click(object sender, EventArgs e)
         {
-            if (txtUsuario.Text == "admin" && txtClave.Text == "123456")
+            try
             {
-                this.Hide(); // Escondemos el login rápidamente
+                string dni = txtUsuario.Text.Trim();
+                string clave = txtClave.Text.Trim();
 
-                // TODO: Más adelante Agustín conectará esto a la BD para saber si ya hay caja abierta
-                bool cajaAbiertaHoy = false;
+                // 1. Validamos credenciales mediante la capa de negocio
+                Usuario user = usuarioNegocio.ValidarLogin(dni, clave);
 
-                if (cajaAbiertaHoy)
+                if (user != null)
                 {
-                    // Si ya abrieron la caja hoy, vamos directo al sistema
-                    MainForm ventanaPrincipal = new MainForm();
-                    ventanaPrincipal.FormClosed += (s, args) => this.Close();
-                    ventanaPrincipal.Show();
-                }
-                else
-                {
-                    // Es el primer ingreso, forzamos la apertura de caja
-                    AperturaCajaForm formCaja = new AperturaCajaForm();
+                    // 2. Guardamos los datos en la Sesión Activa Global
+                    SesionActiva.IdUsuario = user.Id;
+                    SesionActiva.Nombre = user.Nombre;
+                    SesionActiva.Apellido = user.Apellido;
+                    SesionActiva.Rol = user.Rol; // "Administrador", "Vendedor", etc.
 
-                    // Si el usuario cierra la apertura de caja con la X, matamos la app
-                    formCaja.FormClosed += (s, args) => this.Close();
-                    formCaja.Show();
+                    this.Hide(); // Ocultamos el login
+
+                    // 3. Verificamos en la BDD si este usuario ya tiene una caja abierta hoy
+                    CajaDatos cajaDatos = new CajaDatos();
+                    int cajaId = cajaDatos.VerificarCajaAbierta(user.Id);
+
+                    if (cajaId > 0)
+                    {
+                        // Si ya tiene caja abierta, pasamos directo al menú principal
+                        PrincipalForm ventanaPrincipal = new PrincipalForm();
+                        ventanaPrincipal.FormClosed += (s, args) => Application.Exit();
+                        ventanaPrincipal.Show();
+                    }
+                    else
+                    {
+                        // Si no tiene caja abierta, abrimos el formulario de apertura pasándole el ID
+                        AperturaCajaForm formCaja = new AperturaCajaForm(user.Id);
+                        formCaja.FormClosed += (s, args) => Application.Exit();
+                        formCaja.Show();
+                    }
                 }
             }
-
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error de Inicio de Sesión", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         private void btnSalir_Click(object sender, EventArgs e)
@@ -55,9 +68,6 @@ namespace PacuIbera.UI.Common
             Application.Exit();
         }
 
-        private void PacuIbera_IniciarSesion_Load(object sender, EventArgs e)
-        {
-
-        }
+        private void PacuIbera_IniciarSesion_Load(object sender, EventArgs e) { }
     }
 }

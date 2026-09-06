@@ -303,8 +303,8 @@
             // 
             // PanelContenedor
             // 
-            PanelContenedor.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             PanelContenedor.BackColor = Color.WhiteSmoke;
+            PanelContenedor.Dock = DockStyle.Fill;
             PanelContenedor.Location = new Point(250, 50);
             PanelContenedor.Name = "PanelContenedor";
             PanelContenedor.Size = new Size(1032, 553);

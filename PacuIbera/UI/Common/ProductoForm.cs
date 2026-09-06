@@ -56,5 +56,15 @@ namespace PacuIbera.UI.Common
         {
 
         }
+
+        private void btnCancelar_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

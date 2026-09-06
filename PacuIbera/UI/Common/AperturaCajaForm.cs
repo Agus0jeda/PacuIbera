@@ -1,22 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
+using Datos; // Para usar CajaDatos
 
 namespace PacuIbera.UI.Common
 {
     public partial class AperturaCajaForm : Form
     {
-        public AperturaCajaForm()
+        private int usuarioIdSesion;
+
+        // Modificamos el constructor para recibir el ID del usuario logueado
+        public AperturaCajaForm(int usuarioId)
         {
             InitializeComponent();
+            this.usuarioIdSesion = usuarioId;
 
             this.BackColor = ColorTranslator.FromHtml("#88E788");
-
-            // Configuraciones visuales para que quede prolijo
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -24,35 +22,32 @@ namespace PacuIbera.UI.Common
 
         private void button1_Click(object sender, EventArgs e)
         {
-            // Intentamos convertir el texto a un número decimal (por si ponen centavos)
             if (!decimal.TryParse(txtMonto.Text.Trim(), out decimal montoInicial) || montoInicial < 0)
             {
                 MessageBox.Show("Por favor, ingresá un monto válido (solo números, sin letras).", "Monto inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return; // Frenamos la ejecución
+                return;
             }
 
-            // falta la tabla inicio de caja en la bdd
-            MessageBox.Show($"¡Caja abierta con éxito! Saldo inicial: ${montoInicial}", "Apertura de Caja", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            try
+            {
+                // Registramos la apertura en la Base de Datos con tu clase CajaDatos
+                CajaDatos cajaDatos = new CajaDatos();
+                int nuevaCajaId = cajaDatos.AbrirCaja(usuarioIdSesion, montoInicial);
 
-            //// creamos y abrimos el Menú Principal
-            //MainForm ventanaPrincipal = new MainForm();
-            //Nuevo Menu Principal
-            PrincipalForm ventanaPrincipal = new PrincipalForm();
+                MessageBox.Show($"¡Caja abierta con éxito! (ID de Caja: {nuevaCajaId}) - Saldo inicial: ${montoInicial}", "Apertura de Caja", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            // le decimos a la app que se cierre por completo si el usuario cierra el Menú Principal
-            ventanaPrincipal.FormClosed += (s, args) => Application.Exit();
+                PrincipalForm ventanaPrincipal = new PrincipalForm();
+                ventanaPrincipal.FormClosed += (s, args) => Application.Exit();
 
-            this.Hide(); // Escondemos esta ventana de caja
-            ventanaPrincipal.Show();
-
-
-            
-
+                this.Hide();
+                ventanaPrincipal.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al registrar la apertura de caja: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
-        private void AperturaCajaForm_Load(object sender, EventArgs e)
-        {
-
-        }
+        private void AperturaCajaForm_Load(object sender, EventArgs e) { }
     }
 }

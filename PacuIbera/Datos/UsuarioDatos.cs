@@ -1,34 +1,39 @@
-﻿using Datos;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using System;
 using System.Data;
+using PacuIbera.Dominio;
 
 namespace Datos
 {
     public class UsuarioDatos : ConexionBD
     {
-        public void RegistrarUsuario(string nombre, string apellido, string dni, string claveHasheada, int rolId, int provinciaId, int localidadId)
-        {
+        public Usuario ObtenerPorDNI(string dni)
+         {
+            Usuario usuario = null;
             using (SqlConnection conexion = ObtenerConexion())
             {
-                SqlCommand cmd = new SqlCommand("sp_InsertarUsuario", conexion);
+                SqlCommand cmd = new SqlCommand("sp_LoginUsuario", conexion);
                 cmd.CommandType = CommandType.StoredProcedure;
-
-                cmd.Parameters.AddWithValue("@Nombre", nombre);
-                cmd.Parameters.AddWithValue("@Apellido", apellido);
                 cmd.Parameters.AddWithValue("@DNI", dni);
-                //falta la direccion, telefono, fecha nacimiento y email
-
-                cmd.Parameters.AddWithValue("@ClaveHash", claveHasheada);
-
-                // Estos IDs vendrán de los ComboBox de tu Formulario
-                cmd.Parameters.AddWithValue("@RolId", rolId);
-                cmd.Parameters.AddWithValue("@ProvinciaId", provinciaId);
-                cmd.Parameters.AddWithValue("@LocalidadId", localidadId);
 
                 conexion.Open();
-                cmd.ExecuteNonQuery();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        usuario = new Usuario
+                        {
+                            Id = Convert.ToInt32(reader["Id"]),
+                            Nombre = reader["Nombre"].ToString(),
+                            Apellido = reader["Apellido"].ToString(),
+                            DNI = reader["DNI"].ToString(),
+                            ClaveHash = reader["ClaveHash"].ToString(),
+                            Rol = reader["Rol"].ToString()
+                        };
+                    }
+                }
             }
+            return usuario;
         }
     }
 }

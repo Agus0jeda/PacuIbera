@@ -1,31 +1,25 @@
-﻿using System;
+﻿using PacuIbera.Dominio;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Printing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Runtime.InteropServices;
-using System.Drawing.Printing;
 
 namespace PacuIbera.UI.Common
 {
     public partial class PrincipalForm : Form
     {
-
-
-
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         public PrincipalForm()
         {
             InitializeComponent();
+            this.Load += PrincipalForm_Load;
+
         }
 
         [DllImport("user32.DLL", EntryPoint = "ReleaseCapture")]
@@ -33,51 +27,116 @@ namespace PacuIbera.UI.Common
         [DllImport("user32.DLL", EntryPoint = "SendMessage")]
         private extern static void SendMessage(System.IntPtr hWnd, int wMsg, int wParam, int lParam);
 
+        private void ConfigurarPermisosMenu()
+        {
+            string rolUsuario = SesionActiva.Rol;
+
+            // Opcional: mostrar un mensaje de bienvenida personalizado con el rol
+            // this.Text = $"Pacú Iberá - Usuario: {SesionActiva.Nombre} {SesionActiva.Apellido} ({rolUsuario})";
+
+            if (rolUsuario == "Vendedor")
+            {
+                // El vendedor SOLO ve Productos, Clientes, Ventas y Pagos.
+                // Ocultamos los módulos administrativos y sensibles:
+                btnEmpleados.Visible = false;
+                btnProveedores.Visible = false;
+                btnCompras.Visible = false;
+                btnReportes.Visible = false;
+            }
+            else if (rolUsuario == "Administrador")
+            {
+                // El administrador ve todo, pero internamente en el formulario de empleados 
+                // tendrá la restricción de no poder eliminar.
+                btnEmpleados.Visible = true;
+                btnProveedores.Visible = true;
+                btnCompras.Visible = true;
+                btnReportes.Visible = true;
+            }
+            else if (rolUsuario == "Gerente" || rolUsuario == "SuperAdministrador")
+            {
+                // Acceso absoluto a todos los módulos y botones del sistema
+                btnEmpleados.Visible = true;
+                btnProveedores.Visible = true;
+                btnCompras.Visible = true;
+                btnReportes.Visible = true;
+            }
+        }
+
         private void AjustarMenu()
         {
             PanelContenedor.Left = MenuVertical.Width;
             PanelContenedor.Width = this.ClientRectangle.Width - MenuVertical.Width;
-
             PanelContenedor.Height = this.ClientRectangle.Height - PanelContenedor.Top;
+        }
+
+        private void ReorganizarMenu()
+        {
+            // Define la posición Y donde arranca el primer botón debajo de tu logo
+            int posYInicial = 120; // Podes ajustarlo según la altura de tu logo en el panel
+            int espacioEntreBotones = 5; // Espacio prolijo entre cada botón
+
+            int posYActual = posYInicial;
+
+            // Agrupamos todos los botones del menú en un array ordenados de arriba hacia abajo
+            Button[] botonesMenu = { btnProducto, btnVentas, btnClientes, btnCompras, btnProveedores, btnEmpleados, btnPagos, btnReportes };
+
+            foreach (var btn in botonesMenu)
+            {
+                if (btn != null)
+                {
+                    if (btn.Visible)
+                    {
+                        // Si el botón está visible, lo posicionamos en la siguiente línea disponible
+                        btn.Top = posYActual;
+                        posYActual += btn.Height + espacioEntreBotones; // Movemos la referencia hacia abajo para el próximo
+                    }
+                }
+            }
         }
 
         private void AjustarBotones()
         {
-            if(MenuVertical.Width == 250)
+            if (MenuVertical.Width == 250)
             {
-                btnProducto.Text = "        Productos"; 
+                btnProducto.Text = "        Productos";
                 btnProducto.TextAlign = ContentAlignment.MiddleLeft;
                 btnProducto.ImageAlign = ContentAlignment.MiddleLeft;
                 btnProducto.TextImageRelation = TextImageRelation.ImageBeforeText;
+
                 btnVentas.Text = "        Ventas";
                 btnVentas.TextAlign = ContentAlignment.MiddleLeft;
                 btnVentas.ImageAlign = ContentAlignment.MiddleLeft;
                 btnVentas.TextImageRelation = TextImageRelation.ImageBeforeText;
+
                 btnClientes.Text = "        Clientes";
                 btnClientes.TextAlign = ContentAlignment.MiddleLeft;
                 btnClientes.ImageAlign = ContentAlignment.MiddleLeft;
                 btnClientes.TextImageRelation = TextImageRelation.ImageBeforeText;
+
                 btnCompras.Text = "        Compras";
                 btnCompras.TextAlign = ContentAlignment.MiddleLeft;
                 btnCompras.ImageAlign = ContentAlignment.MiddleLeft;
                 btnCompras.TextImageRelation = TextImageRelation.ImageBeforeText;
+
                 btnProveedores.Text = "        Proveedores";
                 btnProveedores.TextAlign = ContentAlignment.MiddleLeft;
                 btnProveedores.ImageAlign = ContentAlignment.MiddleLeft;
                 btnProveedores.TextImageRelation = TextImageRelation.ImageBeforeText;
+
                 btnEmpleados.Text = "       Empleados";
                 btnEmpleados.TextAlign = ContentAlignment.MiddleLeft;
                 btnEmpleados.ImageAlign = ContentAlignment.MiddleLeft;
                 btnEmpleados.TextImageRelation = TextImageRelation.ImageBeforeText;
+
                 btnPagos.Text = "        Pagos";
                 btnPagos.TextAlign = ContentAlignment.MiddleLeft;
                 btnPagos.ImageAlign = ContentAlignment.MiddleLeft;
                 btnPagos.TextImageRelation = TextImageRelation.ImageBeforeText;
+
                 btnReportes.Text = "        Reportes";
                 btnReportes.TextAlign = ContentAlignment.MiddleLeft;
                 btnReportes.ImageAlign = ContentAlignment.MiddleLeft;
                 btnReportes.TextImageRelation = TextImageRelation.ImageBeforeText;
-
             }
             else
             {
@@ -99,6 +158,7 @@ namespace PacuIbera.UI.Common
                 btnReportes.Padding = new Padding(10, 0, 0, 0);
             }
         }
+
         private void btnMenu_Click(object sender, EventArgs e)
         {
             if (MenuVertical.Width == 250)
@@ -106,30 +166,28 @@ namespace PacuIbera.UI.Common
                 MenuVertical.Width = 96;
                 Logo.Width = 85;
                 Logo.Left = (MenuVertical.Width - Logo.Width) / 2;
-           
             }
             else
             {
                 MenuVertical.Width = 250;
                 Logo.Width = 220;
                 Logo.Left = (MenuVertical.Width - Logo.Width) / 2;
-                
             }
             AjustarBotones();
             AjustarMenu();
         }
 
-
+        private void PrincipalForm_Load(object sender, EventArgs e)
+        {
+            ConfigurarPermisosMenu(); // Los permisos se leen una sola vez al entrar
+            ReorganizarMenu();        // Los botones se ordenan una sola vez al arrancar
+        }
         private void PrincipalForm_Resize(object sender, EventArgs e)
         {
             AjustarMenu();
         }
-        #endregion
 
-        private void MenuVertical_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
+        private void MenuVertical_Paint(object sender, PaintEventArgs e) { }
 
         private void iconCerrar_Click(object sender, EventArgs e)
         {
@@ -141,7 +199,6 @@ namespace PacuIbera.UI.Common
             this.WindowState = FormWindowState.Maximized;
             iconRestaurar.Visible = true;
             iconMaximizar.Visible = false;
-
         }
 
         private void iconRestaurar_Click(object sender, EventArgs e)
@@ -154,25 +211,17 @@ namespace PacuIbera.UI.Common
         private void iconMinimizar_Click(object sender, EventArgs e)
         {
             this.WindowState = FormWindowState.Minimized;
-
         }
 
-        private void PanelContenedor_Paint(object sender, PaintEventArgs e)
-        {
+        private void PanelContenedor_Paint(object sender, PaintEventArgs e) { }
 
-        }
-
-        private void BarraTitulo_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
+        private void BarraTitulo_Paint(object sender, PaintEventArgs e) { }
 
         private void BarraTitulo_MouseDown(object sender, MouseEventArgs e)
         {
             ReleaseCapture();
             SendMessage(this.Handle, 0x112, 0xf012, 0);
         }
-
 
         private void AbrirFormularioPanel(object Formhijo)
         {
@@ -181,6 +230,7 @@ namespace PacuIbera.UI.Common
             Form fh = Formhijo as Form;
             fh.TopLevel = false;
             fh.Dock = DockStyle.Fill;
+            PanelContenedor.Controls.Clear();
             this.PanelContenedor.Controls.Add(fh);
             this.PanelContenedor.Tag = fh;
             fh.Show();
@@ -196,14 +246,8 @@ namespace PacuIbera.UI.Common
             AbrirFormularioPanel(new ClientesForm());
         }
 
-        private void button2_Click(object sender, EventArgs e)
-        {
+        private void button2_Click(object sender, EventArgs e) { }
 
-        }
-
-        private void button4_Click(object sender, EventArgs e)
-        {
-
-        }
+        private void button4_Click(object sender, EventArgs e) { }
     }
 }
