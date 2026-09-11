@@ -37,24 +37,57 @@ namespace PacuIbera.UI.Common
 
                     this.Hide(); // Ocultamos el login
 
-                    // 3. Verificamos en la BDD si este usuario ya tiene una caja abierta hoy
-                    CajaDatos cajaDatos = new CajaDatos();
-                    int cajaId = cajaDatos.VerificarCajaAbierta(user.Id);
 
-                    if (cajaId > 0)
+                    // 3. Verificamos si el usuario tiene una caja abierta EXCLUSIVAMENTE HOY
+                    // 3. Verificamos si el usuario tiene un registro de caja creado HOY
+                    int cajaId = 0;
+                    string stringConexion = "Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
+
+                    using (Microsoft.Data.SqlClient.SqlConnection conexion = new Microsoft.Data.SqlClient.SqlConnection(stringConexion))
                     {
-                        // Si ya tiene caja abierta, pasamos directo al menú principal
-                        PrincipalForm ventanaPrincipal = new PrincipalForm();
-                        ventanaPrincipal.FormClosed += (s, args) => Application.Exit();
-                        ventanaPrincipal.Show();
+                        // Buscamos que exista una caja de HOY para este usuario, sin importar qué palabra tenga en "Estado"
+                        string query = "SELECT TOP 1 Id FROM Caja WHERE UsuarioId = @UsuarioId AND CAST(FechaHoraApertura AS DATE) = CAST(GETDATE() AS DATE)";
+                        Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand(query, conexion);
+                        cmd.Parameters.AddWithValue("@UsuarioId", user.Id);
+
+                        conexion.Open();
+                        object result = cmd.ExecuteScalar();
+                        if (result != null)
+                        {
+                            cajaId = Convert.ToInt32(result);
+                        }
                     }
-                    else
+
+                    // Si NO tiene caja HOY, lo obligamos a abrirla
+                    if (cajaId <= 0)
                     {
-                        // Si no tiene caja abierta, abrimos el formulario de apertura pasándole el ID
                         AperturaCajaForm formCaja = new AperturaCajaForm(user.Id);
-                        formCaja.FormClosed += (s, args) => Application.Exit();
-                        formCaja.Show();
+                        formCaja.ShowDialog(); // Frena el código hasta que cierre la ventana
+
+                        // Verificamos de nuevo: ¿Realmente se guardó el turno de hoy o apretó la "X"?
+                        using (Microsoft.Data.SqlClient.SqlConnection conexion = new Microsoft.Data.SqlClient.SqlConnection(stringConexion))
+                        {
+                            string query = "SELECT TOP 1 Id FROM Caja WHERE UsuarioId = @UsuarioId AND CAST(FechaHoraApertura AS DATE) = CAST(GETDATE() AS DATE)";
+                            Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand(query, conexion);
+                            cmd.Parameters.AddWithValue("@UsuarioId", user.Id);
+
+                            conexion.Open();
+                            object result = cmd.ExecuteScalar();
+
+                            // Si sigue siendo null, cerró con la X o el guardado falló
+                            if (result == null)
+                            {
+                                MessageBox.Show("Es obligatorio realizar la apertura de caja del día para comenzar el turno.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                this.Show(); // Mostramos el login de nuevo
+                                return;      // Cortamos para que no abra el menú
+                            }
+                        }
                     }
+
+                    // 4. Si la caja de HOY ya está creada, pasamos al menú principal
+                    PrincipalForm ventanaPrincipal = new PrincipalForm();
+                    ventanaPrincipal.FormClosed += (s, args) => Application.Exit();
+                    ventanaPrincipal.Show();
                 }
             }
             catch (Exception ex)

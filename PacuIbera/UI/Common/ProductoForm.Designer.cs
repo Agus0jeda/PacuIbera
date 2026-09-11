@@ -31,11 +31,13 @@
             label1 = new Label();
             btnCerrar = new Label();
             panelNuevoProducto = new Panel();
+            btnNuevaCat = new Button();
+            cmbCategoria = new ComboBox();
             chkPorPeso = new CheckBox();
             label8 = new Label();
             nupStockMin = new NumericUpDown();
             nupPrecio = new NumericUpDown();
-            btnCancelarCliente = new Button();
+            btnEliminar = new Button();
             GUARDAR = new Button();
             textBox4 = new TextBox();
             label7 = new Label();
@@ -50,8 +52,6 @@
             label6 = new Label();
             panel3 = new Panel();
             listView1 = new ListView();
-            cmbCategoria = new ComboBox();
-            btnNuevaCat = new Button();
             panelNuevoProducto.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)nupStockMin).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nupPrecio).BeginInit();
@@ -93,7 +93,7 @@
             panelNuevoProducto.Controls.Add(label8);
             panelNuevoProducto.Controls.Add(nupStockMin);
             panelNuevoProducto.Controls.Add(nupPrecio);
-            panelNuevoProducto.Controls.Add(btnCancelarCliente);
+            panelNuevoProducto.Controls.Add(btnEliminar);
             panelNuevoProducto.Controls.Add(GUARDAR);
             panelNuevoProducto.Controls.Add(textBox4);
             panelNuevoProducto.Controls.Add(label7);
@@ -109,7 +109,24 @@
             panelNuevoProducto.Name = "panelNuevoProducto";
             panelNuevoProducto.Size = new Size(306, 426);
             panelNuevoProducto.TabIndex = 9;
-            
+            // 
+            // btnNuevaCat
+            // 
+            btnNuevaCat.Location = new Point(93, 105);
+            btnNuevaCat.Name = "btnNuevaCat";
+            btnNuevaCat.Size = new Size(28, 28);
+            btnNuevaCat.TabIndex = 27;
+            btnNuevaCat.Text = "+";
+            btnNuevaCat.UseVisualStyleBackColor = true;
+            btnNuevaCat.Click += btnNuevaCat_Click;
+            // 
+            // cmbCategoria
+            // 
+            cmbCategoria.FormattingEnabled = true;
+            cmbCategoria.Location = new Point(127, 105);
+            cmbCategoria.Name = "cmbCategoria";
+            cmbCategoria.Size = new Size(160, 28);
+            cmbCategoria.TabIndex = 26;
             // 
             // chkPorPeso
             // 
@@ -144,6 +161,7 @@
             nupPrecio.DecimalPlaces = 2;
             nupPrecio.Location = new Point(93, 148);
             nupPrecio.Margin = new Padding(3, 2, 3, 2);
+            nupPrecio.Maximum = new decimal(new int[] { 999999, 0, 0, 0 });
             nupPrecio.Name = "nupPrecio";
             nupPrecio.Size = new Size(194, 26);
             nupPrecio.TabIndex = 22;
@@ -151,21 +169,21 @@
             nupPrecio.ThousandsSeparator = true;
             nupPrecio.ValueChanged += numericUpDown1_ValueChanged;
             // 
-            // btnCancelarCliente
+            // btnEliminar
             // 
-            btnCancelarCliente.BackColor = Color.Red;
-            btnCancelarCliente.Cursor = Cursors.Hand;
-            btnCancelarCliente.FlatAppearance.BorderSize = 0;
-            btnCancelarCliente.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 192, 192);
-            btnCancelarCliente.FlatStyle = FlatStyle.Flat;
-            btnCancelarCliente.Font = new Font("Microsoft Sans Serif", 9F);
-            btnCancelarCliente.Location = new Point(192, 355);
-            btnCancelarCliente.Margin = new Padding(3, 2, 3, 2);
-            btnCancelarCliente.Name = "btnCancelarCliente";
-            btnCancelarCliente.Size = new Size(96, 30);
-            btnCancelarCliente.TabIndex = 21;
-            btnCancelarCliente.Text = "CANCELAR";
-            btnCancelarCliente.UseVisualStyleBackColor = false;
+            btnEliminar.BackColor = Color.Red;
+            btnEliminar.Cursor = Cursors.Hand;
+            btnEliminar.FlatAppearance.BorderSize = 0;
+            btnEliminar.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 192, 192);
+            btnEliminar.FlatStyle = FlatStyle.Flat;
+            btnEliminar.Font = new Font("Microsoft Sans Serif", 9F);
+            btnEliminar.Location = new Point(175, 355);
+            btnEliminar.Margin = new Padding(3, 2, 3, 2);
+            btnEliminar.Name = "btnEliminar";
+            btnEliminar.Size = new Size(96, 30);
+            btnEliminar.TabIndex = 21;
+            btnEliminar.Text = "ELIMINAR";
+            btnEliminar.UseVisualStyleBackColor = false;
             // 
             // GUARDAR
             // 
@@ -174,7 +192,7 @@
             GUARDAR.FlatAppearance.MouseOverBackColor = Color.FromArgb(192, 255, 192);
             GUARDAR.FlatStyle = FlatStyle.Flat;
             GUARDAR.Font = new Font("Microsoft Sans Serif", 9F);
-            GUARDAR.Location = new Point(10, 355);
+            GUARDAR.Location = new Point(43, 355);
             GUARDAR.Margin = new Padding(3, 2, 3, 2);
             GUARDAR.Name = "GUARDAR";
             GUARDAR.Size = new Size(96, 30);
@@ -189,9 +207,12 @@
             textBox4.Location = new Point(93, 196);
             textBox4.Margin = new Padding(3, 2, 3, 2);
             textBox4.MaxLength = 100;
+            textBox4.Multiline = true;
             textBox4.Name = "textBox4";
+            textBox4.ScrollBars = ScrollBars.Vertical;
             textBox4.Size = new Size(195, 26);
             textBox4.TabIndex = 19;
+            textBox4.DoubleClick += textBox4_DoubleClick;
             // 
             // label7
             // 
@@ -324,24 +345,7 @@
             listView1.Size = new Size(663, 242);
             listView1.TabIndex = 0;
             listView1.UseCompatibleStateImageBehavior = false;
-            // 
-            // cmbCategoria
-            // 
-            cmbCategoria.FormattingEnabled = true;
-            cmbCategoria.Location = new Point(127, 105);
-            cmbCategoria.Name = "cmbCategoria";
-            cmbCategoria.Size = new Size(160, 28);
-            cmbCategoria.TabIndex = 26;
-            // 
-            // btnNuevaCat
-            // 
-            btnNuevaCat.Location = new Point(93, 105);
-            btnNuevaCat.Name = "btnNuevaCat";
-            btnNuevaCat.Size = new Size(28, 28);
-            btnNuevaCat.TabIndex = 27;
-            btnNuevaCat.Text = "+";
-            btnNuevaCat.UseVisualStyleBackColor = true;
-            btnNuevaCat.Click += btnNuevaCat_Click;
+            listView1.DoubleClick += listView1_DoubleClick_1;
             // 
             // ProductoForm
             // 
@@ -383,7 +387,7 @@
         private TextBox textBox4;
         private Label label7;
         private Button GUARDAR;
-        private Button btnCancelarCliente;
+        private Button btnEliminar;
         private NumericUpDown nupPrecio;
         private CheckBox chkPorPeso;
         private Label label8;
