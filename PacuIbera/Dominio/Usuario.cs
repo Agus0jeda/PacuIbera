@@ -13,7 +13,7 @@ namespace PacuIbera.Dominio
         public string ClaveHash { get; set; }
         public string Email { get; set; }
         public string Telefono { get; set; }
-        public DateTime? FechaNacimiento { get; set; } // El ? permite que sea null si no lo cargan
+        public DateTime? FechaNacimiento { get; set; } 
         public string Direccion { get; set; }
         public string Rol { get; set; }
         public int ProvinciaId { get; set; }

@@ -1,4 +1,5 @@
 ﻿using Negocio;
+using PacuIbera.Datos;
 using PacuIbera.Dominio;
 using System;
 using System.Data;
@@ -10,6 +11,7 @@ namespace PacuIbera.UI.Common
     public partial class ClientesForm : Form
     {
         private ClienteNegocio negocio = new ClienteNegocio();
+        private OtrosDatos otrosDatos = new OtrosDatos();
 
         public ClientesForm()
         {
@@ -30,24 +32,16 @@ namespace PacuIbera.UI.Common
 
         private void CargarProvincias()
         {
-            try
-            {
-                cmbProvincia.DataSource = negocio.ListarProvincias();
-                cmbProvincia.DisplayMember = "Nombre";
-                cmbProvincia.ValueMember = "Id";
-                cmbProvincia.SelectedIndex = -1;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error al cargar provincias: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            cmbProvincia.DataSource = otrosDatos.ObtenerProvincias();
+            cmbProvincia.DisplayMember = "Nombre";
+            cmbProvincia.ValueMember = "Id";
         }
 
         private void CargarGrillaClientes()
         {
             try
             {
-                dataGridView1.DataSource = negocio.ListarClientes();
+                dgvClientes.DataSource = negocio.ListarClientes();
             }
             catch (Exception ex)
             {
@@ -59,12 +53,12 @@ namespace PacuIbera.UI.Common
         {
             // Vinculamos los DataPropertyName de tus columnas con las columnas de la consulta SQL
             // Asegúrate de que los nombres de las columnas en tu diseñador coincidan (id, Nombre, Column1, etc.)
-            if (dataGridView1.Columns["id"] != null) dataGridView1.Columns["id"].DataPropertyName = "Id";
-            if (dataGridView1.Columns["Nombre"] != null) dataGridView1.Columns["Nombre"].DataPropertyName = "Nombre";
-            if (dataGridView1.Columns["Column1"] != null) dataGridView1.Columns["Column1"].DataPropertyName = "Apellido"; // Asumiendo Column1 es Apellido
-            if (dataGridView1.Columns["DNI"] != null) dataGridView1.Columns["DNI"].DataPropertyName = "DNI_CUIT";
-            if (dataGridView1.Columns["Provincia"] != null) dataGridView1.Columns["Provincia"].DataPropertyName = "Provincia";
-            if (dataGridView1.Columns["Localidad"] != null) dataGridView1.Columns["Localidad"].DataPropertyName = "Localidad";
+            if (dgvClientes.Columns["id"] != null) dgvClientes.Columns["id"].DataPropertyName = "Id";
+            if (dgvClientes.Columns["Nombre"] != null) dgvClientes.Columns["Nombre"].DataPropertyName = "Nombre";
+            if (dgvClientes.Columns["Column1"] != null) dgvClientes.Columns["Column1"].DataPropertyName = "Apellido"; // Asumiendo Column1 es Apellido
+            if (dgvClientes.Columns["DNI"] != null) dgvClientes.Columns["DNI"].DataPropertyName = "DNI_CUIT";
+            if (dgvClientes.Columns["Provincia"] != null) dgvClientes.Columns["Provincia"].DataPropertyName = "Provincia";
+            if (dgvClientes.Columns["Localidad"] != null) dgvClientes.Columns["Localidad"].DataPropertyName = "Localidad";
         }
 
         private void cmbProvincia_SelectedIndexChanged(object sender, EventArgs e)
@@ -124,34 +118,34 @@ namespace PacuIbera.UI.Common
 
         private void EstilizarGrilla()
         {
-            dataGridView1.BackgroundColor = Color.White;
-            dataGridView1.BorderStyle = BorderStyle.None;
-            dataGridView1.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            dataGridView1.GridColor = Color.FromArgb(230, 230, 230);
-            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridView1.MultiSelect = false;
-            dataGridView1.RowHeadersVisible = false;
+            dgvClientes.BackgroundColor = Color.White;
+            dgvClientes.BorderStyle = BorderStyle.None;
+            dgvClientes.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            dgvClientes.GridColor = Color.FromArgb(230, 230, 230);
+            dgvClientes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvClientes.MultiSelect = false;
+            dgvClientes.RowHeadersVisible = false;
 
             // Encabezado en Verde (acorde al botón Guardar)
-            dataGridView1.EnableHeadersVisualStyles = false;
-            dataGridView1.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-            dataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(46, 204, 113); // Verde claro
-            dataGridView1.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            dataGridView1.ColumnHeadersHeight = 35;
+            dgvClientes.EnableHeadersVisualStyles = false;
+            dgvClientes.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+            dgvClientes.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(46, 204, 113); // Verde claro
+            dgvClientes.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            dgvClientes.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            dgvClientes.ColumnHeadersHeight = 35;
 
             // Filas y selección en un tono verde más elegante
-            dataGridView1.DefaultCellStyle.BackColor = Color.White;
-            dataGridView1.DefaultCellStyle.ForeColor = Color.FromArgb(64, 64, 64);
-            dataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(39, 174, 96); // Verde de selección
-            dataGridView1.DefaultCellStyle.SelectionForeColor = Color.White;
-            dataGridView1.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
-            dataGridView1.RowTemplate.Height = 30;
+            dgvClientes.DefaultCellStyle.BackColor = Color.White;
+            dgvClientes.DefaultCellStyle.ForeColor = Color.FromArgb(64, 64, 64);
+            dgvClientes.DefaultCellStyle.SelectionBackColor = Color.FromArgb(39, 174, 96); // Verde de selección
+            dgvClientes.DefaultCellStyle.SelectionForeColor = Color.White;
+            dgvClientes.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
+            dgvClientes.RowTemplate.Height = 30;
         }
 
-           public void FiltrarClientes(string filtro)
+        public void FiltrarClientes(string filtro)
         {
-            if (dataGridView1.DataSource is DataTable dt)
+            if (dgvClientes.DataSource is DataTable dt)
             {
                 // Aplicamos el filtro por Nombre, Apellido o DNI/CUIT
                 dt.DefaultView.RowFilter = $"Nombre LIKE '%{filtro}%' OR Apellido LIKE '%{filtro}%' OR DNI_CUIT LIKE '%{filtro}%'";
@@ -193,6 +187,16 @@ namespace PacuIbera.UI.Common
         private void txtBuscar_TextChanged(object sender, EventArgs e)
         {
             FiltrarClientes(txtBuscar.Text.Trim());
+        }
+
+        private void btnCancelar_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void nuevoCliente_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }

@@ -8,15 +8,16 @@ namespace Datos
     public class UsuarioDatos : ConexionBD
     {
         public Usuario ObtenerPorDNI(string dni)
-         {
+        {
             Usuario usuario = null;
+
             using (SqlConnection conexion = ObtenerConexion())
             {
                 SqlCommand cmd = new SqlCommand("sp_LoginUsuario", conexion);
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@DNI", dni);
-
                 conexion.Open();
+
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     if (reader.Read())
@@ -34,6 +35,111 @@ namespace Datos
                 }
             }
             return usuario;
+        }
+    
+
+
+//  LISTAR TODOS 
+public DataTable ObtenerTodos()
+        {
+            DataTable dt = new DataTable();
+            using (SqlConnection conexion = ObtenerConexion())
+            {
+                string query = @"SELECT u.Id, u.Nombre, u.Apellido, u.DNI, u.Telefono, u.Email, u.Direccion, 
+                        r.Nombre AS Rol, 
+                        p.Nombre AS Provincia, 
+                        l.Nombre AS Localidad,
+                        CASE WHEN u.Activo = 1 THEN 'Activo' ELSE 'Inactivo' END AS Estado,
+                        u.ClaveHash AS Clave
+                 FROM Usuario u 
+                 INNER JOIN Rol r ON u.RolId = r.Id
+                 INNER JOIN Provincia p ON u.ProvinciaId = p.Id
+                 INNER JOIN Localidad l ON u.LocalidadId = l.Id";
+
+                SqlCommand cmd = new SqlCommand(query, conexion);
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                da.Fill(dt);
+            }
+            return dt;
+        }
+
+        public void Insertar(Usuario usuario)
+        {
+            using (SqlConnection conexion = ObtenerConexion())
+            {
+                string query = @"INSERT INTO Usuario (Nombre, Apellido, DNI, Telefono, Email, Direccion, RolId, ClaveHash, Activo, ProvinciaId, LocalidadId) 
+                         VALUES (@Nombre, @Apellido, @DNI, @Telefono, @Email, @Direccion, @RolId, @ClaveHash, @Activo, @ProvinciaId, @LocalidadId)";
+
+                SqlCommand cmd = new SqlCommand(query, conexion);
+                cmd.Parameters.AddWithValue("@Nombre", usuario.Nombre);
+                cmd.Parameters.AddWithValue("@Apellido", usuario.Apellido);
+                cmd.Parameters.AddWithValue("@DNI", usuario.DNI);
+                cmd.Parameters.AddWithValue("@Telefono", usuario.Telefono);
+                cmd.Parameters.AddWithValue("@Email", usuario.Email);
+                cmd.Parameters.AddWithValue("@Direccion", usuario.Direccion);
+                cmd.Parameters.AddWithValue("@RolId", ConvertirRolAId(usuario.Rol));
+
+                cmd.Parameters.AddWithValue("@ClaveHash", usuario.ClaveHash);
+                cmd.Parameters.AddWithValue("@Activo", usuario.Activo ? 1 : 0);
+                cmd.Parameters.AddWithValue("@ProvinciaId", usuario.ProvinciaId);
+                cmd.Parameters.AddWithValue("@LocalidadId", usuario.LocalidadId);
+
+                conexion.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public void Actualizar(Usuario usuario)
+        {
+            using (SqlConnection conexion = ObtenerConexion())
+            {
+                string query = @"UPDATE Usuario SET Nombre=@Nombre, Apellido=@Apellido, DNI=@DNI, 
+                         Telefono=@Telefono, Email=@Email, Direccion=@Direccion, RolId=@RolId, 
+                         Activo=@Activo, ProvinciaId=@ProvinciaId, LocalidadId=@LocalidadId 
+                         WHERE Id=@Id";
+
+                SqlCommand cmd = new SqlCommand(query, conexion);
+                cmd.Parameters.AddWithValue("@Id", usuario.Id);
+                cmd.Parameters.AddWithValue("@Nombre", usuario.Nombre);
+                cmd.Parameters.AddWithValue("@Apellido", usuario.Apellido);
+                cmd.Parameters.AddWithValue("@DNI", usuario.DNI);
+                cmd.Parameters.AddWithValue("@Telefono", usuario.Telefono);
+                cmd.Parameters.AddWithValue("@Email", usuario.Email);
+                cmd.Parameters.AddWithValue("@Direccion", usuario.Direccion);
+                cmd.Parameters.AddWithValue("@RolId", ConvertirRolAId(usuario.Rol));
+                cmd.Parameters.AddWithValue("@Activo", usuario.Activo ? 1 : 0);
+                cmd.Parameters.AddWithValue("@ProvinciaId", usuario.ProvinciaId);
+                cmd.Parameters.AddWithValue("@LocalidadId", usuario.LocalidadId);
+
+                conexion.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+
+        public void Eliminar(int idUsuario)
+        {
+            using (SqlConnection conexion = ObtenerConexion())
+            {
+                // En lugar de borrarlo, actualizamos su campo Activo a 0 (Falso/Inactivo)
+                string query = "UPDATE Usuario SET Activo = 0 WHERE Id = @Id";
+
+                SqlCommand cmd = new SqlCommand(query, conexion);
+                cmd.Parameters.AddWithValue("@Id", idUsuario);
+
+                conexion.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+
+
+        //  transformar el texto al ID
+        private int ConvertirRolAId(string nombreRol)
+        {
+            if (nombreRol == "Administrador") return 1;
+            if (nombreRol == "Vendedor") return 2;
+            return 3; // Gerente
         }
     }
 }

@@ -248,6 +248,8 @@ namespace PacuIbera.UI.Common
 
         private void button2_Click(object sender, EventArgs e) { }
 
-        private void button4_Click(object sender, EventArgs e) { }
+        private void button4_Click(object sender, EventArgs e) {
+            AbrirFormularioPanel(new EmpleadosForm());
+        }
     }
 }

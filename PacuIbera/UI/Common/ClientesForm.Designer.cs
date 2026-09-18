@@ -39,13 +39,11 @@ namespace PacuIbera.UI.Common
             cmbProvincia = new ComboBox();
             lblTelefonoCliente = new Label();
             txtTelefonoCliente = new TextBox();
-            lblEmailCliente = new Label();
             txtEmailCliente = new TextBox();
             lblDireccionCliente = new Label();
             txtDireccionCliente = new TextBox();
             lblLocCliente = new Label();
             lblProvCliente = new Label();
-            lblDniCliente = new Label();
             lblApellidoCliente = new Label();
             lblNombreCliente = new Label();
             btnCancelar = new Button();
@@ -59,7 +57,7 @@ namespace PacuIbera.UI.Common
             txtBuscar = new TextBox();
             btnCerrar = new Label();
             lblTituloCliente = new Label();
-            dataGridView1 = new DataGridView();
+            dgvClientes = new DataGridView();
             id = new DataGridViewTextBoxColumn();
             Nombre = new DataGridViewTextBoxColumn();
             Column1 = new DataGridViewTextBoxColumn();
@@ -73,7 +71,7 @@ namespace PacuIbera.UI.Common
             panel2 = new Panel();
             nuevoCliente.SuspendLayout();
             panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvClientes).BeginInit();
             ((System.ComponentModel.ISupportInitialize)usuarioDatosBindingSource).BeginInit();
             panel2.SuspendLayout();
             SuspendLayout();
@@ -85,13 +83,11 @@ namespace PacuIbera.UI.Common
             nuevoCliente.Controls.Add(cmbProvincia);
             nuevoCliente.Controls.Add(lblTelefonoCliente);
             nuevoCliente.Controls.Add(txtTelefonoCliente);
-            nuevoCliente.Controls.Add(lblEmailCliente);
             nuevoCliente.Controls.Add(txtEmailCliente);
             nuevoCliente.Controls.Add(lblDireccionCliente);
             nuevoCliente.Controls.Add(txtDireccionCliente);
             nuevoCliente.Controls.Add(lblLocCliente);
             nuevoCliente.Controls.Add(lblProvCliente);
-            nuevoCliente.Controls.Add(lblDniCliente);
             nuevoCliente.Controls.Add(lblApellidoCliente);
             nuevoCliente.Controls.Add(lblNombreCliente);
             nuevoCliente.Controls.Add(btnCancelar);
@@ -106,6 +102,7 @@ namespace PacuIbera.UI.Common
             nuevoCliente.Name = "nuevoCliente";
             nuevoCliente.Size = new Size(350, 534);
             nuevoCliente.TabIndex = 0;
+            nuevoCliente.Paint += nuevoCliente_Paint;
             // 
             // cmbLocalidad
             // 
@@ -122,6 +119,7 @@ namespace PacuIbera.UI.Common
             cmbProvincia.Name = "cmbProvincia";
             cmbProvincia.Size = new Size(222, 31);
             cmbProvincia.TabIndex = 23;
+            cmbProvincia.SelectedIndexChanged += cmbProvincia_SelectedIndexChanged;
             // 
             // lblTelefonoCliente
             // 
@@ -143,16 +141,6 @@ namespace PacuIbera.UI.Common
             txtTelefonoCliente.Name = "txtTelefonoCliente";
             txtTelefonoCliente.Size = new Size(222, 27);
             txtTelefonoCliente.TabIndex = 21;
-            // 
-            // lblEmailCliente
-            // 
-            lblEmailCliente.AutoSize = true;
-            lblEmailCliente.Font = new Font("SansSerif", 9F);
-            lblEmailCliente.Location = new Point(32, 247);
-            lblEmailCliente.Name = "lblEmailCliente";
-            lblEmailCliente.Size = new Size(52, 17);
-            lblEmailCliente.TabIndex = 20;
-            lblEmailCliente.Text = "Email :";
             // 
             // txtEmailCliente
             // 
@@ -206,16 +194,6 @@ namespace PacuIbera.UI.Common
             lblProvCliente.TabIndex = 16;
             lblProvCliente.Text = "Provincia :";
             // 
-            // lblDniCliente
-            // 
-            lblDniCliente.AutoSize = true;
-            lblDniCliente.Font = new Font("SansSerif", 9F);
-            lblDniCliente.Location = new Point(4, 162);
-            lblDniCliente.Name = "lblDniCliente";
-            lblDniCliente.Size = new Size(81, 17);
-            lblDniCliente.TabIndex = 15;
-            lblDniCliente.Text = "DNI/CUIT :";
-            // 
             // lblApellidoCliente
             // 
             lblApellidoCliente.AutoSize = true;
@@ -251,6 +229,7 @@ namespace PacuIbera.UI.Common
             btnCancelar.TabIndex = 12;
             btnCancelar.Text = "CANCELAR";
             btnCancelar.UseVisualStyleBackColor = false;
+            btnCancelar.Click += btnCancelar_Click;
             // 
             // btnGuardar
             // 
@@ -361,19 +340,19 @@ namespace PacuIbera.UI.Common
             lblTituloCliente.TabIndex = 0;
             lblTituloCliente.Text = "CLIENTES";
             // 
-            // dataGridView1
+            // dgvClientes
             // 
-            dataGridView1.AutoGenerateColumns = false;
-            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { id, Nombre, Column1, DNI, Provincia, Localidad, Rol, Estado });
-            dataGridView1.DataSource = usuarioDatosBindingSource;
-            dataGridView1.Dock = DockStyle.Fill;
-            dataGridView1.Location = new Point(0, 0);
-            dataGridView1.Name = "dataGridView1";
-            dataGridView1.RowHeadersWidth = 51;
-            dataGridView1.Size = new Size(647, 464);
-            dataGridView1.TabIndex = 2;
-            dataGridView1.CellContentClick += dataGridView1_CellContentClick;
+            dgvClientes.AutoGenerateColumns = false;
+            dgvClientes.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvClientes.Columns.AddRange(new DataGridViewColumn[] { id, Nombre, Column1, DNI, Provincia, Localidad, Rol, Estado });
+            dgvClientes.DataSource = usuarioDatosBindingSource;
+            dgvClientes.Dock = DockStyle.Fill;
+            dgvClientes.Location = new Point(0, 0);
+            dgvClientes.Name = "dgvClientes";
+            dgvClientes.RowHeadersWidth = 51;
+            dgvClientes.Size = new Size(647, 464);
+            dgvClientes.TabIndex = 2;
+            dgvClientes.CellContentClick += dataGridView1_CellContentClick;
             // 
             // id
             // 
@@ -431,10 +410,6 @@ namespace PacuIbera.UI.Common
             Estado.Name = "Estado";
             Estado.Width = 125;
             // 
-            // usuarioDatosBindingSource
-            // 
-            usuarioDatosBindingSource.DataSource = typeof(Datos.UsuarioDatos);
-            // 
             // lblSinResultados
             // 
             lblSinResultados.AutoSize = true;
@@ -448,7 +423,7 @@ namespace PacuIbera.UI.Common
             // panel2
             // 
             panel2.Controls.Add(lblSinResultados);
-            panel2.Controls.Add(dataGridView1);
+            panel2.Controls.Add(dgvClientes);
             panel2.Dock = DockStyle.Fill;
             panel2.Location = new Point(350, 70);
             panel2.Name = "panel2";
@@ -470,7 +445,7 @@ namespace PacuIbera.UI.Common
             nuevoCliente.PerformLayout();
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvClientes).EndInit();
             ((System.ComponentModel.ISupportInitialize)usuarioDatosBindingSource).EndInit();
             panel2.ResumeLayout(false);
             panel2.PerformLayout();
@@ -488,7 +463,7 @@ namespace PacuIbera.UI.Common
         private Label lblNuevoCliente;
         private Button btnCancelar;
         private Button btnGuardar;
-        private DataGridView dataGridView1;
+        private DataGridView dgvClientes;
         private DataGridViewTextBoxColumn id;
         private DataGridViewTextBoxColumn Nombre;
         private DataGridViewTextBoxColumn Column1;
@@ -500,7 +475,6 @@ namespace PacuIbera.UI.Common
         private BindingSource usuarioDatosBindingSource;
         private Label lblLocCliente;
         private Label lblProvCliente;
-        private Label lblDniCliente;
         private Label lblApellidoCliente;
         private Label lblNombreCliente;
         private Label btnCerrar;
@@ -508,7 +482,6 @@ namespace PacuIbera.UI.Common
         private TextBox txtDireccionCliente;
         private Label lblTelefonoCliente;
         private TextBox txtTelefonoCliente;
-        private Label lblEmailCliente;
         private TextBox txtEmailCliente;
         private ComboBox cmbLocalidad;
         private ComboBox cmbProvincia;

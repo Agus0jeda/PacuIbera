@@ -1,12 +1,14 @@
 ﻿using System.Data;
 using Datos;
+using PacuIbera.Datos;
 using PacuIbera.Dominio;
 
 namespace Negocio
 {
     public class ClienteNegocio
     {
-        private ClienteDatos datos = new ClienteDatos();
+        private OtrosDatos datos = new OtrosDatos();
+        private ClienteDatos clientes = new ClienteDatos();
 
         // Método para traer las provincias al ComboBox
         public DataTable ListarProvincias()
@@ -28,11 +30,11 @@ namespace Negocio
                 throw new System.Exception("El nombre y el apellido son obligatorios.");
             }
 
-            datos.RegistrarCliente(cliente);
+            clientes.RegistrarCliente(cliente);
         }
         public DataTable ListarClientes()
         {
-            return datos.ObtenerClientes();
+            return clientes.ObtenerClientes();
         }
     }
 }

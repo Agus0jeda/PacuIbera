@@ -2,47 +2,13 @@
 using System;
 using System.Data;
 using PacuIbera.Dominio;
+using PacuIbera.Datos;
 
 namespace Datos
 {
     public class ClienteDatos : ConexionBD
     {
-        // 1. Obtener lista de Provincias para el ComboBox
-        public DataTable ObtenerProvincias()
-        {
-            DataTable tabla = new DataTable();
-            using (SqlConnection conexion = ObtenerConexion())
-            {
-                SqlCommand cmd = new SqlCommand("sp_ObtenerProvincias", conexion);
-                cmd.CommandType = CommandType.StoredProcedure;
-
-                conexion.Open();
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    tabla.Load(reader);
-                }
-            }
-            return tabla;
-        }
-
-        // 2. Obtener Localidades filtradas por la Provincia seleccionada
-        public DataTable ObtenerLocalidadesPorProvincia(int provinciaId)
-        {
-            DataTable tabla = new DataTable();
-            using (SqlConnection conexion = ObtenerConexion())
-            {
-                SqlCommand cmd = new SqlCommand("sp_ObtenerLocalidadesPorProvincia", conexion);
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@ProvinciaId", provinciaId);
-
-                conexion.Open();
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    tabla.Load(reader);
-                }
-            }
-            return tabla;
-        }
+        
 
         // 3. Registrar un nuevo Cliente
         public void RegistrarCliente(Cliente cliente)
