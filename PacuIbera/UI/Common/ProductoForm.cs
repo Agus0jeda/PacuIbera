@@ -1,27 +1,47 @@
 ﻿using Datos;
 using System;
 using System.Data;
+using System.Drawing; // <-- Faltaba esto para los Colores y Tamaños
 using System.Windows.Forms;
 
 namespace PacuIbera.UI.Common
 {
     public partial class ProductoForm : Form
     {
+        // --- VARIABLES DEL FORMULARIO ---
         private ProductoDatos productoDatos = new ProductoDatos();
-        private DataTable dtProductosGlobal; // Guarda los productos para filtrar rápido
-        private int idProductoSeleccionado = 0; // Para saber si editamos o guardamos nuevo
+        private DataTable dtProductosGlobal;
+        private int idProductoSeleccionado = 0;
+        private decimal precioOriginal = 0;
+
+        // --- VARIABLES DEL PANEL DE LOTES ---
+        private Panel panelLotes;
+        private DataGridView dgvLotes;
+        private TextBox txtStockLote;
+        private DateTimePicker dtpVencimientoLote;
+        private Button btnActualizarLote;
+        private Button btnCerrarPanel;
 
         public ProductoForm()
         {
             InitializeComponent();
             this.Load += ProductoForm_Load;
 
-            // Conectamos los filtros y los clics de la lista
+            // Construimos el panel oculto al iniciar
+            CrearPanelFlotantePorCodigo();
+
+            // Filtros y clics
             bucarNombreProducto.TextChanged += Filtros_Changed;
             buscarCatProd.SelectedIndexChanged += Filtros_Changed;
             listView1.SelectedIndexChanged += listView1_SelectedIndexChanged;
 
-            // Actualizamos la frase del efecto fantasma
+            // Botones
+            btnEliminar.Click += btnEliminar_Click;
+
+            // --- ESTA ES LA LÍNEA NUEVA QUE CONECTA EL DESPLEGABLE ---
+            cmbNombreProducto.SelectedIndexChanged += cmbNombreProducto_SelectedIndexChanged;
+
+            // Fantasma buscador
             bucarNombreProducto.Enter += (s, e) => { if (bucarNombreProducto.Text == "TODOS LOS PRODUCTOS") bucarNombreProducto.Text = ""; };
             bucarNombreProducto.Leave += (s, e) => { if (string.IsNullOrWhiteSpace(bucarNombreProducto.Text)) bucarNombreProducto.Text = "TODOS LOS PRODUCTOS"; };
         }
@@ -39,12 +59,10 @@ namespace PacuIbera.UI.Common
             {
                 DataTable dtCategorias = productoDatos.ObtenerCategorias();
 
-                // Llenamos el ComboBox de crear/editar
                 cmbCategoria.DataSource = dtCategorias;
                 cmbCategoria.DisplayMember = "Nombre";
                 cmbCategoria.ValueMember = "Id";
 
-                // Llenamos el ComboBox del Filtro de arriba agregando la opción "TODAS"
                 DataTable dtFiltro = dtCategorias.Copy();
                 DataRow filaTodas = dtFiltro.NewRow();
                 filaTodas["Id"] = 0;
@@ -63,6 +81,7 @@ namespace PacuIbera.UI.Common
 
         private void CargarListaProductos()
         {
+            productoDatos.ProcesarLotesVencidos();
             try
             {
                 listView1.Clear();
@@ -74,26 +93,32 @@ namespace PacuIbera.UI.Common
                 listView1.Columns.Add("Nombre", 180);
                 listView1.Columns.Add("Categoría", 120);
                 listView1.Columns.Add("Precio", 80);
+                listView1.Columns.Add("Stock", 60);
                 listView1.Columns.Add("Stock Min", 80);
                 listView1.Columns.Add("X Peso", 60);
+                listView1.Columns.Add("Próx. Venc.", 90);
                 listView1.Columns.Add("Descripción", 180);
 
                 dtProductosGlobal = productoDatos.ObtenerProductos();
 
-                // Vaciamos la lista y agregamos la opción "TODOS" al principio
                 bucarNombreProducto.Items.Clear();
                 bucarNombreProducto.Items.Add("TODOS LOS PRODUCTOS");
 
+                cmbNombreProducto.Items.Clear();
+
                 foreach (DataRow row in dtProductosGlobal.Rows)
                 {
-                    bucarNombreProducto.Items.Add(row["Nombre"].ToString());
+                    string nombreProd = row["Nombre"].ToString();
+                    bucarNombreProducto.Items.Add(nombreProd);
+                    cmbNombreProducto.Items.Add(nombreProd);
                 }
 
                 bucarNombreProducto.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
                 bucarNombreProducto.AutoCompleteSource = AutoCompleteSource.ListItems;
-
-                // Que arranque mostrando "TODOS LOS PRODUCTOS"
                 bucarNombreProducto.SelectedIndex = 0;
+
+                cmbNombreProducto.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+                cmbNombreProducto.AutoCompleteSource = AutoCompleteSource.ListItems;
 
                 AplicarFiltros();
             }
@@ -101,9 +126,37 @@ namespace PacuIbera.UI.Common
             {
                 MessageBox.Show("Error al cargar la lista: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
+            ActualizarPanelAlertas();
         }
 
-        // --- SISTEMA DE FILTROS ---
+        private void ActualizarPanelAlertas()
+        {
+            listaStockBajo.Items.Clear();
+            listaVencimientos.Items.Clear();
+
+            if (dtProductosGlobal == null) return;
+
+            foreach (DataRow row in dtProductosGlobal.Rows)
+            {
+                string nombre = row["Nombre"].ToString();
+                decimal stockActual = Convert.ToDecimal(row["StockActual"]);
+                decimal stockMin = Convert.ToDecimal(row["StockMinimo"]);
+
+                if (stockActual <= stockMin)
+                {
+                    listaStockBajo.Items.Add($"⚠️ {nombre} - Quedan: {stockActual} (Mín: {stockMin})");
+                }
+
+                int lotesPorVencer = row["LotesPorVencer"] != DBNull.Value ? Convert.ToInt32(row["LotesPorVencer"]) : 0;
+                if (lotesPorVencer > 0)
+                {
+                    string proxVenc = row["ProximoVencimiento"] != DBNull.Value ? Convert.ToDateTime(row["ProximoVencimiento"]).ToString("dd/MM/yyyy") : "N/A";
+                    listaVencimientos.Items.Add($"⏳ {nombre} - {lotesPorVencer} lote(s) vence(n) ({proxVenc})");
+                }
+            }
+        }
+
         private void Filtros_Changed(object sender, EventArgs e)
         {
             AplicarFiltros();
@@ -113,27 +166,23 @@ namespace PacuIbera.UI.Common
         {
             if (dtProductosGlobal == null) return;
 
-            string filtro = "1=1"; // Trae todo por defecto
+            string filtro = "1=1";
 
-            // Filtro por Nombre
             if (!string.IsNullOrWhiteSpace(bucarNombreProducto.Text) &&
                 bucarNombreProducto.Text != "TODOS LOS PRODUCTOS" &&
-                bucarNombreProducto.Text != "Nombre del Producto") // Dejamos el viejo por las dudas
+                bucarNombreProducto.Text != "Nombre del Producto")
             {
                 filtro += $" AND Nombre LIKE '%{bucarNombreProducto.Text}%'";
             }
 
-            // Filtro por Categoría
-            if (buscarCatProd.SelectedIndex > 0) // Si no es "TODAS"
+            if (buscarCatProd.SelectedIndex > 0)
             {
                 filtro += $" AND Categoria = '{buscarCatProd.Text}'";
             }
 
-            // Aplicamos el filtro a la memoria
             DataView dv = dtProductosGlobal.DefaultView;
             dv.RowFilter = filtro;
 
-            // Dibujamos las filas filtradas
             listView1.Items.Clear();
             foreach (DataRowView rowView in dv)
             {
@@ -142,73 +191,146 @@ namespace PacuIbera.UI.Common
                 item.SubItems.Add(row["Nombre"].ToString());
                 item.SubItems.Add(row["Categoria"].ToString());
                 item.SubItems.Add(row["PrecioVenta"].ToString());
+                item.SubItems.Add(row["StockActual"].ToString());
                 item.SubItems.Add(row["StockMinimo"].ToString());
                 item.SubItems.Add(Convert.ToBoolean(row["SeVendePorPeso"]) ? "Sí" : "No");
+
+                if (row["ProximoVencimiento"] != DBNull.Value)
+                {
+                    item.SubItems.Add(Convert.ToDateTime(row["ProximoVencimiento"]).ToString("dd/MM/yyyy"));
+                }
+                else
+                {
+                    item.SubItems.Add("");
+                }
+
                 item.SubItems.Add(row["Descripcion"].ToString());
+
+                decimal stockActual = Convert.ToDecimal(row["StockActual"]);
+                decimal stockMinimo = Convert.ToDecimal(row["StockMinimo"]);
+                int lotesPorVencer = Convert.ToInt32(row["LotesPorVencer"]);
+
+                if (stockActual <= stockMinimo)
+                {
+                    item.BackColor = System.Drawing.Color.LightCoral;
+                }
+                else if (lotesPorVencer > 0)
+                {
+                    item.BackColor = System.Drawing.Color.LightYellow;
+                }
 
                 listView1.Items.Add(item);
             }
         }
 
-        // --- AL HACER CLIC EN LA GRILLA ---
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (listView1.SelectedItems.Count > 0)
             {
                 ListViewItem item = listView1.SelectedItems[0];
-                idProductoSeleccionado = Convert.ToInt32(item.Text); // Guardamos el ID
+                idProductoSeleccionado = Convert.ToInt32(item.Text);
 
-                textBox1.Text = item.SubItems[1].Text; // Nombre
-                cmbCategoria.Text = item.SubItems[2].Text; // Categoria
+                cmbNombreProducto.Text = item.SubItems[1].Text;
+                cmbCategoria.Text = item.SubItems[2].Text;
                 nupPrecio.Value = Convert.ToDecimal(item.SubItems[3].Text);
-                nupStockMin.Value = Convert.ToDecimal(item.SubItems[4].Text);
-                chkPorPeso.Checked = item.SubItems[5].Text == "Sí";
-                textBox4.Text = item.SubItems[6].Text; // Descripción
 
-                GUARDAR.Text = "ACTUALIZAR"; // Cambiamos el texto del botón
-                btnEliminar.Visible = true;  // Mostramos el botón Eliminar
+                btnIngresarStock.Text = "";
+                nupStockMin.Value = Convert.ToDecimal(item.SubItems[5].Text);
+                chkPorPeso.Checked = item.SubItems[6].Text == "Sí";
+
+                string fechaGrilla = item.SubItems[7].Text;
+                if (DateTime.TryParse(fechaGrilla, out DateTime fechaValida))
+                {
+                    chkVencimiento.Checked = true;
+                    dtpVencimiento.Value = fechaValida;
+                }
+                else
+                {
+                    chkVencimiento.Checked = false;
+                }
+
+                textBox4.Text = item.SubItems[8].Text;
+
+                GUARDAR.Text = "ACTUALIZAR";
+                btnEliminar.Visible = true;
             }
         }
 
-        // --- BOTÓN GUARDAR (NUEVO O ACTUALIZAR) ---
         private void GUARDAR_Click(object sender, EventArgs e)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(textBox1.Text))
+                if (string.IsNullOrWhiteSpace(cmbNombreProducto.Text))
                 {
-                    MessageBox.Show("El nombre del producto es obligatorio.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("El nombre del producto es obligatorio.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    cmbNombreProducto.Focus();
                     return;
                 }
 
-                if (cmbCategoria.SelectedValue == null)
+                if (cmbCategoria.SelectedValue == null || cmbCategoria.SelectedIndex == -1)
                 {
-                    MessageBox.Show("Debe seleccionar una categoría.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Debe seleccionar una categoría válida.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    cmbCategoria.Focus();
                     return;
                 }
 
-                string nombre = textBox1.Text;
+                if (nupPrecio.Value <= 0)
+                {
+                    MessageBox.Show("El precio de venta debe ser mayor a cero.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    nupPrecio.Focus();
+                    return;
+                }
+
+                decimal stockNuevo = 0;
+                DateTime? fechaVenc = null;
+
+                if (!string.IsNullOrWhiteSpace(btnIngresarStock.Text))
+                {
+                    if (!decimal.TryParse(btnIngresarStock.Text, out stockNuevo) || stockNuevo <= 0)
+                    {
+                        MessageBox.Show("La cantidad de stock a ingresar no es válida.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        btnIngresarStock.Focus();
+                        return;
+                    }
+
+                    if (chkVencimiento.Checked)
+                    {
+                        fechaVenc = dtpVencimiento.Value;
+                        if (fechaVenc.Value.Date < DateTime.Now.Date)
+                        {
+                            MessageBox.Show("La fecha de vencimiento no puede ser del pasado.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            dtpVencimiento.Focus();
+                            return;
+                        }
+                    }
+                }
+
+                string nombre = cmbNombreProducto.Text;
                 string descripcion = textBox4.Text;
-                decimal precio = nupPrecio.Value;
+                decimal precioActual = nupPrecio.Value;
                 int categoriaId = Convert.ToInt32(cmbCategoria.SelectedValue);
                 decimal stockMinimo = nupStockMin.Value;
                 bool seVendePorPeso = chkPorPeso.Checked;
 
+                if (idProductoSeleccionado > 0 && precioActual != precioOriginal)
+                {
+                    DialogResult resp = MessageBox.Show($"El precio cambió de ${precioOriginal} a ${precioActual}.\n\n¿Desea actualizar el precio en el sistema?", "Cambio de Precio", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (resp == DialogResult.No) precioActual = precioOriginal;
+                }
+
                 if (idProductoSeleccionado == 0)
                 {
-                    // Es un producto nuevo
-                    productoDatos.RegistrarProducto(nombre, categoriaId, precio, stockMinimo, seVendePorPeso, descripcion);
+                    productoDatos.RegistrarProducto(nombre, categoriaId, precioActual, stockMinimo, seVendePorPeso, descripcion, stockNuevo, fechaVenc);
                     MessageBox.Show("¡Producto guardado exitosamente!", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    // Estamos editando un producto existente
-                    productoDatos.ModificarProducto(idProductoSeleccionado, nombre, categoriaId, precio, stockMinimo, seVendePorPeso, descripcion);
+                    productoDatos.ModificarProducto(idProductoSeleccionado, nombre, categoriaId, precioActual, stockMinimo, seVendePorPeso, descripcion, stockNuevo, fechaVenc);
                     MessageBox.Show("¡Producto actualizado exitosamente!", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
 
-                btnCancelarCliente_Click(null, null); // Reutilizamos el botón cancelar para limpiar todo
-                CargarListaProductos(); // Recargamos la grilla
+                btnCancelarCliente_Click(null, null);
+                CargarListaProductos();
             }
             catch (Exception ex)
             {
@@ -216,7 +338,6 @@ namespace PacuIbera.UI.Common
             }
         }
 
-        // --- BOTÓN ELIMINAR (BAJA LÓGICA) ---
         private void btnEliminar_Click(object sender, EventArgs e)
         {
             if (idProductoSeleccionado > 0)
@@ -230,8 +351,8 @@ namespace PacuIbera.UI.Common
                         productoDatos.EliminarProducto(idProductoSeleccionado);
                         MessageBox.Show("Producto eliminado correctamente.", "Baja Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                        btnCancelarCliente_Click(null, null); // Limpiar cajas
-                        CargarListaProductos(); // Recargar grilla (ya no va a aparecer)
+                        btnCancelarCliente_Click(null, null);
+                        CargarListaProductos();
                     }
                     catch (Exception ex)
                     {
@@ -241,26 +362,22 @@ namespace PacuIbera.UI.Common
             }
         }
 
-        // --- BOTÓN CANCELAR (LIMPIAR) ---
         private void btnCancelarCliente_Click(object sender, EventArgs e)
         {
-            idProductoSeleccionado = 0; // Reseteamos el ID
-            GUARDAR.Text = "GUARDAR"; // Volvemos el botón a la normalidad
-            btnEliminar.Visible = false; // Ocultamos el botón eliminar
+            idProductoSeleccionado = 0;
+            GUARDAR.Text = "GUARDAR";
+            btnEliminar.Visible = false;
 
-            // Vaciamos campos
-            textBox1.Clear();
+            cmbNombreProducto.Text = "";
             textBox4.Clear();
             nupPrecio.Value = 0;
             nupStockMin.Value = 0;
             chkPorPeso.Checked = false;
             if (cmbCategoria.Items.Count > 0) cmbCategoria.SelectedIndex = 0;
 
-            // Sacamos la selección de la grilla
             if (listView1.SelectedItems.Count > 0) listView1.SelectedItems[0].Selected = false;
         }
 
-        // --- BOTÓN CREAR NUEVA CATEGORÍA ---
         private void btnNuevaCat_Click(object sender, EventArgs e)
         {
             string nuevaCategoria = PromptParametro("Ingrese el nombre de la nueva categoría:", "Nueva Categoría");
@@ -306,32 +423,268 @@ namespace PacuIbera.UI.Common
 
         private void textBox4_DoubleClick(object sender, EventArgs e)
         {
-
-
-            // Solo mostramos el cartel si la caja tiene algo escrito
             if (!string.IsNullOrWhiteSpace(textBox4.Text))
             {
                 MessageBox.Show(textBox4.Text, "Descripción Completa", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
             }
-
         }
-
-        // --- MOSTRAR DESCRIPCIÓN AL HACER DOBLE CLIC EN LA TABLA ---
-        
 
         private void listView1_DoubleClick_1(object sender, EventArgs e)
         {
             if (listView1.SelectedItems.Count > 0)
             {
-                
-                string descripcion = listView1.SelectedItems[0].SubItems[6].Text;
+                Point mousePos = listView1.PointToClient(Control.MousePosition);
+                ListViewHitTestInfo hit = listView1.HitTest(mousePos);
+                int columnaClickeada = hit.Item.SubItems.IndexOf(hit.SubItem);
 
-                if (!string.IsNullOrWhiteSpace(descripcion))
+                int prodId = Convert.ToInt32(listView1.SelectedItems[0].Text);
+                string prodNombre = listView1.SelectedItems[0].SubItems[1].Text;
+
+                if (columnaClickeada == 7) // Columna "Próx. Venc."
                 {
-                    MessageBox.Show(descripcion, "Descripción del Producto", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    DataTable dtLotes = productoDatos.ObtenerLotesPorProducto(prodId);
+                    if (dtLotes.Rows.Count == 0)
+                    {
+                        MessageBox.Show("No hay lotes con stock para este producto.", "Lotes de " + prodNombre, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return;
+                    }
+
+                    // 1. Le pasamos los datos a la grilla de nuestro panel
+                    dgvLotes.DataSource = dtLotes;
+
+                    // 2. Escondemos temporalmente el ID del producto en el panel para usarlo al actualizar
+                    panelLotes.Tag = prodId;
+
+                    // 3. ¡HACEMOS APARECER EL PANEL!
+                    panelLotes.Visible = true;
+                    panelLotes.BringToFront();
+                }
+                else if (columnaClickeada == 8) // Columna "Descripción"
+                {
+                    string desc = hit.SubItem.Text;
+                    if (!string.IsNullOrWhiteSpace(desc))
+                        MessageBox.Show(desc, "Descripción", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
+        }
+
+        private void btnIngresarLote_Click(object sender, EventArgs e)
+        {
+            if (idProductoSeleccionado == 0)
+            {
+                MessageBox.Show("Primero debe seleccionar un producto de la lista.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (PromptIngresoLote(out decimal cantidadIngresada, out DateTime fechaVenc))
+            {
+                try
+                {
+                    productoDatos.RegistrarIngresoLote(idProductoSeleccionado, cantidadIngresada, fechaVenc);
+                    MessageBox.Show("Stock cargado correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    btnCancelarCliente_Click(null, null);
+                    CargarListaProductos();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error al cargar stock: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        public static bool PromptIngresoLote(out decimal cantidad, out DateTime vencimiento)
+        {
+            cantidad = 0;
+            vencimiento = DateTime.Now;
+
+            Form prompt = new Form() { Width = 300, Height = 250, FormBorderStyle = FormBorderStyle.FixedDialog, Text = "Ingresar Stock (Lote)", StartPosition = FormStartPosition.CenterScreen };
+
+            Label lblCant = new Label() { Left = 20, Top = 20, Text = "Cantidad a ingresar:" };
+            NumericUpDown nupCant = new NumericUpDown() { Left = 20, Top = 45, Width = 240, DecimalPlaces = 3, Maximum = 100000 };
+
+            Label lblVenc = new Label() { Left = 20, Top = 90, Text = "Fecha de Vencimiento:" };
+            DateTimePicker dtpVenc = new DateTimePicker() { Left = 20, Top = 115, Width = 240, Format = DateTimePickerFormat.Short };
+
+            Button confirmation = new Button() { Text = "Guardar", Left = 160, Width = 100, Top = 160, DialogResult = DialogResult.OK, BackColor = System.Drawing.Color.LightGreen };
+            Button cancel = new Button() { Text = "Cancelar", Left = 20, Width = 100, Top = 160, DialogResult = DialogResult.Cancel };
+
+            prompt.Controls.Add(lblCant);
+            prompt.Controls.Add(nupCant);
+            prompt.Controls.Add(lblVenc);
+            prompt.Controls.Add(dtpVenc);
+            prompt.Controls.Add(confirmation);
+            prompt.Controls.Add(cancel);
+            prompt.AcceptButton = confirmation;
+
+            if (prompt.ShowDialog() == DialogResult.OK)
+            {
+                cantidad = nupCant.Value;
+                vencimiento = dtpVenc.Value;
+                return cantidad > 0;
+            }
+            return false;
+        }
+
+        private void btnNuevoProducto_Click(object sender, EventArgs e)
+        {
+            idProductoSeleccionado = 0;
+            GUARDAR.Text = "GUARDAR";
+            btnEliminar.Visible = false;
+
+            cmbNombreProducto.Text = "";
+            btnIngresarStock.Text = "";
+
+            textBox4.Text = "";
+            nupPrecio.Value = 0;
+            nupStockMin.Value = 0;
+            chkPorPeso.Checked = false;
+
+            if (cmbCategoria.Items.Count > 0) cmbCategoria.SelectedIndex = 0;
+
+            if (listView1.SelectedItems.Count > 0)
+            {
+                listView1.SelectedItems[0].Selected = false;
+            }
+
+            cmbNombreProducto.Focus();
+        }
+
+        private void cmbNombreProducto_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbNombreProducto.SelectedIndex >= 0 && dtProductosGlobal != null)
+            {
+                string nombreElegido = cmbNombreProducto.Text;
+
+                DataRow[] filas = dtProductosGlobal.Select($"Nombre = '{nombreElegido}'");
+                if (filas.Length > 0)
+                {
+                    DataRow row = filas[0];
+                    idProductoSeleccionado = Convert.ToInt32(row["Id"]);
+
+                    cmbCategoria.Text = row["Categoria"].ToString();
+                    precioOriginal = Convert.ToDecimal(row["PrecioVenta"]);
+                    nupPrecio.Value = precioOriginal;
+                    nupStockMin.Value = Convert.ToDecimal(row["StockMinimo"]);
+                    chkPorPeso.Checked = Convert.ToBoolean(row["SeVendePorPeso"]);
+                    textBox4.Text = row["Descripcion"].ToString();
+
+                    btnIngresarStock.Text = "";
+                    chkVencimiento.Checked = true;
+                    dtpVencimiento.Value = DateTime.Now;
+
+                    GUARDAR.Text = "ACTUALIZAR";
+                    btnEliminar.Visible = true;
+                }
+            }
+        }
+
+        private void chkVencimiento_CheckedChanged(object sender, EventArgs e) { }
+        private void label10_Click(object sender, EventArgs e) { }
+        private void panel1_Paint(object sender, PaintEventArgs e) { }
+        private void dataGridView1_CellContentClick_1(object sender, DataGridViewCellEventArgs e) { }
+
+        // --- MÉTODO PARA CREAR EL PANEL FLOTANTE DE LOTES ---
+        private void CrearPanelFlotantePorCodigo()
+        {
+            panelLotes = new Panel();
+            panelLotes.Size = new Size(480, 350);
+            panelLotes.Location = new Point(250, 100);
+            panelLotes.BackColor = Color.WhiteSmoke;
+            panelLotes.BorderStyle = BorderStyle.FixedSingle;
+            panelLotes.Visible = false;
+
+            Label lblTitulo = new Label();
+            lblTitulo.Text = "GESTIÓN DE LOTES DEL PRODUCTO";
+            lblTitulo.Font = new Font("Segoe UI", 12, FontStyle.Bold);
+            lblTitulo.Location = new Point(10, 10);
+            lblTitulo.AutoSize = true;
+
+            btnCerrarPanel = new Button();
+            btnCerrarPanel.Text = "X";
+            btnCerrarPanel.BackColor = Color.DarkRed;
+            btnCerrarPanel.ForeColor = Color.White;
+            btnCerrarPanel.Size = new Size(30, 30);
+            btnCerrarPanel.Location = new Point(440, 5);
+            btnCerrarPanel.Click += (s, e) => { panelLotes.Visible = false; };
+
+            dgvLotes = new DataGridView();
+            dgvLotes.Location = new Point(10, 50);
+            dgvLotes.Size = new Size(450, 180);
+            dgvLotes.AllowUserToAddRows = false;
+            dgvLotes.ReadOnly = true;
+            dgvLotes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvLotes.BackgroundColor = Color.White;
+
+            // --- MAGIA NUEVA 1: Al hacer clic en un lote, pasamos los datos a las cajitas ---
+            dgvLotes.CellClick += (s, ev) =>
+            {
+                if (dgvLotes.CurrentRow != null)
+                {
+                    txtStockLote.Text = dgvLotes.CurrentRow.Cells["Quedan"].Value.ToString();
+                    dtpVencimientoLote.Value = Convert.ToDateTime(dgvLotes.CurrentRow.Cells["Vencimiento"].Value);
+                }
+            };
+
+            Label lblStock = new Label() { Text = "Stock a dejar:", Location = new Point(10, 250), AutoSize = true };
+            txtStockLote = new TextBox() { Location = new Point(10, 270), Size = new Size(100, 25) };
+
+            Label lblFecha = new Label() { Text = "Nueva Fecha:", Location = new Point(130, 250), AutoSize = true };
+            dtpVencimientoLote = new DateTimePicker() { Format = DateTimePickerFormat.Short, Location = new Point(130, 270), Size = new Size(120, 25) };
+
+            btnActualizarLote = new Button();
+            btnActualizarLote.Text = "ACTUALIZAR LOTE";
+            btnActualizarLote.BackColor = ColorTranslator.FromHtml("#88E788");
+            btnActualizarLote.Location = new Point(280, 255);
+            btnActualizarLote.Size = new Size(180, 40);
+
+            // --- MAGIA NUEVA 2: El clic del botón Guardar ---
+            btnActualizarLote.Click += (s, ev) =>
+            {
+                if (dgvLotes.CurrentRow == null)
+                {
+                    MessageBox.Show("Seleccione un lote de la tablita primero.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!decimal.TryParse(txtStockLote.Text, out decimal nuevoStock) || nuevoStock < 0)
+                {
+                    MessageBox.Show("La cantidad de stock no es válida.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                int loteId = Convert.ToInt32(dgvLotes.CurrentRow.Cells["Lote N°"].Value);
+                int prodId = Convert.ToInt32(panelLotes.Tag);
+                DateTime nuevaFecha = dtpVencimientoLote.Value;
+
+                try
+                {
+                    productoDatos.ActualizarLote(loteId, prodId, nuevoStock, nuevaFecha);
+                    MessageBox.Show("¡Lote actualizado con éxito!", "Excelente", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    // Recargamos el panel flotante
+                    dgvLotes.DataSource = productoDatos.ObtenerLotesPorProducto(prodId);
+
+                    // Recargamos la tabla principal de fondo para ver cómo cambió el stock total
+                    CargarListaProductos();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error al actualizar el lote: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            };
+
+            panelLotes.Controls.Add(lblTitulo);
+            panelLotes.Controls.Add(btnCerrarPanel);
+            panelLotes.Controls.Add(dgvLotes);
+            panelLotes.Controls.Add(lblStock);
+            panelLotes.Controls.Add(txtStockLote);
+            panelLotes.Controls.Add(lblFecha);
+            panelLotes.Controls.Add(dtpVencimientoLote);
+            panelLotes.Controls.Add(btnActualizarLote);
+
+            this.Controls.Add(panelLotes);
+            panelLotes.BringToFront();
         }
     }
 }

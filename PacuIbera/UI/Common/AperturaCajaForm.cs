@@ -36,11 +36,7 @@ namespace PacuIbera.UI.Common
 
                 MessageBox.Show($"¡Caja abierta con éxito! (ID de Caja: {nuevaCajaId}) - Saldo inicial: ${montoInicial}", "Apertura de Caja", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                PrincipalForm ventanaPrincipal = new PrincipalForm();
-                ventanaPrincipal.FormClosed += (s, args) => Application.Exit();
-
-                this.Hide();
-                ventanaPrincipal.Show();
+                this.Close();
             }
             catch (Exception ex)
             {
