@@ -7,6 +7,8 @@ namespace Negocio
 {
     public class ClienteNegocio
     {
+
+
         private OtrosDatos datos = new OtrosDatos();
         private ClienteDatos clientes = new ClienteDatos();
 

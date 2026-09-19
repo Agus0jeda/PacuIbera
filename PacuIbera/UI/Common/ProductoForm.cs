@@ -190,9 +190,12 @@ namespace PacuIbera.UI.Common
                 ListViewItem item = new ListViewItem(row["Id"].ToString());
                 item.SubItems.Add(row["Nombre"].ToString());
                 item.SubItems.Add(row["Categoria"].ToString());
-                item.SubItems.Add(row["PrecioVenta"].ToString());
-                item.SubItems.Add(row["StockActual"].ToString());
-                item.SubItems.Add(row["StockMinimo"].ToString());
+
+                // APLICAMOS FORMATO N2 (2 DECIMALES LIMPIOS)
+                item.SubItems.Add(Convert.ToDecimal(row["PrecioVenta"]).ToString("N2"));
+                item.SubItems.Add(Convert.ToDecimal(row["StockActual"]).ToString("N2"));
+                item.SubItems.Add(Convert.ToDecimal(row["StockMinimo"]).ToString("N2"));
+
                 item.SubItems.Add(Convert.ToBoolean(row["SeVendePorPeso"]) ? "Sí" : "No");
 
                 if (row["ProximoVencimiento"] != DBNull.Value)
@@ -452,6 +455,13 @@ namespace PacuIbera.UI.Common
                     // 1. Le pasamos los datos a la grilla de nuestro panel
                     dgvLotes.DataSource = dtLotes;
 
+                    // Formato limpio para la columna "Quedan" de los lotes
+                    if (dgvLotes.Columns.Contains("Quedan"))
+                    {
+                        dgvLotes.Columns["Quedan"].DefaultCellStyle.Format = "N2";
+                        dgvLotes.Columns["Quedan"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                    }
+
                     // 2. Escondemos temporalmente el ID del producto en el panel para usarlo al actualizar
                     panelLotes.Tag = prodId;
 
@@ -647,9 +657,14 @@ namespace PacuIbera.UI.Common
                     return;
                 }
 
-                if (!decimal.TryParse(txtStockLote.Text, out decimal nuevoStock) || nuevoStock < 0)
+                // FILTRO ANTIBALAS PARA PUNTOS Y COMAS
+                string inputStock = txtStockLote.Text.Trim();
+                inputStock = inputStock.Replace(".", System.Globalization.NumberFormatInfo.CurrentInfo.NumberDecimalSeparator)
+                                       .Replace(",", System.Globalization.NumberFormatInfo.CurrentInfo.NumberDecimalSeparator);
+
+                if (!decimal.TryParse(inputStock, out decimal nuevoStock) || nuevoStock < 0)
                 {
-                    MessageBox.Show("La cantidad de stock no es válida.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("La cantidad de stock no es válida. Use números correctos.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
@@ -665,7 +680,7 @@ namespace PacuIbera.UI.Common
                     // Recargamos el panel flotante
                     dgvLotes.DataSource = productoDatos.ObtenerLotesPorProducto(prodId);
 
-                    // Recargamos la tabla principal de fondo para ver cómo cambió el stock total
+                    // Recargamos la tabla principal de fondo
                     CargarListaProductos();
                 }
                 catch (Exception ex)
