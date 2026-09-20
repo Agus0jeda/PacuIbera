@@ -1,6 +1,6 @@
 ﻿namespace PacuIbera.UI.Common
 {
-    partial class AperturaCajaForm
+    partial class AperturaCajaForm : Form
     {
         /// <summary>
         /// Required designer variable.

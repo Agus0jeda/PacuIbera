@@ -251,8 +251,14 @@ namespace PacuIbera.UI.Common
             AbrirFormularioPanel(new VentasForm());
         }
 
-        private void button4_Click(object sender, EventArgs e) {
+        private void button4_Click(object sender, EventArgs e)
+        {
             AbrirFormularioPanel(new EmpleadosForm());
+        }
+
+        private void btnReportes_Click(object sender, EventArgs e)
+        {
+            AbrirFormularioPanel(new ReportesForm());
         }
     }
 }

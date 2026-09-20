@@ -4,7 +4,7 @@ using Datos; // Para usar CajaDatos
 
 namespace PacuIbera.UI.Common
 {
-    public partial class AperturaCajaForm : Form
+    partial class AperturaCajaForm : Form
     {
         private int usuarioIdSesion;
 
