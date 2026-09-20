@@ -74,7 +74,7 @@ namespace PacuIbera.UI.Common
 
             // 5. Gráfico de Productos
             chartTopProductos = new Chart();
-            chartTopProductos.Size = new Size(400, 350);
+            chartTopProductos.Size = new Size(500, 350);
             chartTopProductos.Location = new Point(20, 120);
             ChartArea areaProductos = new ChartArea();
 
@@ -85,8 +85,8 @@ namespace PacuIbera.UI.Common
             this.Controls.Add(chartTopProductos);
 
             // 6. Configurar la Grilla de Alertas (dgvAlertasStock ya existe en el diseñador)
-            dgvAlertasStock.Location = new Point(440, 120);
-            dgvAlertasStock.Size = new Size(350, 350);
+            dgvAlertasStock.Location = new Point(540, 120);
+            dgvAlertasStock.Size = new Size(550, 350);
             dgvAlertasStock.BackgroundColor = Color.White;
             dgvAlertasStock.RowHeadersVisible = false;
         }
@@ -143,11 +143,11 @@ namespace PacuIbera.UI.Common
             Series serie = new Series("Ventas");
             serie.ChartType = SeriesChartType.Column; // Cambiado a vertical (Column)
 
-            serie.Points.AddXY("Iniciador 20kg", 125);
-            serie.Points.AddXY("Bomba 1HP", 45);
-            serie.Points.AddXY("Red Captura", 38);
-            serie.Points.AddXY("Filtro Biol.", 25);
-            serie.Points.AddXY("Termómetro", 18);
+            serie.Points.AddXY("Pacú 20kg", 125);
+            serie.Points.AddXY("Empanadas", 45);
+            serie.Points.AddXY("Milanesa", 38);
+            serie.Points.AddXY("Bife.", 25);
+            serie.Points.AddXY("Otro", 18);
 
             chartTopProductos.Series.Add(serie);
             chartTopProductos.Titles.Add("Top 5 Productos Más Vendidos");
@@ -163,9 +163,9 @@ namespace PacuIbera.UI.Common
             dgvAlertasStock.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvAlertasStock.AllowUserToAddRows = false;
 
-            dgvAlertasStock.Rows.Add("Alimento Engorde 10kg", "5", "Crítico");
-            dgvAlertasStock.Rows.Add("Oxigenador Solar", "2", "Crítico");
-            dgvAlertasStock.Rows.Add("Kit Medidor pH", "8", "Bajo");
+            dgvAlertasStock.Rows.Add("Pacú /kg", "5", "Crítico");
+            dgvAlertasStock.Rows.Add("Empanadas", "2", "Crítico");
+            dgvAlertasStock.Rows.Add("Bife", "14", "Bajo");
         }
     }
 }

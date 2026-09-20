@@ -42,7 +42,7 @@ namespace PacuIbera.UI.Common
                     // 3. Verificamos si el usuario tiene un registro de caja creado HOY
                     int cajaId = 0;
                     //string stringConexion = "Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-                    string stringConexion = "Server=Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
+                    string stringConexion = "Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
 
 
                     using (Microsoft.Data.SqlClient.SqlConnection conexion = new Microsoft.Data.SqlClient.SqlConnection(stringConexion))

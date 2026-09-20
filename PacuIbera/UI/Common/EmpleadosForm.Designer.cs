@@ -63,10 +63,6 @@
             lblAñadir = new Label();
             panelEmpleados = new Panel();
             dgvEmpleados = new DataGridView();
-            pnlSuperior = new Panel();
-            txtFiltrarRol = new TextBox();
-            txtFiltrarNombre = new TextBox();
-            usuarioDatosBindingSource = new BindingSource(components);
             Id = new DataGridViewTextBoxColumn();
             Nombre = new DataGridViewTextBoxColumn();
             Apellido = new DataGridViewTextBoxColumn();
@@ -79,6 +75,10 @@
             Rol = new DataGridViewTextBoxColumn();
             Clave = new DataGridViewTextBoxColumn();
             Estado = new DataGridViewTextBoxColumn();
+            pnlSuperior = new Panel();
+            txtFiltrarRol = new TextBox();
+            txtFiltrarNombre = new TextBox();
+            usuarioDatosBindingSource = new BindingSource(components);
             panelAñadirEmpleado.SuspendLayout();
             gbEstado.SuspendLayout();
             panelEmpleados.SuspendLayout();
@@ -464,43 +464,6 @@
             dgvEmpleados.CellContentClick += dgvEmpleados_CellContentClick;
             dgvEmpleados.DataBindingComplete += dgvEmpleados_DataBindingComplete;
             // 
-            // pnlSuperior
-            // 
-            pnlSuperior.Controls.Add(lblEmpleados);
-            pnlSuperior.Controls.Add(txtFiltrarRol);
-            pnlSuperior.Controls.Add(lblBuscar);
-            pnlSuperior.Controls.Add(txtFiltrarNombre);
-            pnlSuperior.Dock = DockStyle.Top;
-            pnlSuperior.Location = new Point(0, 0);
-            pnlSuperior.Name = "pnlSuperior";
-            pnlSuperior.Size = new Size(497, 125);
-            pnlSuperior.TabIndex = 22;
-            pnlSuperior.Paint += pnlSuperior_Paint;
-            // 
-            // txtFiltrarRol
-            // 
-            txtFiltrarRol.CharacterCasing = CharacterCasing.Upper;
-            txtFiltrarRol.Cursor = Cursors.Hand;
-            txtFiltrarRol.ForeColor = SystemColors.WindowFrame;
-            txtFiltrarRol.Location = new Point(274, 65);
-            txtFiltrarRol.Name = "txtFiltrarRol";
-            txtFiltrarRol.Size = new Size(159, 27);
-            txtFiltrarRol.TabIndex = 20;
-            txtFiltrarRol.Text = "ROL";
-            txtFiltrarRol.TextChanged += txtFiltrarRol_TextChanged;
-            // 
-            // txtFiltrarNombre
-            // 
-            txtFiltrarNombre.CharacterCasing = CharacterCasing.Upper;
-            txtFiltrarNombre.Cursor = Cursors.Hand;
-            txtFiltrarNombre.ForeColor = SystemColors.WindowFrame;
-            txtFiltrarNombre.Location = new Point(83, 65);
-            txtFiltrarNombre.Name = "txtFiltrarNombre";
-            txtFiltrarNombre.Size = new Size(185, 27);
-            txtFiltrarNombre.TabIndex = 18;
-            txtFiltrarNombre.Text = "NOMBRE O APELLIDO";
-            txtFiltrarNombre.TextChanged += txtFiltrarNombre_TextChanged;
-            // 
             // Id
             // 
             Id.DataPropertyName = "Id";
@@ -608,6 +571,47 @@
             Estado.Name = "Estado";
             Estado.ReadOnly = true;
             Estado.Width = 125;
+            // 
+            // pnlSuperior
+            // 
+            pnlSuperior.Controls.Add(lblEmpleados);
+            pnlSuperior.Controls.Add(txtFiltrarRol);
+            pnlSuperior.Controls.Add(lblBuscar);
+            pnlSuperior.Controls.Add(txtFiltrarNombre);
+            pnlSuperior.Dock = DockStyle.Top;
+            pnlSuperior.Location = new Point(0, 0);
+            pnlSuperior.Name = "pnlSuperior";
+            pnlSuperior.Size = new Size(497, 125);
+            pnlSuperior.TabIndex = 22;
+            pnlSuperior.Paint += pnlSuperior_Paint;
+            // 
+            // txtFiltrarRol
+            // 
+            txtFiltrarRol.CharacterCasing = CharacterCasing.Upper;
+            txtFiltrarRol.Cursor = Cursors.Hand;
+            txtFiltrarRol.ForeColor = SystemColors.WindowFrame;
+            txtFiltrarRol.Location = new Point(274, 65);
+            txtFiltrarRol.Name = "txtFiltrarRol";
+            txtFiltrarRol.Size = new Size(159, 27);
+            txtFiltrarRol.TabIndex = 20;
+            txtFiltrarRol.Text = "ROL";
+            txtFiltrarRol.TextChanged += txtFiltrarRol_TextChanged;
+            txtFiltrarRol.Enter += txtFiltrarRol_Enter;
+            txtFiltrarRol.Leave += txtFiltrarRol_Leave;
+            // 
+            // txtFiltrarNombre
+            // 
+            txtFiltrarNombre.CharacterCasing = CharacterCasing.Upper;
+            txtFiltrarNombre.Cursor = Cursors.Hand;
+            txtFiltrarNombre.ForeColor = SystemColors.WindowFrame;
+            txtFiltrarNombre.Location = new Point(83, 65);
+            txtFiltrarNombre.Name = "txtFiltrarNombre";
+            txtFiltrarNombre.Size = new Size(185, 27);
+            txtFiltrarNombre.TabIndex = 18;
+            txtFiltrarNombre.Text = "NOMBRE O APELLIDO";
+            txtFiltrarNombre.TextChanged += txtFiltrarNombre_TextChanged;
+            txtFiltrarNombre.Enter += txtFiltrarNombre_Enter;
+            txtFiltrarNombre.Leave += txtFiltrarNombre_Leave;
             // 
             // EmpleadosForm
             // 

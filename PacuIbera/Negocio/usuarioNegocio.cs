@@ -1,4 +1,5 @@
 ﻿using Datos;
+using Dominio;
 using PacuIbera.Datos;
 using PacuIbera.Dominio;
 using System;
@@ -26,9 +27,11 @@ namespace Negocio
                 throw new Exception("El usuario no existe o se encuentra inactivo.");
             }
 
-            // Aquí puedes aplicar tu lógica de hashing si usas encriptación (ej. SHA256)
-            // Si por ahora guardas la clave en texto plano en la BD:
-            if (usuario.ClaveHash != claveIngresada)
+            // 1. Convertimos la clave ingresada (ej. "123456") al mismo Hash de la base de datos
+            string claveHasheada = Seguridad.GenerarHashSHA256(claveIngresada);
+
+            // 2. Comparamos los dos Hashes
+            if (usuario.ClaveHash != claveHasheada)
             {
                 throw new Exception("Contraseña incorrecta.");
             }
