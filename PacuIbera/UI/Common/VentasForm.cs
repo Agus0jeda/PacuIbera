@@ -1,10 +1,12 @@
 ﻿using Datos;
 using PacuIbera.Datos;
+using PacuIbera.Dominio;
 using System;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Printing;
 using System.Windows.Forms;
-using PacuIbera.Dominio;
+
 
 namespace PacuIbera.UI.Common
 {
@@ -284,6 +286,86 @@ namespace PacuIbera.UI.Common
             txtBuscador.Focus();
         }
 
+        private void ImprimirTicketTermico(decimal totalPagado, DataTable carrito, string nombreCliente, decimal pagoEfectivo, decimal pagoTarjeta, decimal pagoTransferencia)
+        {
+            PrintDocument pd = new PrintDocument();
+
+            // Configuramos el tamaño del papel térmico (80mm = aprox 314 centésimas de pulgada)
+            pd.DefaultPageSettings.PaperSize = new PaperSize("Ticket80mm", 314, 1000); // 1000 es el largo máximo por defecto
+
+            pd.PrintPage += (sender, e) =>
+            {
+                Graphics g = e.Graphics;
+                Font fontTitulo = new Font("Courier New", 12, FontStyle.Bold);
+                Font fontNormal = new Font("Courier New", 10);
+                Font fontChica = new Font("Courier New", 8);
+
+                int y = 20;
+                int x = 10;
+
+                // --- CABECERA DEL LOCAL ---
+                g.DrawString("PESCADERÍA PACÚ IBERÁ", fontTitulo, Brushes.Black, x + 20, y); y += 20;
+                g.DrawString("CUIT: 30-12345678-9", fontNormal, Brushes.Black, x + 45, y); y += 20;
+                g.DrawString("Corrientes Capital", fontNormal, Brushes.Black, x + 50, y); y += 30;
+
+                // --- DATOS DE VENTA ---
+                g.DrawString("Fecha: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm"), fontNormal, Brushes.Black, x, y); y += 20;
+                g.DrawString("Ticket N°: " + DateTime.Now.ToString("yyMMddHHmm"), fontNormal, Brushes.Black, x, y); y += 20;
+                g.DrawString("Cajero: " + SesionActiva.Nombre + " " + SesionActiva.Apellido, fontNormal, Brushes.Black, x, y); y += 20;
+
+                // Cortamos el nombre del cliente si es muy largo para que no rompa el ticket
+                string clienteTicket = nombreCliente.Length > 20 ? nombreCliente.Substring(0, 20) : nombreCliente;
+                g.DrawString("Cliente: " + clienteTicket, fontNormal, Brushes.Black, x, y); y += 30;
+
+                // --- ENCABEZADO DE PRODUCTOS ---
+                g.DrawString("----------------------------------------", fontNormal, Brushes.Black, x, y); y += 15;
+                g.DrawString("CANT   DESCRIPCION            SUBTOTAL", fontNormal, Brushes.Black, x, y); y += 15;
+                g.DrawString("----------------------------------------", fontNormal, Brushes.Black, x, y); y += 20;
+
+                // --- DETALLE DE PRODUCTOS ---
+                foreach (DataRow row in carrito.Rows)
+                {
+                    string cant = Convert.ToDecimal(row["Cantidad"]).ToString("0.00");
+                    string nombre = row["Nombre"].ToString();
+                    if (nombre.Length > 18) nombre = nombre.Substring(0, 18);
+                    string subtotal = Convert.ToDecimal(row["Subtotal"]).ToString("0.00");
+
+                    string linea = $"{cant,-6} {nombre,-19} ${subtotal,8}";
+                    g.DrawString(linea, fontNormal, Brushes.Black, x, y);
+                    y += 20;
+                }
+
+                // --- TOTALES Y PAGOS ---
+                y += 10;
+                g.DrawString("----------------------------------------", fontNormal, Brushes.Black, x, y); y += 20;
+                g.DrawString("TOTAL A PAGAR:  $" + totalPagado.ToString("0.00"), fontTitulo, Brushes.Black, x, y); y += 30;
+
+                g.DrawString("SU PAGO:", fontNormal, Brushes.Black, x, y); y += 20;
+                if (pagoEfectivo > 0) { g.DrawString($"Efectivo:       ${pagoEfectivo,8:0.00}", fontNormal, Brushes.Black, x, y); y += 20; }
+                if (pagoTarjeta > 0) { g.DrawString($"Tarjeta:        ${pagoTarjeta,8:0.00}", fontNormal, Brushes.Black, x, y); y += 20; }
+                if (pagoTransferencia > 0) { g.DrawString($"Transferencia:  ${pagoTransferencia,8:0.00}", fontNormal, Brushes.Black, x, y); y += 20; }
+
+                y += 10;
+                g.DrawString("¡Gracias por su compra!", fontChica, Brushes.Black, x + 50, y);
+            };
+
+            try
+            {
+                PrintPreviewDialog vistaPrevia = new PrintPreviewDialog();
+                vistaPrevia.Document = pd;
+
+                
+                vistaPrevia.WindowState = FormWindowState.Maximized;
+                vistaPrevia.PrintPreviewControl.Zoom = 1.5;
+
+                vistaPrevia.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al intentar generar el ticket: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void BtnCobrar_Click(object sender, EventArgs e)
         {
             if (dtCarrito.Rows.Count == 0)
@@ -299,7 +381,7 @@ namespace PacuIbera.UI.Common
                 {
                     try
                     {
-                        // SALVAVIDAS: Si probás la pantalla directo sin hacer Login, forzamos la Caja 1
+                        
                         if (SesionActiva.IdCaja == 0 || SesionActiva.IdUsuario == 0)
                         {
                             SesionActiva.IdCaja = 1;
@@ -321,6 +403,11 @@ namespace PacuIbera.UI.Common
                         );
 
                         MessageBox.Show("¡Venta registrada con éxito y stock descontado!", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        string nombreClienteTicket = cmbCliente.Text;
+
+                        ImprimirTicketTermico(totalVenta, dtCarrito, nombreClienteTicket, cobro.PagoEfectivo, cobro.PagoTarjeta, cobro.PagoTransferencia);
+
 
                         // Limpieza del carrito 
                         dtCarrito.Rows.Clear();

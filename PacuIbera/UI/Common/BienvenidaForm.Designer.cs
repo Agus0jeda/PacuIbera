@@ -37,32 +37,33 @@
             // lblBienvenida
             // 
             lblBienvenida.AutoSize = true;
-            lblBienvenida.Font = new Font("SansSerif", 24F, FontStyle.Bold, GraphicsUnit.Point, 2);
-            lblBienvenida.Location = new Point(305, 53);
+            lblBienvenida.Font = new Font("Microsoft Sans Serif", 24F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblBienvenida.Location = new Point(267, 40);
             lblBienvenida.Name = "lblBienvenida";
-            lblBienvenida.Size = new Size(231, 47);
+            lblBienvenida.Size = new Size(183, 37);
             lblBienvenida.TabIndex = 1;
             lblBienvenida.Text = "Bienvenida";
             // 
             // Logo
             // 
             Logo.Image = (Image)resources.GetObject("Logo.Image");
-            Logo.Location = new Point(227, 104);
-            Logo.Margin = new Padding(3, 4, 3, 4);
+            Logo.Location = new Point(199, 78);
             Logo.Name = "Logo";
-            Logo.Size = new Size(310, 257);
+            Logo.Size = new Size(271, 193);
             Logo.SizeMode = PictureBoxSizeMode.Zoom;
             Logo.TabIndex = 7;
             Logo.TabStop = false;
             // 
             // BienvenidaForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(700, 338);
             Controls.Add(Logo);
             Controls.Add(lblBienvenida);
+            Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
             FormBorderStyle = FormBorderStyle.None;
+            Margin = new Padding(3, 2, 3, 2);
             Name = "BienvenidaForm";
             Text = "BienvenidaForm";
             Load += BienvenidaForm_Load;
