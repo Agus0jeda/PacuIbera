@@ -1,8 +1,10 @@
 ﻿using Datos;
+using PacuIbera.Datos;
 using System;
 using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
+using PacuIbera.Dominio;
 
 namespace PacuIbera.UI.Common
 {
@@ -28,6 +30,8 @@ namespace PacuIbera.UI.Common
         // Motor de la BD
         private ProductoDatos productoDatos = new ProductoDatos();
         private ClienteDatos clienteDatos = new ClienteDatos();
+
+        private VentaDatos ventaDatos = new VentaDatos();
         private DataTable dtProductosGlobal;
 
         // --- VARIABLES DE SESIÓN (A conectar con el Login futuro) ---
@@ -289,7 +293,48 @@ namespace PacuIbera.UI.Common
                 return;
             }
 
-            MessageBox.Show($"Cobrando un total de $ {totalVenta:N2}...\n(Acá abriremos la ventana de pagos)", "Cobrar", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            using (CobroForm cobro = new CobroForm(totalVenta))
+            {
+                if (cobro.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        // SALVAVIDAS: Si probás la pantalla directo sin hacer Login, forzamos la Caja 1
+                        if (SesionActiva.IdCaja == 0 || SesionActiva.IdUsuario == 0)
+                        {
+                            SesionActiva.IdCaja = 1;
+                            SesionActiva.IdUsuario = 1;
+                        }
+
+                        int idCliente = Convert.ToInt32(cmbCliente.SelectedValue);
+
+                        // Mandamos toda la información conectada a tu usuario real
+                        ventaDatos.RegistrarVentaCompleta(
+                            SesionActiva.IdCaja,
+                            SesionActiva.IdUsuario,
+                            idCliente,
+                            totalVenta,
+                            cobro.PagoEfectivo,
+                            cobro.PagoTransferencia,
+                            cobro.PagoTarjeta,
+                            dtCarrito
+                        );
+
+                        MessageBox.Show("¡Venta registrada con éxito y stock descontado!", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        // Limpieza del carrito 
+                        dtCarrito.Rows.Clear();
+                        ActualizarTotal();
+                        cmbCliente.SelectedIndex = 0;
+                        CargarBuscadorDinamico();
+                        txtBuscador.Focus();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Error al procesar la venta", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
         }
 
         private void VentasForm_KeyDown(object sender, KeyEventArgs e)
