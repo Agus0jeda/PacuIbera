@@ -38,15 +38,17 @@ namespace PacuIbera.UI.Common
             // Evaluamos el rol para encender lo que corresponda
             switch (SesionActiva.Rol)
             {
-                case "Administrador":
                 case "Gerente":
                 case "SuperAdministrador":
                     btnEmpleados.Visible = true;
                     btnProveedores.Visible = true;
-                    btnCompras.Visible = true;
                     btnReportes.Visible = true;
                     break;
-
+                case "Administrador":
+                    btnEmpleados.Visible = true;
+                    btnProveedores.Visible = true;
+                    btnCompras.Visible = true;
+                    break;
                 case "Vendedor":
                     // El vendedor solo verá Productos, Clientes, Ventas y Pagos que nunca se ocultaron.
                     break;

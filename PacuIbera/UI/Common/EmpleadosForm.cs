@@ -61,9 +61,22 @@ namespace PacuIbera.UI.Common
 
         private void CargarCombos()
         {
-            cmbRol.DataSource = otrosDatos.ObtenerRoles();
-            cmbRol.DisplayMember = "Nombre"; // Lo que lee el usuario (Ej: "Vendedor")
-            cmbRol.ValueMember = "Id";       // El valor real en la BD (Ej: 1)
+            DataTable dtRoles = otrosDatos.ObtenerRoles();
+
+            // Filtramos la vista de la tabla si el usuario es Administrador
+            if (SesionActiva.Rol == "Administrador")
+            {
+                dtRoles.DefaultView.RowFilter = "Nombre = 'Vendedor'";
+                cmbRol.DataSource = dtRoles.DefaultView;
+            }
+            else
+            {
+                // El Gerente tiene acceso a la tabla completa
+                cmbRol.DataSource = dtRoles;
+            }
+
+            cmbRol.DisplayMember = "Nombre";
+            cmbRol.ValueMember = "Id";
 
             cmbProvincia.DataSource = otrosDatos.ObtenerProvincias();
             cmbProvincia.DisplayMember = "Nombre";
@@ -79,17 +92,6 @@ namespace PacuIbera.UI.Common
                 dgvEmpleados.Columns["Id"].Visible = false;
             }
         }
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
-        {
-
-        }
-
-
 
         private void dgvEmpleados_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -116,10 +118,22 @@ namespace PacuIbera.UI.Common
                 //  CONTROL DE ACCESOS PARA LA CLAVE Y EDICIÓN
                 if (SesionActiva.Rol == "Administrador")
                 {
-                    txtClave.Text = "********"; // Ocultamos la clave real
-                    txtClave.Enabled = false;   // No la puede tocar
-                    //btnGuardar.Enabled = false; // ¡BLOQUEAMOS EL BOTÓN GUARDAR! No puede modificar.
+                    txtClave.Text = "********";
+                    txtClave.Enabled = false;
                     btnEliminar.Visible = false;
+
+                    // Si el Administrador selecciona a alguien con un rango mayor o igual, bloqueamos todo
+                    string rolSeleccionado = fila.Cells["Rol"].Value.ToString();
+                    if (rolSeleccionado != "Vendedor")
+                    {
+                        btnGuardar.Enabled = false;
+                        cmbRol.Enabled = false;
+                    }
+                    else
+                    {
+                        btnGuardar.Enabled = true;
+                        cmbRol.Enabled = true;
+                    }
                 }
                 else if (SesionActiva.Rol == "Gerente")
                 {
@@ -133,10 +147,6 @@ namespace PacuIbera.UI.Common
 
                 panelAñadirEmpleado.Width = 500;
             }
-        }
-        private void textBox3_TextChanged(object sender, EventArgs e)
-        {
-
         }
 
         private void btnGuardar_Click(object sender, EventArgs e)
@@ -245,9 +255,14 @@ namespace PacuIbera.UI.Common
             rbActivo.Checked = true;
 
             // --- NUEVO: REINICIO DE PERMISOS PARA USUARIO NUEVO ---
-            txtClave.Enabled = true;   // El Admin SÍ puede escribir una clave inicial
-            btnGuardar.Enabled = true; // El Admin SÍ puede guardar un usuario nuevo
-            btnEliminar.Visible = false; // Nadie puede eliminar un usuario que aún no existe
+            txtClave.Enabled = true;
+            btnGuardar.Enabled = true;
+            btnEliminar.Visible = false;
+
+            if (SesionActiva.Rol == "Administrador")
+            {
+                cmbRol.Enabled = true; // Para que pueda seleccionar el único rol disponible (Vendedor)
+            }
         }
 
         private bool EsEmailValido(string email)
@@ -262,15 +277,7 @@ namespace PacuIbera.UI.Common
                 return false;
             }
         }
-        private void cmbRol_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void rbActivo_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
+       
 
         private void cmbProvincia_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -332,10 +339,6 @@ namespace PacuIbera.UI.Common
             dgvEmpleados.ClearSelection();
         }
 
-        private void pnlSuperior_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
         private void txtFiltrarNombre_TextChanged(object sender, EventArgs e)
         {
             AplicarFiltros();
