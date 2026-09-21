@@ -71,18 +71,17 @@
             MenuVertical.Cursor = Cursors.Hand;
             MenuVertical.Dock = DockStyle.Left;
             MenuVertical.Location = new Point(0, 0);
-            MenuVertical.Margin = new Padding(3, 2, 3, 2);
             MenuVertical.Name = "MenuVertical";
-            MenuVertical.Size = new Size(219, 452);
+            MenuVertical.Size = new Size(250, 603);
             MenuVertical.TabIndex = 0;
-            MenuVertical.Paint += MenuVertical_Paint;
             // 
             // Logo
             // 
             Logo.Image = (Image)resources.GetObject("Logo.Image");
             Logo.Location = new Point(0, 0);
+            Logo.Margin = new Padding(3, 4, 3, 4);
             Logo.Name = "Logo";
-            Logo.Size = new Size(219, 80);
+            Logo.Size = new Size(250, 107);
             Logo.SizeMode = PictureBoxSizeMode.Zoom;
             Logo.TabIndex = 8;
             Logo.TabStop = false;
@@ -96,10 +95,9 @@
             btnReportes.ForeColor = Color.Black;
             btnReportes.Image = (Image)resources.GetObject("btnReportes.Image");
             btnReportes.ImageAlign = ContentAlignment.MiddleLeft;
-            btnReportes.Location = new Point(0, 366);
-            btnReportes.Margin = new Padding(3, 2, 3, 2);
+            btnReportes.Location = new Point(0, 488);
             btnReportes.Name = "btnReportes";
-            btnReportes.Size = new Size(278, 36);
+            btnReportes.Size = new Size(318, 48);
             btnReportes.TabIndex = 7;
             btnReportes.Text = "Reporte";
             btnReportes.UseVisualStyleBackColor = true;
@@ -114,10 +112,9 @@
             btnPagos.ForeColor = Color.Black;
             btnPagos.Image = (Image)resources.GetObject("btnPagos.Image");
             btnPagos.ImageAlign = ContentAlignment.MiddleLeft;
-            btnPagos.Location = new Point(0, 326);
-            btnPagos.Margin = new Padding(3, 2, 3, 2);
+            btnPagos.Location = new Point(0, 435);
             btnPagos.Name = "btnPagos";
-            btnPagos.Size = new Size(278, 36);
+            btnPagos.Size = new Size(318, 48);
             btnPagos.TabIndex = 6;
             btnPagos.Text = "Pagos";
             btnPagos.UseVisualStyleBackColor = true;
@@ -131,14 +128,13 @@
             btnEmpleados.ForeColor = Color.Black;
             btnEmpleados.Image = (Image)resources.GetObject("btnEmpleados.Image");
             btnEmpleados.ImageAlign = ContentAlignment.MiddleLeft;
-            btnEmpleados.Location = new Point(0, 285);
-            btnEmpleados.Margin = new Padding(3, 2, 3, 2);
+            btnEmpleados.Location = new Point(0, 380);
             btnEmpleados.Name = "btnEmpleados";
-            btnEmpleados.Size = new Size(278, 36);
+            btnEmpleados.Size = new Size(318, 48);
             btnEmpleados.TabIndex = 5;
             btnEmpleados.Text = "Empleados";
             btnEmpleados.UseVisualStyleBackColor = true;
-            btnEmpleados.Click += button4_Click;
+            btnEmpleados.Click += btnEmpleados_Click;
             // 
             // btnProveedores
             // 
@@ -149,10 +145,9 @@
             btnProveedores.ForeColor = Color.Black;
             btnProveedores.Image = (Image)resources.GetObject("btnProveedores.Image");
             btnProveedores.ImageAlign = ContentAlignment.MiddleLeft;
-            btnProveedores.Location = new Point(0, 244);
-            btnProveedores.Margin = new Padding(3, 2, 3, 2);
+            btnProveedores.Location = new Point(0, 325);
             btnProveedores.Name = "btnProveedores";
-            btnProveedores.Size = new Size(278, 36);
+            btnProveedores.Size = new Size(318, 48);
             btnProveedores.TabIndex = 4;
             btnProveedores.Text = "Proveedores";
             btnProveedores.UseVisualStyleBackColor = true;
@@ -166,10 +161,9 @@
             btnCompras.ForeColor = Color.Black;
             btnCompras.Image = (Image)resources.GetObject("btnCompras.Image");
             btnCompras.ImageAlign = ContentAlignment.MiddleLeft;
-            btnCompras.Location = new Point(0, 204);
-            btnCompras.Margin = new Padding(3, 2, 3, 2);
+            btnCompras.Location = new Point(0, 272);
             btnCompras.Name = "btnCompras";
-            btnCompras.Size = new Size(278, 36);
+            btnCompras.Size = new Size(318, 48);
             btnCompras.TabIndex = 3;
             btnCompras.Text = "Compras";
             btnCompras.UseVisualStyleBackColor = true;
@@ -183,10 +177,9 @@
             btnClientes.ForeColor = Color.Black;
             btnClientes.Image = (Image)resources.GetObject("btnClientes.Image");
             btnClientes.ImageAlign = ContentAlignment.MiddleLeft;
-            btnClientes.Location = new Point(0, 166);
-            btnClientes.Margin = new Padding(3, 2, 3, 2);
+            btnClientes.Location = new Point(0, 221);
             btnClientes.Name = "btnClientes";
-            btnClientes.Size = new Size(278, 36);
+            btnClientes.Size = new Size(318, 48);
             btnClientes.TabIndex = 2;
             btnClientes.Text = "Clientes";
             btnClientes.UseVisualStyleBackColor = true;
@@ -201,10 +194,9 @@
             btnVentas.ForeColor = Color.Black;
             btnVentas.Image = (Image)resources.GetObject("btnVentas.Image");
             btnVentas.ImageAlign = ContentAlignment.MiddleLeft;
-            btnVentas.Location = new Point(0, 126);
-            btnVentas.Margin = new Padding(3, 2, 3, 2);
+            btnVentas.Location = new Point(0, 168);
             btnVentas.Name = "btnVentas";
-            btnVentas.Size = new Size(278, 36);
+            btnVentas.Size = new Size(318, 48);
             btnVentas.TabIndex = 1;
             btnVentas.Text = "Ventas";
             btnVentas.UseVisualStyleBackColor = true;
@@ -219,10 +211,9 @@
             btnProducto.ForeColor = Color.Black;
             btnProducto.Image = (Image)resources.GetObject("btnProducto.Image");
             btnProducto.ImageAlign = ContentAlignment.MiddleLeft;
-            btnProducto.Location = new Point(0, 86);
-            btnProducto.Margin = new Padding(3, 2, 3, 2);
+            btnProducto.Location = new Point(0, 115);
             btnProducto.Name = "btnProducto";
-            btnProducto.Size = new Size(278, 36);
+            btnProducto.Size = new Size(318, 48);
             btnProducto.TabIndex = 0;
             btnProducto.Text = "Productos";
             btnProducto.UseVisualStyleBackColor = true;
@@ -237,12 +228,10 @@
             BarraTitulo.Controls.Add(iconCerrar);
             BarraTitulo.Controls.Add(btnMenu);
             BarraTitulo.Dock = DockStyle.Top;
-            BarraTitulo.Location = new Point(219, 0);
-            BarraTitulo.Margin = new Padding(3, 2, 3, 2);
+            BarraTitulo.Location = new Point(250, 0);
             BarraTitulo.Name = "BarraTitulo";
-            BarraTitulo.Size = new Size(903, 38);
+            BarraTitulo.Size = new Size(1032, 51);
             BarraTitulo.TabIndex = 1;
-            BarraTitulo.Paint += BarraTitulo_Paint;
             BarraTitulo.MouseDown += BarraTitulo_MouseDown;
             // 
             // iconRestaurar
@@ -250,10 +239,9 @@
             iconRestaurar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             iconRestaurar.Cursor = Cursors.Hand;
             iconRestaurar.Image = (Image)resources.GetObject("iconRestaurar.Image");
-            iconRestaurar.Location = new Point(844, 9);
-            iconRestaurar.Margin = new Padding(3, 2, 3, 2);
+            iconRestaurar.Location = new Point(965, 12);
             iconRestaurar.Name = "iconRestaurar";
-            iconRestaurar.Size = new Size(22, 19);
+            iconRestaurar.Size = new Size(25, 25);
             iconRestaurar.SizeMode = PictureBoxSizeMode.Zoom;
             iconRestaurar.TabIndex = 4;
             iconRestaurar.TabStop = false;
@@ -266,10 +254,9 @@
             iconMaximizar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             iconMaximizar.Cursor = Cursors.Hand;
             iconMaximizar.Image = (Image)resources.GetObject("iconMaximizar.Image");
-            iconMaximizar.Location = new Point(844, 9);
-            iconMaximizar.Margin = new Padding(3, 2, 3, 2);
+            iconMaximizar.Location = new Point(965, 12);
             iconMaximizar.Name = "iconMaximizar";
-            iconMaximizar.Size = new Size(22, 19);
+            iconMaximizar.Size = new Size(25, 25);
             iconMaximizar.SizeMode = PictureBoxSizeMode.Zoom;
             iconMaximizar.TabIndex = 3;
             iconMaximizar.TabStop = false;
@@ -280,10 +267,9 @@
             iconMinimizar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             iconMinimizar.Cursor = Cursors.Hand;
             iconMinimizar.Image = (Image)resources.GetObject("iconMinimizar.Image");
-            iconMinimizar.Location = new Point(816, 9);
-            iconMinimizar.Margin = new Padding(3, 2, 3, 2);
+            iconMinimizar.Location = new Point(933, 12);
             iconMinimizar.Name = "iconMinimizar";
-            iconMinimizar.Size = new Size(22, 19);
+            iconMinimizar.Size = new Size(25, 25);
             iconMinimizar.SizeMode = PictureBoxSizeMode.Zoom;
             iconMinimizar.TabIndex = 2;
             iconMinimizar.TabStop = false;
@@ -294,10 +280,9 @@
             iconCerrar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             iconCerrar.Cursor = Cursors.Hand;
             iconCerrar.Image = (Image)resources.GetObject("iconCerrar.Image");
-            iconCerrar.Location = new Point(871, 9);
-            iconCerrar.Margin = new Padding(3, 2, 3, 2);
+            iconCerrar.Location = new Point(995, 12);
             iconCerrar.Name = "iconCerrar";
-            iconCerrar.Size = new Size(22, 19);
+            iconCerrar.Size = new Size(25, 25);
             iconCerrar.SizeMode = PictureBoxSizeMode.Zoom;
             iconCerrar.TabIndex = 1;
             iconCerrar.TabStop = false;
@@ -307,10 +292,9 @@
             // 
             btnMenu.Cursor = Cursors.Hand;
             btnMenu.Image = (Image)resources.GetObject("btnMenu.Image");
-            btnMenu.Location = new Point(5, 2);
-            btnMenu.Margin = new Padding(3, 2, 3, 2);
+            btnMenu.Location = new Point(6, 3);
             btnMenu.Name = "btnMenu";
-            btnMenu.Size = new Size(45, 31);
+            btnMenu.Size = new Size(51, 41);
             btnMenu.SizeMode = PictureBoxSizeMode.Zoom;
             btnMenu.TabIndex = 0;
             btnMenu.TabStop = false;
@@ -320,23 +304,20 @@
             // 
             PanelContenedor.BackColor = Color.WhiteSmoke;
             PanelContenedor.Dock = DockStyle.Fill;
-            PanelContenedor.Location = new Point(219, 38);
-            PanelContenedor.Margin = new Padding(3, 2, 3, 2);
+            PanelContenedor.Location = new Point(250, 51);
             PanelContenedor.Name = "PanelContenedor";
-            PanelContenedor.Size = new Size(903, 414);
+            PanelContenedor.Size = new Size(1032, 552);
             PanelContenedor.TabIndex = 2;
-            PanelContenedor.Paint += PanelContenedor_Paint;
             // 
             // PrincipalForm
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1122, 452);
+            ClientSize = new Size(1282, 603);
             Controls.Add(PanelContenedor);
             Controls.Add(BarraTitulo);
             Controls.Add(MenuVertical);
             FormBorderStyle = FormBorderStyle.None;
-            Margin = new Padding(3, 2, 3, 2);
             Name = "PrincipalForm";
             Text = "PrincipalForm";
             MenuVertical.ResumeLayout(false);
