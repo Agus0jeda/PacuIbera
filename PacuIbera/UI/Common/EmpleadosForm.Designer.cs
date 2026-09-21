@@ -121,7 +121,6 @@
             panelAñadirEmpleado.Name = "panelAñadirEmpleado";
             panelAñadirEmpleado.Size = new Size(500, 534);
             panelAñadirEmpleado.TabIndex = 0;
-            panelAñadirEmpleado.Paint += panel1_Paint;
             // 
             // lblFechaNacimiento
             // 
@@ -141,7 +140,6 @@
             dtFechaNacimiento.Name = "dtFechaNacimiento";
             dtFechaNacimiento.Size = new Size(142, 27);
             dtFechaNacimiento.TabIndex = 26;
-            dtFechaNacimiento.ValueChanged += dateTimePicker1_ValueChanged;
             // 
             // gbEstado
             // 
@@ -177,7 +175,6 @@
             rbActivo.TabStop = true;
             rbActivo.Text = "Activo";
             rbActivo.UseVisualStyleBackColor = true;
-            rbActivo.CheckedChanged += rbActivo_CheckedChanged;
             // 
             // txtClave
             // 
@@ -195,7 +192,6 @@
             cmbRol.Size = new Size(150, 28);
             cmbRol.TabIndex = 23;
             cmbRol.Text = "SELECCIONAR...";
-            cmbRol.SelectedIndexChanged += cmbRol_SelectedIndexChanged;
             // 
             // cmbLocalidad
             // 
@@ -583,7 +579,6 @@
             pnlSuperior.Name = "pnlSuperior";
             pnlSuperior.Size = new Size(497, 125);
             pnlSuperior.TabIndex = 22;
-            pnlSuperior.Paint += pnlSuperior_Paint;
             // 
             // txtFiltrarRol
             // 
