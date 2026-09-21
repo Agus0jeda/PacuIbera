@@ -10,8 +10,9 @@ namespace Datos
 
         static ConexionBD()
         {
+
             // Detecta automáticamente en qué computadora está corriendo el proyecto
-            if (Environment.MachineName == "AGUS") // Asegurate de que "AGUS" sea el nombre exacto de tu PC
+            if (Environment.MachineName == "AGUS") 
             {
                 CadenaGlobal = "Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
             }
@@ -20,6 +21,8 @@ namespace Datos
                 // Si la PC no se llama AGUS, asume automáticamente que es la máquina de tu compañero
                 CadenaGlobal = "Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
             }
+
+            
         }
 
         // Este método lo siguen usando tus repositorios internos (CajaDatos, ClienteDatos, etc.)

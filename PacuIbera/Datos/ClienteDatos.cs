@@ -8,7 +8,48 @@ namespace Datos
 {
     public class ClienteDatos : ConexionBD
     {
-        
+        public void InsertarClienteRapido(string nombre, string telefono, string direccion, int provinciaId, int localidadId)
+        {
+            using (var conexion = ObtenerConexion())
+            {
+                conexion.Open();
+                using (var cmd = new SqlCommand("sp_InsertarClienteRapido", conexion))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@Nombre", nombre);
+                    cmd.Parameters.AddWithValue("@Telefono", string.IsNullOrWhiteSpace(telefono) ? (object)DBNull.Value : telefono);
+                    cmd.Parameters.AddWithValue("@Direccion", string.IsNullOrWhiteSpace(direccion) ? (object)DBNull.Value : direccion);
+
+                    // Pasamos los IDs del vendedor
+                    cmd.Parameters.AddWithValue("@ProvinciaId", provinciaId);
+                    cmd.Parameters.AddWithValue("@LocalidadId", localidadId);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public DataTable ObtenerClientesParaVenta()
+        {
+            DataTable tabla = new DataTable();
+            using (var conexion = ObtenerConexion())
+            {
+                // Consulta SQL directa y cruda: traemos a TODOS sin usar INNER JOINS que nos oculten datos
+                string query = "SELECT Id, Nombre, ISNULL(Apellido, '') AS Apellido FROM Cliente";
+
+                // ¡Acá está la corrección! SqlCommand limpio sin la ruta larga.
+                using (var cmd = new SqlCommand(query, conexion))
+                {
+                    conexion.Open();
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        tabla.Load(reader);
+                    }
+                }
+            }
+            return tabla;
+        }
 
         // 3. Registrar un nuevo Cliente
         public void RegistrarCliente(Cliente cliente)
