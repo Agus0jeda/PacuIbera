@@ -195,9 +195,34 @@ namespace PacuIbera.UI.Common
                 CargarGrilla();
                 LimpiarCampos();
             }
+            catch (Microsoft.Data.SqlClient.SqlException sqlEx)
+            {
+                // Atrapamos exclusivamente errores que vienen del motor de SQL Server
+                switch (sqlEx.Number)
+                {
+                    case 2627: // Violación de UNIQUE KEY o PRIMARY KEY
+                    case 2601: // Duplicado en índice único
+                        MessageBox.Show("El DNI o el Correo Electrónico ingresado ya está registrado en otro usuario.", "Dato Duplicado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        break;
+
+                    case 547: // Violación de FOREIGN KEY
+                        MessageBox.Show("No se puede guardar/eliminar porque este registro está vinculado a otras partes del sistema (Ej: tiene ventas asociadas).", "Conflicto de Datos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        break;
+
+                    case 53: // Servidor no encontrado
+                    case 26: // Error de conexión de red
+                        MessageBox.Show("No se pudo conectar a la base de datos. Verifique que SQL Server esté encendido.", "Error de Conexión", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
+
+                    default: // Cualquier otro error de SQL
+                        MessageBox.Show("Ocurrió un error en la base de datos: " + sqlEx.Message, "Error Interno", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
+                }
+            }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al guardar: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // Atrapamos errores generales de C# (ej: intentó convertir una letra a número)
+                MessageBox.Show(ex.Message, "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -311,22 +336,45 @@ namespace PacuIbera.UI.Common
         {
 
         }
-
         private void txtFiltrarNombre_TextChanged(object sender, EventArgs e)
         {
-            if (dgvEmpleados.DataSource is DataTable dt)
-            {
-                string texto = txtFiltrarNombre.Text.Trim();
-                dt.DefaultView.RowFilter = $"Nombre LIKE '%{texto}%' OR Apellido LIKE '%{texto}%'";
-            }
+            AplicarFiltros();
         }
 
         private void txtFiltrarRol_TextChanged(object sender, EventArgs e)
         {
+            AplicarFiltros();
+        }
+        private void AplicarFiltros()
+        {
             if (dgvEmpleados.DataSource is DataTable dt)
             {
-                string texto = txtFiltrarRol.Text.Trim();
-                dt.DefaultView.RowFilter = $"Rol LIKE '%{texto}%'";
+                string filtroNombre = "";
+                string filtroRol = "";
+
+                // Verificamos el primer filtro ignorando su texto de ayuda
+                if (!string.IsNullOrWhiteSpace(txtFiltrarNombre.Text) && txtFiltrarNombre.Text != "NOMBRE O APELLIDO")
+                {
+                    filtroNombre = $"(Nombre LIKE '%{txtFiltrarNombre.Text.Trim()}%' OR Apellido LIKE '%{txtFiltrarNombre.Text.Trim()}%')";
+                }
+
+                // Verificamos el segundo filtro ignorando su texto de ayuda
+                if (!string.IsNullOrWhiteSpace(txtFiltrarRol.Text) && txtFiltrarRol.Text != "ROL")
+                {
+                    filtroRol = $"(Rol LIKE '%{txtFiltrarRol.Text.Trim()}%')";
+                }
+
+                // Combinamos los filtros
+                string filtroFinal = "";
+                if (filtroNombre != "" && filtroRol != "")
+                    filtroFinal = $"{filtroNombre} AND {filtroRol}";
+                else if (filtroNombre != "")
+                    filtroFinal = filtroNombre;
+                else if (filtroRol != "")
+                    filtroFinal = filtroRol;
+
+                // Aplicamos a la grilla
+                dt.DefaultView.RowFilter = filtroFinal;
             }
         }
 
@@ -349,17 +397,73 @@ namespace PacuIbera.UI.Common
 
                         MessageBox.Show("El empleado ha sido dado de baja correctamente.", "Baja exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                        
+
                         CargarGrilla();
                         LimpiarCampos();
                     }
+                    catch (Microsoft.Data.SqlClient.SqlException sqlEx)
+                    {
+                        // Atrapamos errores que vienen exclusivamente del motor de SQL Server
+                        switch (sqlEx.Number)
+                        {
+                            case 547: // Violación de FOREIGN KEY (Por si en el futuro cambias a un DELETE real)
+                                MessageBox.Show("No se puede eliminar porque este empleado tiene registros vinculados en el sistema (ej. ventas o aperturas de caja).", "Conflicto de Datos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                break;
+
+                            case 53: // Servidor no encontrado
+                            case 26: // Error de conexión de red
+                                MessageBox.Show("No se pudo conectar a la base de datos. Verifique que SQL Server esté encendido y accesible.", "Error de Conexión", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                break;
+
+                            default: // Cualquier otro error de base de datos
+                                MessageBox.Show("Ocurrió un error en la base de datos: " + sqlEx.Message, "Error Interno", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                break;
+                        }
+                    }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error al dar de baja: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        // Atrapamos cualquier otro error general de C#
+                        MessageBox.Show("Error general al dar de baja: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
         }
-    
+        // Eventos para el cuadro de Búsqueda por Nombre
+        private void txtFiltrarNombre_Enter(object sender, EventArgs e)
+        {
+            if (txtFiltrarNombre.Text == "NOMBRE O APELLIDO")
+            {
+                txtFiltrarNombre.Text = "";
+                txtFiltrarNombre.ForeColor = Color.Black;
+            }
+        }
+
+        private void txtFiltrarNombre_Leave(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtFiltrarNombre.Text))
+            {
+                txtFiltrarNombre.Text = "NOMBRE O APELLIDO";
+                txtFiltrarNombre.ForeColor = Color.Gray;
+            }
+        }
+
+        // Eventos para el cuadro de Búsqueda por Rol
+        private void txtFiltrarRol_Enter(object sender, EventArgs e)
+        {
+            if (txtFiltrarRol.Text == "ROL")
+            {
+                txtFiltrarRol.Text = "";
+                txtFiltrarRol.ForeColor = Color.Black;
+            }
+        }
+
+        private void txtFiltrarRol_Leave(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtFiltrarRol.Text))
+            {
+                txtFiltrarRol.Text = "ROL";
+                txtFiltrarRol.ForeColor = Color.Gray;
+            }
+        }
     }
 }
