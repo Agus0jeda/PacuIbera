@@ -1,6 +1,6 @@
 ﻿namespace PacuIbera
 {
-    partial class Form1
+    partial class VentasForm
     {
         /// <summary>
         ///  Required designer variable.
