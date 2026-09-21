@@ -29,36 +29,27 @@ namespace PacuIbera.UI.Common
 
         private void ConfigurarPermisosMenu()
         {
-            string rolUsuario = SesionActiva.Rol;
+            // Apagamos los botones sensibles por defecto
+            btnEmpleados.Visible = false;
+            btnProveedores.Visible = false;
+            btnCompras.Visible = false;
+            btnReportes.Visible = false;
 
-            // Opcional: mostrar un mensaje de bienvenida personalizado con el rol
-            // this.Text = $"Pacú Iberá - Usuario: {SesionActiva.Nombre} {SesionActiva.Apellido} ({rolUsuario})";
+            // Evaluamos el rol para encender lo que corresponda
+            switch (SesionActiva.Rol)
+            {
+                case "Administrador":
+                case "Gerente":
+                case "SuperAdministrador":
+                    btnEmpleados.Visible = true;
+                    btnProveedores.Visible = true;
+                    btnCompras.Visible = true;
+                    btnReportes.Visible = true;
+                    break;
 
-            if (rolUsuario == "Vendedor")
-            {
-                // El vendedor SOLO ve Productos, Clientes, Ventas y Pagos.
-                // Ocultamos los módulos administrativos y sensibles:
-                btnEmpleados.Visible = false;
-                btnProveedores.Visible = false;
-                btnCompras.Visible = false;
-                btnReportes.Visible = false;
-            }
-            else if (rolUsuario == "Administrador")
-            {
-                // El administrador ve todo, pero internamente en el formulario de empleados 
-                // tendrá la restricción de no poder eliminar.
-                btnEmpleados.Visible = true;
-                btnProveedores.Visible = true;
-                btnCompras.Visible = true;
-                btnReportes.Visible = true;
-            }
-            else if (rolUsuario == "Gerente" || rolUsuario == "SuperAdministrador")
-            {
-                // Acceso absoluto a todos los módulos y botones del sistema
-                btnEmpleados.Visible = true;
-                btnProveedores.Visible = true;
-                btnCompras.Visible = true;
-                btnReportes.Visible = true;
+                case "Vendedor":
+                    // El vendedor solo verá Productos, Clientes, Ventas y Pagos que nunca se ocultaron.
+                    break;
             }
         }
 
@@ -181,13 +172,13 @@ namespace PacuIbera.UI.Common
         {
             ConfigurarPermisosMenu(); // Los permisos se leen una sola vez al entrar
             ReorganizarMenu();        // Los botones se ordenan una sola vez al arrancar
+            AbrirFormularioPanel(new BienvenidaForm());
         }
         private void PrincipalForm_Resize(object sender, EventArgs e)
         {
             AjustarMenu();
         }
 
-        private void MenuVertical_Paint(object sender, PaintEventArgs e) { }
 
         private void iconCerrar_Click(object sender, EventArgs e)
         {
@@ -212,11 +203,6 @@ namespace PacuIbera.UI.Common
         {
             this.WindowState = FormWindowState.Minimized;
         }
-
-        private void PanelContenedor_Paint(object sender, PaintEventArgs e) { }
-
-        private void BarraTitulo_Paint(object sender, PaintEventArgs e) { }
-
         private void BarraTitulo_MouseDown(object sender, MouseEventArgs e)
         {
             ReleaseCapture();
@@ -246,13 +232,6 @@ namespace PacuIbera.UI.Common
             AbrirFormularioPanel(new ClientesForm());
         }
 
-
-
-        private void button4_Click(object sender, EventArgs e)
-        {
-            AbrirFormularioPanel(new EmpleadosForm());
-        }
-
         private void btnReportes_Click(object sender, EventArgs e)
         {
             AbrirFormularioPanel(new ReportesForm());
@@ -261,6 +240,11 @@ namespace PacuIbera.UI.Common
         private void btnVentas_Click(object sender, EventArgs e)
         {
             AbrirFormularioPanel(new VentasForm());
+        }
+
+        private void btnEmpleados_Click(object sender, EventArgs e)
+        {
+            AbrirFormularioPanel(new EmpleadosForm());
         }
     }
 }
