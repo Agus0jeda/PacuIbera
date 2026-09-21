@@ -11,8 +11,8 @@ namespace Datos
         {
             // Integrated Security=True usa la autenticación de Windows de tu PC.
             // TrustServerCertificate=True evita errores de certificados locales en .NET moderno.
-            cadenaConexion = "Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-            //cadenaConexion ="Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
+            //cadenaConexion = "Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
+            cadenaConexion ="Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
         }
 
         // Este método lo van a usar tus repositorios para conectarse
