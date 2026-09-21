@@ -77,13 +77,25 @@ namespace Datos
 
             using (SqlConnection conexion = ObtenerConexion())
             {
-                string query = @"SELECT p.Id, p.Nombre, c.Nombre AS Categoria, p.PrecioVenta, 
-                                        p.StockActual, p.StockMinimo, p.SeVendePorPeso, p.Descripcion,
-                                        (SELECT COUNT(*) FROM Lote l WHERE l.ProductoId = p.Id AND l.Activo = 1 AND l.FechaVencimiento <= DATEADD(day, 15, GETDATE())) AS LotesPorVencer,
-                                        (SELECT MIN(FechaVencimiento) FROM Lote l WHERE l.ProductoId = p.Id AND l.Activo = 1 AND l.StockActual > 0) AS ProximoVencimiento
-                                 FROM Producto p 
-                                 LEFT JOIN Categoria c ON p.CategoriaId = c.Id
-                                 WHERE p.Activo = 1";
+                string query = @"SELECT 
+                            p.Id, 
+                            p.Nombre, 
+                            c.Nombre AS Categoria, 
+                            p.PrecioVenta, 
+                            -- SUMAMOS EL STOCK REAL DE TODOS LOS LOTES ACTIVOS
+                            ISNULL(SUM(l.StockActual), 0) AS StockActual, 
+                            p.StockMinimo, 
+                            p.SeVendePorPeso, 
+                            p.Descripcion,
+                            (SELECT COUNT(*) FROM Lote lo WHERE lo.ProductoId = p.Id AND lo.Activo = 1 AND lo.FechaVencimiento <= DATEADD(day, 15, GETDATE())) AS LotesPorVencer,
+                            (SELECT MIN(FechaVencimiento) FROM Lote lo WHERE lo.ProductoId = p.Id AND lo.Activo = 1 AND lo.StockActual > 0) AS ProximoVencimiento
+                        FROM Producto p 
+                        LEFT JOIN Categoria c ON p.CategoriaId = c.Id
+                        LEFT JOIN Lote l ON p.Id = l.ProductoId AND l.Activo = 1
+                        WHERE p.Activo = 1
+                        GROUP BY 
+                            p.Id, p.Nombre, c.Nombre, p.PrecioVenta, p.StockMinimo, p.SeVendePorPeso, p.Descripcion";
+
                 SqlCommand cmd = new SqlCommand(query, conexion);
                 conexion.Open();
                 using (SqlDataReader reader = cmd.ExecuteReader())

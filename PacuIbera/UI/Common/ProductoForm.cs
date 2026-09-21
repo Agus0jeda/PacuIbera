@@ -41,9 +41,19 @@ namespace PacuIbera.UI.Common
             // --- ESTA ES LA LÍNEA NUEVA QUE CONECTA EL DESPLEGABLE ---
             cmbNombreProducto.SelectedIndexChanged += cmbNombreProducto_SelectedIndexChanged;
 
-            // Fantasma buscador
+            // Fantasma buscador (¡Fijate cómo ahora cierran bien con ;!)
             bucarNombreProducto.Enter += (s, e) => { if (bucarNombreProducto.Text == "TODOS LOS PRODUCTOS") bucarNombreProducto.Text = ""; };
             bucarNombreProducto.Leave += (s, e) => { if (string.IsNullOrWhiteSpace(bucarNombreProducto.Text)) bucarNombreProducto.Text = "TODOS LOS PRODUCTOS"; };
+
+            // TRUCO: Actualizar pantalla al volver a verla (Totalmente separado del buscador)
+            this.VisibleChanged += (sender, e) =>
+            {
+                if (this.Visible == true)
+                {
+                    
+                    CargarListaProductos();
+                }
+            };
         }
 
         private void ProductoForm_Load(object sender, EventArgs e)
