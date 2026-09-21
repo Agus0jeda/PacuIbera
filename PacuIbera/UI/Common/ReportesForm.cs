@@ -86,7 +86,7 @@ namespace PacuIbera.UI.Common
 
             // 6. Configurar la Grilla de Alertas (dgvAlertasStock ya existe en el diseñador)
             dgvAlertasStock.Location = new Point(540, 120);
-            dgvAlertasStock.Size = new Size(550, 350);
+            dgvAlertasStock.Size = new Size(500, 350);
             dgvAlertasStock.BackgroundColor = Color.White;
             dgvAlertasStock.RowHeadersVisible = false;
         }

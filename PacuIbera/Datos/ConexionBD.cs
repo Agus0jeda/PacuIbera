@@ -1,24 +1,31 @@
 ﻿using System;
-using Microsoft.Data.SqlClient; 
+using Microsoft.Data.SqlClient;
 
-namespace Datos 
+namespace Datos
 {
     public abstract class ConexionBD
     {
-         private readonly string cadenaConexion;
+        // Propiedad estática accesible desde cualquier lado del proyecto sin instanciar
+        public static readonly string CadenaGlobal;
 
-        public ConexionBD()
+        static ConexionBD()
         {
-            // Integrated Security=True usa la autenticación de Windows de tu PC.
-            // TrustServerCertificate=True evita errores de certificados locales en .NET moderno.
-            cadenaConexion = "Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-            //cadenaConexion ="Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
+            // Detecta automáticamente en qué computadora está corriendo el proyecto
+            if (Environment.MachineName == "AGUS") // Asegurate de que "AGUS" sea el nombre exacto de tu PC
+            {
+                CadenaGlobal = "Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
+            }
+            else
+            {
+                // Si la PC no se llama AGUS, asume automáticamente que es la máquina de tu compañero
+                CadenaGlobal = "Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
+            }
         }
 
-        // Este método lo van a usar tus repositorios para conectarse
+        // Este método lo siguen usando tus repositorios internos (CajaDatos, ClienteDatos, etc.)
         protected SqlConnection ObtenerConexion()
         {
-            return new SqlConnection(cadenaConexion);
+            return new SqlConnection(CadenaGlobal);
         }
     }
 }

@@ -24,10 +24,7 @@ namespace Datos
 
         public void RegistrarIngresoLote(int productoId, decimal cantidad, DateTime fechaVencimiento)
         {
-            //string stringConexion = "Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-            string stringConexion = "Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-
-            using (SqlConnection conexion = new SqlConnection(stringConexion))
+            using (SqlConnection conexion = ObtenerConexion())
             {
                 conexion.Open();
                 using (SqlTransaction transaccion = conexion.BeginTransaction())
@@ -77,10 +74,8 @@ namespace Datos
         public DataTable ObtenerProductos()
         {
             DataTable tabla = new DataTable();
-            //string stringConexion = "Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-            string stringConexion = "Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
 
-            using (SqlConnection conexion = new SqlConnection(stringConexion))
+            using (SqlConnection conexion = ObtenerConexion())
             {
                 string query = @"SELECT p.Id, p.Nombre, c.Nombre AS Categoria, p.PrecioVenta, 
                                         p.StockActual, p.StockMinimo, p.SeVendePorPeso, p.Descripcion,
@@ -103,10 +98,8 @@ namespace Datos
         public DataTable ObtenerLotesPorProducto(int productoId)
         {
             DataTable tabla = new DataTable();
-            //string stringConexion = "Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-            string stringConexion = "Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
 
-            using (Microsoft.Data.SqlClient.SqlConnection conexion = new Microsoft.Data.SqlClient.SqlConnection(stringConexion))
+            using (SqlConnection conexion = ObtenerConexion())
             {
                 string query = @"SELECT Id AS [Lote N°], FechaIngreso AS [Ingreso], FechaVencimiento AS [Vencimiento], StockActual AS [Quedan] 
                                  FROM Lote WHERE ProductoId = @ProdId AND Activo = 1 ORDER BY FechaVencimiento ASC";
@@ -123,10 +116,7 @@ namespace Datos
 
         public void ModificarProducto(int id, string nombre, int categoriaId, decimal precioVenta, decimal stockMinimo, bool seVendePorPeso, string descripcion, decimal stockNuevo, DateTime? fechaVencimiento)
         {
-            //string stringConexion = "Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-            string stringConexion = "Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-
-            using (Microsoft.Data.SqlClient.SqlConnection conexion = new Microsoft.Data.SqlClient.SqlConnection(stringConexion))
+            using (SqlConnection conexion = ObtenerConexion())
             {
                 conexion.Open();
 
@@ -161,10 +151,7 @@ namespace Datos
 
         public void EliminarProducto(int id)
         {
-            //string stringConexion = "Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-            string stringConexion = "Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-
-            using (SqlConnection conexion = new SqlConnection(stringConexion))
+            using (SqlConnection conexion = ObtenerConexion())
             {
                 string query = "UPDATE Producto SET Activo = 0 WHERE Id = @Id";
                 SqlCommand cmd = new SqlCommand(query, conexion);
@@ -176,10 +163,7 @@ namespace Datos
 
         public void RegistrarProducto(string nombre, int categoriaId, decimal precioVenta, decimal stockMinimo, bool seVendePorPeso, string descripcion, decimal stock, DateTime? fechaVencimiento)
         {
-            //string stringConexion = "Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-            string stringConexion = "Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-
-            using (Microsoft.Data.SqlClient.SqlConnection conexion = new Microsoft.Data.SqlClient.SqlConnection(stringConexion))
+            using (SqlConnection conexion = ObtenerConexion())
             {
                 conexion.Open();
                 string query = @"INSERT INTO Producto (Nombre, CategoriaId, PrecioVenta, StockMinimo, SeVendePorPeso, Descripcion, StockActual, Activo) 
@@ -210,10 +194,7 @@ namespace Datos
         }
         public void ProcesarLotesVencidos()
         {
-            //string stringConexion = "Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-            string stringConexion = "Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-
-            using (Microsoft.Data.SqlClient.SqlConnection conexion = new Microsoft.Data.SqlClient.SqlConnection(stringConexion))
+            using (SqlConnection conexion = ObtenerConexion())
             {
                 conexion.Open();
                 // 1. Resta al Producto el stock exacto de los lotes que se vencieron hoy o antes
@@ -240,10 +221,7 @@ namespace Datos
 
         public void ActualizarLote(int loteId, int productoId, decimal nuevoStock, DateTime nuevaFecha)
         {
-            //string stringConexion = "Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-            string stringConexion = "Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-
-            using (Microsoft.Data.SqlClient.SqlConnection conexion = new Microsoft.Data.SqlClient.SqlConnection(stringConexion))
+            using (SqlConnection conexion = ObtenerConexion())
             {
                 conexion.Open();
                 using (Microsoft.Data.SqlClient.SqlTransaction transaccion = conexion.BeginTransaction())

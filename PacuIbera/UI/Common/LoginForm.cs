@@ -41,11 +41,7 @@ namespace PacuIbera.UI.Common
                     // 3. Verificamos si el usuario tiene una caja abierta EXCLUSIVAMENTE HOY
                     // 3. Verificamos si el usuario tiene un registro de caja creado HOY
                     int cajaId = 0;
-                    //string stringConexion = "Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-                    string stringConexion = "Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
-
-
-                    using (Microsoft.Data.SqlClient.SqlConnection conexion = new Microsoft.Data.SqlClient.SqlConnection(stringConexion))
+                    using (Microsoft.Data.SqlClient.SqlConnection conexion = new Microsoft.Data.SqlClient.SqlConnection(ConexionBD.CadenaGlobal))
                     {
                         // Buscamos que exista una caja de HOY para este usuario, sin importar qué palabra tenga en "Estado"
                         string query = "SELECT TOP 1 Id FROM Caja WHERE UsuarioId = @UsuarioId AND CAST(FechaHoraApertura AS DATE) = CAST(GETDATE() AS DATE)";
@@ -67,7 +63,8 @@ namespace PacuIbera.UI.Common
                         formCaja.ShowDialog(); // Frena el código hasta que cierre la ventana
 
                         // Verificamos de nuevo: ¿Realmente se guardó el turno de hoy o apretó la "X"?
-                        using (Microsoft.Data.SqlClient.SqlConnection conexion = new Microsoft.Data.SqlClient.SqlConnection(stringConexion))
+
+                        using (Microsoft.Data.SqlClient.SqlConnection conexion = new Microsoft.Data.SqlClient.SqlConnection(ConexionBD.CadenaGlobal))
                         {
                             string query = "SELECT TOP 1 Id FROM Caja WHERE UsuarioId = @UsuarioId AND CAST(FechaHoraApertura AS DATE) = CAST(GETDATE() AS DATE)";
                             Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand(query, conexion);
