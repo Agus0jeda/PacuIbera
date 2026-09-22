@@ -92,5 +92,33 @@ namespace Datos
             }
             return tabla;
         }
+
+        // 1. Trae los clientes limpios para el CRM (Panel general)
+        public DataTable ObtenerClientesCRM()
+        {
+            DataTable dt = new DataTable();
+            using (Microsoft.Data.SqlClient.SqlConnection con = ObtenerConexion())
+            {
+                Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand("sp_ObtenerClientesCRM", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                Microsoft.Data.SqlClient.SqlDataAdapter da = new Microsoft.Data.SqlClient.SqlDataAdapter(cmd);
+                da.Fill(dt);
+            }
+            return dt;
+        }
+
+        // 2. Trae el ranking de los mejores clientes (Panel de Top)
+        public DataTable ObtenerTopClientes()
+        {
+            DataTable dt = new DataTable();
+            using (Microsoft.Data.SqlClient.SqlConnection con = ObtenerConexion())
+            {
+                Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand("sp_ReporteTopClientes", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                Microsoft.Data.SqlClient.SqlDataAdapter da = new Microsoft.Data.SqlClient.SqlDataAdapter(cmd);
+                da.Fill(dt);
+            }
+            return dt;
+        }
     }
 }

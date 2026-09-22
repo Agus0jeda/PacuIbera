@@ -118,36 +118,40 @@
             panelAñadirEmpleado.Controls.Add(txtNombre);
             panelAñadirEmpleado.Dock = DockStyle.Left;
             panelAñadirEmpleado.Location = new Point(0, 0);
+            panelAñadirEmpleado.Margin = new Padding(3, 2, 3, 2);
             panelAñadirEmpleado.Name = "panelAñadirEmpleado";
-            panelAñadirEmpleado.Size = new Size(500, 534);
+            panelAñadirEmpleado.Size = new Size(438, 400);
             panelAñadirEmpleado.TabIndex = 0;
             // 
             // lblFechaNacimiento
             // 
             lblFechaNacimiento.AutoSize = true;
-            lblFechaNacimiento.Font = new Font("SansSerif", 10.1999989F, FontStyle.Regular, GraphicsUnit.Point, 2);
-            lblFechaNacimiento.Location = new Point(264, 255);
+            lblFechaNacimiento.Font = new Font("Microsoft Sans Serif", 11.25F);
+            lblFechaNacimiento.Location = new Point(231, 191);
             lblFechaNacimiento.Name = "lblFechaNacimiento";
-            lblFechaNacimiento.Size = new Size(105, 20);
+            lblFechaNacimiento.Size = new Size(92, 18);
             lblFechaNacimiento.TabIndex = 27;
             lblFechaNacimiento.Text = "Fecha Nac. :";
             // 
             // dtFechaNacimiento
             // 
-            dtFechaNacimiento.Font = new Font("SansSerif", 10.1999989F, FontStyle.Regular, GraphicsUnit.Point, 2);
+            dtFechaNacimiento.Font = new Font("Microsoft Sans Serif", 11.25F);
             dtFechaNacimiento.Format = DateTimePickerFormat.Short;
-            dtFechaNacimiento.Location = new Point(350, 290);
+            dtFechaNacimiento.Location = new Point(306, 218);
+            dtFechaNacimiento.Margin = new Padding(3, 2, 3, 2);
             dtFechaNacimiento.Name = "dtFechaNacimiento";
-            dtFechaNacimiento.Size = new Size(142, 27);
+            dtFechaNacimiento.Size = new Size(125, 24);
             dtFechaNacimiento.TabIndex = 26;
             // 
             // gbEstado
             // 
             gbEstado.Controls.Add(rbInactivo);
             gbEstado.Controls.Add(rbActivo);
-            gbEstado.Location = new Point(334, 345);
+            gbEstado.Location = new Point(292, 259);
+            gbEstado.Margin = new Padding(3, 2, 3, 2);
             gbEstado.Name = "gbEstado";
-            gbEstado.Size = new Size(158, 92);
+            gbEstado.Padding = new Padding(3, 2, 3, 2);
+            gbEstado.Size = new Size(138, 69);
             gbEstado.TabIndex = 25;
             gbEstado.TabStop = false;
             gbEstado.Text = "Estado :";
@@ -155,10 +159,11 @@
             // rbInactivo
             // 
             rbInactivo.AutoSize = true;
-            rbInactivo.Font = new Font("SansSerif", 10.1999989F, FontStyle.Regular, GraphicsUnit.Point, 2);
-            rbInactivo.Location = new Point(56, 59);
+            rbInactivo.Font = new Font("Microsoft Sans Serif", 11.25F);
+            rbInactivo.Location = new Point(49, 44);
+            rbInactivo.Margin = new Padding(3, 2, 3, 2);
             rbInactivo.Name = "rbInactivo";
-            rbInactivo.Size = new Size(89, 24);
+            rbInactivo.Size = new Size(76, 22);
             rbInactivo.TabIndex = 1;
             rbInactivo.TabStop = true;
             rbInactivo.Text = "Inactivo";
@@ -167,10 +172,11 @@
             // rbActivo
             // 
             rbActivo.AutoSize = true;
-            rbActivo.Font = new Font("SansSerif", 10.1999989F, FontStyle.Regular, GraphicsUnit.Point, 2);
-            rbActivo.Location = new Point(56, 26);
+            rbActivo.Font = new Font("Microsoft Sans Serif", 11.25F);
+            rbActivo.Location = new Point(49, 20);
+            rbActivo.Margin = new Padding(3, 2, 3, 2);
             rbActivo.Name = "rbActivo";
-            rbActivo.Size = new Size(77, 24);
+            rbActivo.Size = new Size(66, 22);
             rbActivo.TabIndex = 0;
             rbActivo.TabStop = true;
             rbActivo.Text = "Activo";
@@ -178,18 +184,20 @@
             // 
             // txtClave
             // 
-            txtClave.Location = new Point(92, 392);
+            txtClave.Location = new Point(80, 294);
+            txtClave.Margin = new Padding(3, 2, 3, 2);
             txtClave.Name = "txtClave";
-            txtClave.Size = new Size(150, 27);
+            txtClave.Size = new Size(132, 23);
             txtClave.TabIndex = 24;
             // 
             // cmbRol
             // 
             cmbRol.ForeColor = SystemColors.WindowFrame;
             cmbRol.FormattingEnabled = true;
-            cmbRol.Location = new Point(92, 345);
+            cmbRol.Location = new Point(80, 259);
+            cmbRol.Margin = new Padding(3, 2, 3, 2);
             cmbRol.Name = "cmbRol";
-            cmbRol.Size = new Size(150, 28);
+            cmbRol.Size = new Size(132, 23);
             cmbRol.TabIndex = 23;
             cmbRol.Text = "SELECCIONAR...";
             // 
@@ -197,9 +205,10 @@
             // 
             cmbLocalidad.ForeColor = SystemColors.WindowFrame;
             cmbLocalidad.FormattingEnabled = true;
-            cmbLocalidad.Location = new Point(342, 201);
+            cmbLocalidad.Location = new Point(299, 151);
+            cmbLocalidad.Margin = new Padding(3, 2, 3, 2);
             cmbLocalidad.Name = "cmbLocalidad";
-            cmbLocalidad.Size = new Size(150, 28);
+            cmbLocalidad.Size = new Size(132, 23);
             cmbLocalidad.TabIndex = 22;
             cmbLocalidad.Text = "SELECCIONAR...";
             // 
@@ -207,9 +216,10 @@
             // 
             cmbProvincia.ForeColor = SystemColors.WindowFrame;
             cmbProvincia.FormattingEnabled = true;
-            cmbProvincia.Location = new Point(342, 155);
+            cmbProvincia.Location = new Point(299, 116);
+            cmbProvincia.Margin = new Padding(3, 2, 3, 2);
             cmbProvincia.Name = "cmbProvincia";
-            cmbProvincia.Size = new Size(150, 28);
+            cmbProvincia.Size = new Size(132, 23);
             cmbProvincia.TabIndex = 21;
             cmbProvincia.Text = "SELECCIONAR...";
             cmbProvincia.SelectedIndexChanged += cmbProvincia_SelectedIndexChanged;
@@ -217,20 +227,20 @@
             // lblClave
             // 
             lblClave.AutoSize = true;
-            lblClave.Font = new Font("SansSerif", 10.1999989F, FontStyle.Regular, GraphicsUnit.Point, 2);
-            lblClave.Location = new Point(24, 395);
+            lblClave.Font = new Font("Microsoft Sans Serif", 11.25F);
+            lblClave.Location = new Point(21, 296);
             lblClave.Name = "lblClave";
-            lblClave.Size = new Size(62, 20);
+            lblClave.Size = new Size(53, 18);
             lblClave.TabIndex = 20;
             lblClave.Text = "Clave :";
             // 
             // lblRol
             // 
             lblRol.AutoSize = true;
-            lblRol.Font = new Font("SansSerif", 10.1999989F, FontStyle.Regular, GraphicsUnit.Point, 2);
-            lblRol.Location = new Point(42, 348);
+            lblRol.Font = new Font("Microsoft Sans Serif", 11.25F);
+            lblRol.Location = new Point(37, 261);
             lblRol.Name = "lblRol";
-            lblRol.Size = new Size(44, 20);
+            lblRol.Size = new Size(39, 18);
             lblRol.TabIndex = 18;
             lblRol.Text = "Rol :";
             // 
@@ -238,9 +248,9 @@
             // 
             lblProvincia.AutoSize = true;
             lblProvincia.Font = new Font("Microsoft Sans Serif", 10F);
-            lblProvincia.Location = new Point(248, 158);
+            lblProvincia.Location = new Point(217, 118);
             lblProvincia.Name = "lblProvincia";
-            lblProvincia.Size = new Size(88, 20);
+            lblProvincia.Size = new Size(74, 17);
             lblProvincia.TabIndex = 17;
             lblProvincia.Text = "Provincia :";
             // 
@@ -252,9 +262,10 @@
             btnEliminar.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 192, 192);
             btnEliminar.FlatStyle = FlatStyle.Flat;
             btnEliminar.Font = new Font("Microsoft Sans Serif", 10F);
-            btnEliminar.Location = new Point(290, 465);
+            btnEliminar.Location = new Point(254, 349);
+            btnEliminar.Margin = new Padding(3, 2, 3, 2);
             btnEliminar.Name = "btnEliminar";
-            btnEliminar.Size = new Size(110, 40);
+            btnEliminar.Size = new Size(96, 30);
             btnEliminar.TabIndex = 16;
             btnEliminar.Text = "ELIMINAR";
             btnEliminar.UseVisualStyleBackColor = false;
@@ -267,9 +278,10 @@
             btnGuardar.FlatAppearance.MouseOverBackColor = Color.FromArgb(192, 255, 192);
             btnGuardar.FlatStyle = FlatStyle.Flat;
             btnGuardar.Font = new Font("Microsoft Sans Serif", 10F);
-            btnGuardar.Location = new Point(134, 465);
+            btnGuardar.Location = new Point(117, 349);
+            btnGuardar.Margin = new Padding(3, 2, 3, 2);
             btnGuardar.Name = "btnGuardar";
-            btnGuardar.Size = new Size(110, 40);
+            btnGuardar.Size = new Size(96, 30);
             btnGuardar.TabIndex = 15;
             btnGuardar.Text = "GUARDAR";
             btnGuardar.UseVisualStyleBackColor = false;
@@ -279,49 +291,50 @@
             // 
             lblNuevosEmpleados.AutoSize = true;
             lblNuevosEmpleados.Font = new Font("Microsoft Sans Serif", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblNuevosEmpleados.Location = new Point(145, 35);
+            lblNuevosEmpleados.Location = new Point(127, 26);
             lblNuevosEmpleados.Name = "lblNuevosEmpleados";
-            lblNuevosEmpleados.Size = new Size(224, 29);
+            lblNuevosEmpleados.Size = new Size(176, 24);
             lblNuevosEmpleados.TabIndex = 14;
             lblNuevosEmpleados.Text = "Nuevos Empleados";
             // 
             // lblApellido
             // 
             lblApellido.AutoSize = true;
-            lblApellido.Font = new Font("SansSerif", 10.1999989F, FontStyle.Regular, GraphicsUnit.Point, 2);
-            lblApellido.Location = new Point(8, 160);
+            lblApellido.Font = new Font("Microsoft Sans Serif", 11.25F);
+            lblApellido.Location = new Point(7, 120);
             lblApellido.Name = "lblApellido";
-            lblApellido.Size = new Size(78, 20);
+            lblApellido.Size = new Size(67, 18);
             lblApellido.TabIndex = 13;
             lblApellido.Text = "Apellido :";
             // 
             // lblDni
             // 
             lblDni.AutoSize = true;
-            lblDni.Font = new Font("SansSerif", 10.1999989F, FontStyle.Regular, GraphicsUnit.Point, 2);
-            lblDni.Location = new Point(38, 206);
+            lblDni.Font = new Font("Microsoft Sans Serif", 11.25F);
+            lblDni.Location = new Point(33, 154);
             lblDni.Name = "lblDni";
-            lblDni.Size = new Size(48, 20);
+            lblDni.Size = new Size(41, 18);
             lblDni.TabIndex = 12;
             lblDni.Text = "DNI :";
             // 
             // lblDireccion
             // 
             lblDireccion.AutoSize = true;
-            lblDireccion.Font = new Font("SansSerif", 10.1999989F, FontStyle.Regular, GraphicsUnit.Point, 2);
-            lblDireccion.Location = new Point(246, 115);
+            lblDireccion.Font = new Font("Microsoft Sans Serif", 11.25F);
+            lblDireccion.Location = new Point(215, 86);
             lblDireccion.Name = "lblDireccion";
-            lblDireccion.Size = new Size(90, 20);
+            lblDireccion.Size = new Size(79, 18);
             lblDireccion.TabIndex = 11;
             lblDireccion.Text = "Direccion :";
+            lblDireccion.Click += lblDireccion_Click;
             // 
             // lblEmail
             // 
             lblEmail.AutoSize = true;
             lblEmail.Font = new Font("Microsoft Sans Serif", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblEmail.Location = new Point(25, 297);
+            lblEmail.Location = new Point(22, 223);
             lblEmail.Name = "lblEmail";
-            lblEmail.Size = new Size(61, 20);
+            lblEmail.Size = new Size(50, 17);
             lblEmail.TabIndex = 10;
             lblEmail.Text = "Email :";
             // 
@@ -329,9 +342,9 @@
             // 
             lblTelefono.AutoSize = true;
             lblTelefono.Font = new Font("Microsoft Sans Serif", 10F);
-            lblTelefono.Location = new Point(3, 252);
+            lblTelefono.Location = new Point(3, 189);
             lblTelefono.Name = "lblTelefono";
-            lblTelefono.Size = new Size(83, 20);
+            lblTelefono.Size = new Size(72, 17);
             lblTelefono.TabIndex = 9;
             lblTelefono.Text = "Telefono :";
             // 
@@ -339,89 +352,95 @@
             // 
             lblLocalidad.AutoSize = true;
             lblLocalidad.Font = new Font("Microsoft Sans Serif", 10F);
-            lblLocalidad.Location = new Point(245, 204);
+            lblLocalidad.Location = new Point(214, 153);
             lblLocalidad.Name = "lblLocalidad";
-            lblLocalidad.Size = new Size(91, 20);
+            lblLocalidad.Size = new Size(77, 17);
             lblLocalidad.TabIndex = 8;
             lblLocalidad.Text = "Localidad :";
             // 
             // lblNombre
             // 
             lblNombre.AutoSize = true;
-            lblNombre.Font = new Font("SansSerif", 10.1999989F, FontStyle.Regular, GraphicsUnit.Point, 2);
-            lblNombre.Location = new Point(8, 115);
+            lblNombre.Font = new Font("Microsoft Sans Serif", 11.25F);
+            lblNombre.Location = new Point(7, 86);
             lblNombre.Name = "lblNombre";
-            lblNombre.Size = new Size(78, 20);
+            lblNombre.Size = new Size(70, 18);
             lblNombre.TabIndex = 7;
             lblNombre.Text = "Nombre :";
             // 
             // txtTelefono
             // 
             txtTelefono.Font = new Font("Microsoft Sans Serif", 10F);
-            txtTelefono.Location = new Point(92, 249);
+            txtTelefono.Location = new Point(80, 187);
+            txtTelefono.Margin = new Padding(3, 2, 3, 2);
             txtTelefono.Name = "txtTelefono";
-            txtTelefono.Size = new Size(150, 26);
+            txtTelefono.Size = new Size(132, 23);
             txtTelefono.TabIndex = 6;
             txtTelefono.KeyPress += txtTelefono_KeyPress;
             // 
             // txtEmail
             // 
             txtEmail.Font = new Font("Microsoft Sans Serif", 10F);
-            txtEmail.Location = new Point(92, 294);
+            txtEmail.Location = new Point(80, 220);
+            txtEmail.Margin = new Padding(3, 2, 3, 2);
             txtEmail.Name = "txtEmail";
-            txtEmail.Size = new Size(150, 26);
+            txtEmail.Size = new Size(132, 23);
             txtEmail.TabIndex = 5;
             // 
             // txtDireccion
             // 
             txtDireccion.Font = new Font("Microsoft Sans Serif", 10F);
-            txtDireccion.Location = new Point(342, 115);
+            txtDireccion.Location = new Point(299, 86);
+            txtDireccion.Margin = new Padding(3, 2, 3, 2);
             txtDireccion.Name = "txtDireccion";
-            txtDireccion.Size = new Size(150, 26);
+            txtDireccion.Size = new Size(132, 23);
             txtDireccion.TabIndex = 3;
             // 
             // txtDni
             // 
             txtDni.Font = new Font("Microsoft Sans Serif", 10F);
-            txtDni.Location = new Point(92, 203);
+            txtDni.Location = new Point(80, 152);
+            txtDni.Margin = new Padding(3, 2, 3, 2);
             txtDni.Name = "txtDni";
-            txtDni.Size = new Size(150, 26);
+            txtDni.Size = new Size(132, 23);
             txtDni.TabIndex = 2;
             txtDni.KeyPress += txtDni_KeyPress;
             // 
             // txtApellido
             // 
             txtApellido.Font = new Font("Microsoft Sans Serif", 10F);
-            txtApellido.Location = new Point(92, 157);
+            txtApellido.Location = new Point(80, 118);
+            txtApellido.Margin = new Padding(3, 2, 3, 2);
             txtApellido.Name = "txtApellido";
-            txtApellido.Size = new Size(150, 26);
+            txtApellido.Size = new Size(132, 23);
             txtApellido.TabIndex = 1;
             // 
             // txtNombre
             // 
             txtNombre.Font = new Font("Microsoft Sans Serif", 10F);
-            txtNombre.Location = new Point(92, 112);
+            txtNombre.Location = new Point(80, 84);
+            txtNombre.Margin = new Padding(3, 2, 3, 2);
             txtNombre.Name = "txtNombre";
-            txtNombre.Size = new Size(150, 26);
+            txtNombre.Size = new Size(132, 23);
             txtNombre.TabIndex = 0;
             // 
             // lblBuscar
             // 
             lblBuscar.AutoSize = true;
             lblBuscar.Font = new Font("Microsoft Sans Serif", 10F);
-            lblBuscar.Location = new Point(19, 68);
+            lblBuscar.Location = new Point(17, 51);
             lblBuscar.Name = "lblBuscar";
-            lblBuscar.Size = new Size(58, 20);
+            lblBuscar.Size = new Size(48, 17);
             lblBuscar.TabIndex = 17;
             lblBuscar.Text = "Filtrar:";
             // 
             // lblEmpleados
             // 
             lblEmpleados.AutoSize = true;
-            lblEmpleados.Font = new Font("SansSerif", 12F, FontStyle.Regular, GraphicsUnit.Point, 2);
-            lblEmpleados.Location = new Point(135, 35);
+            lblEmpleados.Font = new Font("Microsoft Sans Serif", 11.25F);
+            lblEmpleados.Location = new Point(118, 26);
             lblEmpleados.Name = "lblEmpleados";
-            lblEmpleados.Size = new Size(133, 23);
+            lblEmpleados.Size = new Size(101, 18);
             lblEmpleados.TabIndex = 16;
             lblEmpleados.Text = "EMPLEADOS";
             // 
@@ -429,7 +448,7 @@
             // 
             lblAñadir.Location = new Point(0, 0);
             lblAñadir.Name = "lblAñadir";
-            lblAñadir.Size = new Size(100, 23);
+            lblAñadir.Size = new Size(88, 17);
             lblAñadir.TabIndex = 21;
             // 
             // panelEmpleados
@@ -439,9 +458,10 @@
             panelEmpleados.Controls.Add(lblAñadir);
             panelEmpleados.Controls.Add(pnlSuperior);
             panelEmpleados.Dock = DockStyle.Fill;
-            panelEmpleados.Location = new Point(500, 0);
+            panelEmpleados.Location = new Point(438, 0);
+            panelEmpleados.Margin = new Padding(3, 2, 3, 2);
             panelEmpleados.Name = "panelEmpleados";
-            panelEmpleados.Size = new Size(497, 534);
+            panelEmpleados.Size = new Size(434, 400);
             panelEmpleados.TabIndex = 2;
             // 
             // dgvEmpleados
@@ -451,11 +471,12 @@
             dgvEmpleados.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvEmpleados.Columns.AddRange(new DataGridViewColumn[] { Id, Nombre, Apellido, DNI, Telefono, Email, Direccion, Localidad, Provincia, Rol, Clave, Estado });
             dgvEmpleados.Dock = DockStyle.Fill;
-            dgvEmpleados.Location = new Point(0, 125);
+            dgvEmpleados.Location = new Point(0, 94);
+            dgvEmpleados.Margin = new Padding(3, 2, 3, 2);
             dgvEmpleados.Name = "dgvEmpleados";
             dgvEmpleados.ReadOnly = true;
             dgvEmpleados.RowHeadersWidth = 51;
-            dgvEmpleados.Size = new Size(497, 409);
+            dgvEmpleados.Size = new Size(434, 306);
             dgvEmpleados.TabIndex = 19;
             dgvEmpleados.CellContentClick += dgvEmpleados_CellContentClick;
             dgvEmpleados.DataBindingComplete += dgvEmpleados_DataBindingComplete;
@@ -576,8 +597,9 @@
             pnlSuperior.Controls.Add(txtFiltrarNombre);
             pnlSuperior.Dock = DockStyle.Top;
             pnlSuperior.Location = new Point(0, 0);
+            pnlSuperior.Margin = new Padding(3, 2, 3, 2);
             pnlSuperior.Name = "pnlSuperior";
-            pnlSuperior.Size = new Size(497, 125);
+            pnlSuperior.Size = new Size(434, 94);
             pnlSuperior.TabIndex = 22;
             // 
             // txtFiltrarRol
@@ -585,9 +607,10 @@
             txtFiltrarRol.CharacterCasing = CharacterCasing.Upper;
             txtFiltrarRol.Cursor = Cursors.Hand;
             txtFiltrarRol.ForeColor = SystemColors.WindowFrame;
-            txtFiltrarRol.Location = new Point(274, 65);
+            txtFiltrarRol.Location = new Point(240, 49);
+            txtFiltrarRol.Margin = new Padding(3, 2, 3, 2);
             txtFiltrarRol.Name = "txtFiltrarRol";
-            txtFiltrarRol.Size = new Size(159, 27);
+            txtFiltrarRol.Size = new Size(140, 23);
             txtFiltrarRol.TabIndex = 20;
             txtFiltrarRol.Text = "ROL";
             txtFiltrarRol.TextChanged += txtFiltrarRol_TextChanged;
@@ -599,9 +622,10 @@
             txtFiltrarNombre.CharacterCasing = CharacterCasing.Upper;
             txtFiltrarNombre.Cursor = Cursors.Hand;
             txtFiltrarNombre.ForeColor = SystemColors.WindowFrame;
-            txtFiltrarNombre.Location = new Point(83, 65);
+            txtFiltrarNombre.Location = new Point(73, 49);
+            txtFiltrarNombre.Margin = new Padding(3, 2, 3, 2);
             txtFiltrarNombre.Name = "txtFiltrarNombre";
-            txtFiltrarNombre.Size = new Size(185, 27);
+            txtFiltrarNombre.Size = new Size(162, 23);
             txtFiltrarNombre.TabIndex = 18;
             txtFiltrarNombre.Text = "NOMBRE O APELLIDO";
             txtFiltrarNombre.TextChanged += txtFiltrarNombre_TextChanged;
@@ -610,12 +634,13 @@
             // 
             // EmpleadosForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(997, 534);
+            ClientSize = new Size(872, 400);
             Controls.Add(panelEmpleados);
             Controls.Add(panelAñadirEmpleado);
             FormBorderStyle = FormBorderStyle.None;
+            Margin = new Padding(3, 2, 3, 2);
             Name = "EmpleadosForm";
             Text = "EmpleadoFormulario";
             panelAñadirEmpleado.ResumeLayout(false);

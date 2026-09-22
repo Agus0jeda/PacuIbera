@@ -277,7 +277,7 @@ namespace PacuIbera.UI.Common
                 return false;
             }
         }
-       
+
 
         private void cmbProvincia_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -467,6 +467,11 @@ namespace PacuIbera.UI.Common
                 txtFiltrarRol.Text = "ROL";
                 txtFiltrarRol.ForeColor = Color.Gray;
             }
+        }
+
+        private void lblDireccion_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

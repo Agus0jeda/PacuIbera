@@ -1,91 +1,145 @@
 ﻿using Negocio;
 using PacuIbera.Datos;
 using PacuIbera.Dominio;
+using Datos;
 using System;
 using System.Data;
+using System.Drawing;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace PacuIbera.UI.Common
 {
     public partial class ClientesForm : Form
     {
         private ClienteNegocio negocio = new ClienteNegocio();
-        private OtrosDatos otrosDatos = new OtrosDatos();
+        private ClienteDatos clienteDatos = new ClienteDatos();
+
+        // Variables para las pestañas
+        private Button btnTabCartera;
+        private Button btnTabTop;
 
         public ClientesForm()
         {
             InitializeComponent();
-
             this.Load += ClientesForm_Load;
-            cmbProvincia.SelectedIndexChanged += cmbProvincia_SelectedIndexChanged;
             btnGuardar.Click += btnGuardar_Click;
         }
 
         private void ClientesForm_Load(object sender, EventArgs e)
         {
-            CargarProvincias();
-            CargarGrillaClientes();
-            ConfigurarColumnasGrilla();
+            ConfigurarPestanas();
+            CargarGrillaTabs("Cartera");
             EstilizarGrilla();
+            dgvClientes.CellFormatting += DgvClientes_CellFormatting;
         }
 
-        private void CargarProvincias()
+        // --- PESTAÑAS DINÁMICAS ---
+        private void ConfigurarPestanas()
         {
-            cmbProvincia.DataSource = otrosDatos.ObtenerProvincias();
-            cmbProvincia.DisplayMember = "Nombre";
-            cmbProvincia.ValueMember = "Id";
+            int x = dgvClientes.Location.X;
+            int y = dgvClientes.Location.Y - 40;
+
+            btnTabCartera = new Button
+            {
+                Text = "👥 Cartera de Clientes",
+                Location = new Point(x, y),
+                Size = new Size(200, 40),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = ColorTranslator.FromHtml("#EAEDED"),
+                Cursor = Cursors.Hand,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            btnTabCartera.FlatAppearance.BorderSize = 0;
+            btnTabCartera.Click += (s, ev) => CargarGrillaTabs("Cartera");
+
+            btnTabTop = new Button
+            {
+                Text = "🏆 Top Mejores Clientes",
+                Location = new Point(x + 205, y),
+                Size = new Size(210, 40),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.White,
+                Cursor = Cursors.Hand,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            btnTabTop.FlatAppearance.BorderSize = 0;
+            btnTabTop.Click += (s, ev) => CargarGrillaTabs("Top");
+
+            this.Controls.Add(btnTabCartera);
+            this.Controls.Add(btnTabTop);
+            btnTabCartera.BringToFront();
+            btnTabTop.BringToFront();
         }
 
-        private void CargarGrillaClientes()
+        private void CargarGrillaTabs(string tipo)
         {
             try
             {
-                dgvClientes.DataSource = negocio.ListarClientes();
+                dgvClientes.Columns.Clear();
+                dgvClientes.AutoGenerateColumns = true;
+
+                if (tipo == "Cartera")
+                {
+                    btnTabCartera.BackColor = ColorTranslator.FromHtml("#EAEDED");
+                    btnTabTop.BackColor = Color.White;
+                    dgvClientes.DataSource = clienteDatos.ObtenerClientesCRM();
+                }
+                else
+                {
+                    btnTabTop.BackColor = ColorTranslator.FromHtml("#EAEDED");
+                    btnTabCartera.BackColor = Color.White;
+                    dgvClientes.DataSource = clienteDatos.ObtenerTopClientes();
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al cargar la lista de clientes: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error al cargar la grilla: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void ConfigurarColumnasGrilla()
+        private void DgvClientes_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            // Vinculamos los DataPropertyName de tus columnas con las columnas de la consulta SQL
-            // Asegúrate de que los nombres de las columnas en tu diseñador coincidan (id, Nombre, Column1, etc.)
-            if (dgvClientes.Columns["id"] != null) dgvClientes.Columns["id"].DataPropertyName = "Id";
-            if (dgvClientes.Columns["Nombre"] != null) dgvClientes.Columns["Nombre"].DataPropertyName = "Nombre";
-            if (dgvClientes.Columns["Column1"] != null) dgvClientes.Columns["Column1"].DataPropertyName = "Apellido"; // Asumiendo Column1 es Apellido
-            if (dgvClientes.Columns["DNI"] != null) dgvClientes.Columns["DNI"].DataPropertyName = "DNI_CUIT";
-            if (dgvClientes.Columns["Provincia"] != null) dgvClientes.Columns["Provincia"].DataPropertyName = "Provincia";
-            if (dgvClientes.Columns["Localidad"] != null) dgvClientes.Columns["Localidad"].DataPropertyName = "Localidad";
-        }
-
-        private void cmbProvincia_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (cmbProvincia.SelectedValue != null && int.TryParse(cmbProvincia.SelectedValue.ToString(), out int provinciaId))
+            if (dgvClientes.Columns[e.ColumnIndex].Name == "TotalGastado" && e.Value != DBNull.Value)
             {
-                try
+                e.Value = string.Format("${0:N2}", e.Value);
+                e.FormattingApplied = true;
+            }
+
+            if (dgvClientes.Columns[e.ColumnIndex].Name == "Cliente" && e.RowIndex < 3 && btnTabTop.BackColor != Color.White)
+            {
+                dgvClientes.Rows[e.RowIndex].DefaultCellStyle.BackColor = ColorTranslator.FromHtml("#FEF9E7");
+                dgvClientes.Rows[e.RowIndex].DefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            }
+        }
+
+        // --- BUSCADOR INTELIGENTE UNIFICADO ---
+        public void FiltrarClientes(string filtro)
+        {
+            if (dgvClientes.DataSource is DataTable dt)
+            {
+                dt.DefaultView.RowFilter = $"Cliente LIKE '%{filtro}%' OR Telefono LIKE '%{filtro}%'";
+
+                if (dt.DefaultView.Count == 0 && !string.IsNullOrWhiteSpace(filtro))
                 {
-                    cmbLocalidad.DataSource = negocio.ListarLocalidades(provinciaId);
-                    cmbLocalidad.DisplayMember = "Nombre";
-                    cmbLocalidad.ValueMember = "Id";
-                    cmbLocalidad.SelectedIndex = -1;
+                    // Asumimos que tenés un label llamado lblSinResultados. Si te da error, borrá el texto de abajo.
+                    // lblSinResultados.Text = "⚠️ No se encontró ningún cliente con ese criterio.";
+                    // lblSinResultados.Visible = true;
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show("Error al cargar localidades: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    // lblSinResultados.Visible = false;
                 }
             }
         }
 
+        // --- GUARDADO ULTRALIMPIO ---
         private void btnGuardar_Click(object sender, EventArgs e)
         {
             try
             {
-                if (cmbProvincia.SelectedValue == null || cmbLocalidad.SelectedValue == null)
+                if (string.IsNullOrWhiteSpace(txtNombreCliente.Text))
                 {
-                    MessageBox.Show("Por favor, seleccione una Provincia y una Localidad válidas.", "Campos incompletos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("El nombre del cliente es obligatorio.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -93,28 +147,26 @@ namespace PacuIbera.UI.Common
                 {
                     Nombre = txtNombreCliente.Text.Trim(),
                     Apellido = txtApellidoCliente.Text.Trim(),
-                    DNI_CUIT = txtDniCliente.Text.Trim(),
                     Telefono = txtTelefonoCliente.Text.Trim(),
-                    Email = txtEmailCliente.Text.Trim(),
                     Direccion = txtDireccionCliente.Text.Trim(),
-                    ProvinciaId = Convert.ToInt32(cmbProvincia.SelectedValue),
-                    LocalidadId = Convert.ToInt32(cmbLocalidad.SelectedValue)
+
+                    ProvinciaId = 1,
+                    LocalidadId = 1,
+                    DNI_CUIT = "",
+                    Email = ""
                 };
 
                 negocio.Registrar(nuevoCliente);
 
                 MessageBox.Show("¡Cliente registrado con éxito!", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 LimpiarFormulario();
-
-                // Recargamos la grilla para que aparezca el nuevo cliente inmediatamente
-                CargarGrillaClientes();
+                CargarGrillaTabs("Cartera");
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error al guardar el cliente: " + ex.Message, "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
 
         private void EstilizarGrilla()
         {
@@ -125,78 +177,39 @@ namespace PacuIbera.UI.Common
             dgvClientes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvClientes.MultiSelect = false;
             dgvClientes.RowHeadersVisible = false;
+            dgvClientes.ReadOnly = true;
+            dgvClientes.AllowUserToAddRows = false;
+            dgvClientes.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
-            // Encabezado en Verde (acorde al botón Guardar)
             dgvClientes.EnableHeadersVisualStyles = false;
             dgvClientes.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-            dgvClientes.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(46, 204, 113); // Verde claro
+            dgvClientes.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(46, 204, 113);
             dgvClientes.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             dgvClientes.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             dgvClientes.ColumnHeadersHeight = 35;
 
-            // Filas y selección en un tono verde más elegante
             dgvClientes.DefaultCellStyle.BackColor = Color.White;
             dgvClientes.DefaultCellStyle.ForeColor = Color.FromArgb(64, 64, 64);
-            dgvClientes.DefaultCellStyle.SelectionBackColor = Color.FromArgb(39, 174, 96); // Verde de selección
+            dgvClientes.DefaultCellStyle.SelectionBackColor = Color.FromArgb(39, 174, 96);
             dgvClientes.DefaultCellStyle.SelectionForeColor = Color.White;
             dgvClientes.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
             dgvClientes.RowTemplate.Height = 30;
-        }
-
-        public void FiltrarClientes(string filtro)
-        {
-            if (dgvClientes.DataSource is DataTable dt)
-            {
-                // Aplicamos el filtro por Nombre, Apellido o DNI/CUIT
-                dt.DefaultView.RowFilter = $"Nombre LIKE '%{filtro}%' OR Apellido LIKE '%{filtro}%' OR DNI_CUIT LIKE '%{filtro}%'";
-
-                // Evaluamos si la búsqueda no arroja resultados
-                if (dt.DefaultView.Count == 0 && !string.IsNullOrWhiteSpace(filtro))
-                {
-                    lblSinResultados.Text = "⚠️ No se encontró ningún cliente con ese criterio.";
-                    lblSinResultados.Visible = true; // Mostramos el aviso
-                }
-                else
-                {
-                    lblSinResultados.Visible = false; // Ocultamos el aviso si hay resultados o se borró el texto
-                }
-            }
         }
 
         private void LimpiarFormulario()
         {
             txtNombreCliente.Clear();
             txtApellidoCliente.Clear();
-            txtDniCliente.Clear();
             txtTelefonoCliente.Clear();
-            txtEmailCliente.Clear();
             txtDireccionCliente.Clear();
-            cmbProvincia.SelectedIndex = -1;
-            cmbLocalidad.DataSource = null;
         }
 
-        private void btnCerrar_Click(object sender, EventArgs e)
-        {
-            this.Close();
-        }
-
+        private void btnCerrar_Click(object sender, EventArgs e) { this.Close(); }
+        private void txtBuscar_TextChanged(object sender, EventArgs e) { FiltrarClientes(txtBuscar.Text.Trim()); }
         private void label3_Click(object sender, EventArgs e) { }
         private void textBox1_TextChanged(object sender, EventArgs e) { }
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e) { }
-
-        private void txtBuscar_TextChanged(object sender, EventArgs e)
-        {
-            FiltrarClientes(txtBuscar.Text.Trim());
-        }
-
-        private void btnCancelar_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void nuevoCliente_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
+        private void btnCancelar_Click(object sender, EventArgs e) { }
+        private void nuevoCliente_Paint(object sender, PaintEventArgs e) { }
     }
 }
