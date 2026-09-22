@@ -61,5 +61,21 @@ namespace Datos
                 cmd.ExecuteNonQuery(); // No devuelve datos, solo actualiza la tabla
             }
         }
+
+        public DataTable ObtenerResumenCajas(DateTime fecha)
+        {
+            DataTable tabla = new DataTable();
+            using (Microsoft.Data.SqlClient.SqlConnection conexion = ObtenerConexion())
+            {
+                Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand("sp_ResumenCajas", conexion);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@FechaConsulta", fecha.Date);
+
+                // El DataAdapter agarra los resultados de SQL y los mete en la tabla de C#
+                Microsoft.Data.SqlClient.SqlDataAdapter adapter = new Microsoft.Data.SqlClient.SqlDataAdapter(cmd);
+                adapter.Fill(tabla);
+            }
+            return tabla;
+        }
     }
 }

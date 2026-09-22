@@ -18,14 +18,39 @@ namespace PacuIbera.UI.Common
         public PrincipalForm()
         {
             InitializeComponent();
+            CrearBotonCerrarTurno();
             this.Load += PrincipalForm_Load;
 
+        }
+
+        private void CrearBotonCerrarTurno()
+        {
+            btnCerrarTurno = new Button
+            {
+                Text = "        Cerrar Turno",
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                BackColor = ColorTranslator.FromHtml("#FF4C4C"), // Rojo para destacar
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Height = 40,
+                Cursor = Cursors.Hand,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Margin = new Padding(0),
+                Dock = DockStyle.Bottom
+            };
+            btnCerrarTurno.FlatAppearance.BorderSize = 0;
+            btnCerrarTurno.Click += BtnCerrarTurno_Click;
+
+            // Lo agregamos a tu panel lateral
+            MenuVertical.Controls.Add(btnCerrarTurno);
         }
 
         [DllImport("user32.DLL", EntryPoint = "ReleaseCapture")]
         private extern static void ReleaseCapture();
         [DllImport("user32.DLL", EntryPoint = "SendMessage")]
         private extern static void SendMessage(System.IntPtr hWnd, int wMsg, int wParam, int lParam);
+
+        private Button btnCerrarTurno;
 
         private void ConfigurarPermisosMenu()
         {
@@ -71,7 +96,7 @@ namespace PacuIbera.UI.Common
             int posYActual = posYInicial;
 
             // Agrupamos todos los botones del menú en un array ordenados de arriba hacia abajo
-            Button[] botonesMenu = { btnProducto, btnVentas, btnClientes, btnCompras, btnProveedores, btnEmpleados, btnPagos, btnReportes };
+            Button[] botonesMenu = { btnProducto, btnVentas, btnClientes, btnCompras, btnProveedores, btnEmpleados, btnPagos, btnReportes, btnHistorial };
 
             foreach (var btn in botonesMenu)
             {
@@ -130,6 +155,16 @@ namespace PacuIbera.UI.Common
                 btnReportes.TextAlign = ContentAlignment.MiddleLeft;
                 btnReportes.ImageAlign = ContentAlignment.MiddleLeft;
                 btnReportes.TextImageRelation = TextImageRelation.ImageBeforeText;
+
+                btnHistorial.Text = "        Historial";
+                btnHistorial.TextAlign = ContentAlignment.MiddleLeft;
+                btnHistorial.ImageAlign = ContentAlignment.MiddleLeft;
+                btnHistorial.TextImageRelation = TextImageRelation.ImageBeforeText;
+
+                btnCerrarTurno.Text = "        Cerrar Turno";
+                btnCerrarTurno.TextAlign = ContentAlignment.MiddleLeft;
+                btnCerrarTurno.ImageAlign = ContentAlignment.MiddleLeft;
+                btnCerrarTurno.TextImageRelation = TextImageRelation.ImageBeforeText;
             }
             else
             {
@@ -149,6 +184,10 @@ namespace PacuIbera.UI.Common
                 btnPagos.Padding = new Padding(10, 0, 0, 0);
                 btnReportes.Text = "";
                 btnReportes.Padding = new Padding(10, 0, 0, 0);
+                btnHistorial.Text = "";
+                btnHistorial.Padding = new Padding(10, 0, 0, 0);
+                btnCerrarTurno.Text = "";
+                btnCerrarTurno.Padding = new Padding(10, 0, 0, 0);
             }
         }
 
@@ -261,6 +300,19 @@ namespace PacuIbera.UI.Common
             PanelContenedor.Controls.Add(historial);
             historial.Show();
         }
-    
+
+        private void BtnCerrarTurno_Click(object sender, EventArgs e)
+        {
+            CierreCajaForm formCierre = new CierreCajaForm();
+            formCierre.ShowDialog();
+
+            if (formCierre.CierreExitoso)
+            {
+                this.Hide();
+                PacuIbera_IniciarSesion login = new PacuIbera_IniciarSesion();
+                login.Show();
+            }
+        }
+
     }
 }

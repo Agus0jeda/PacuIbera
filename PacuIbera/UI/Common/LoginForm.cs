@@ -24,66 +24,41 @@ namespace PacuIbera.UI.Common
                 string dni = txtUsuario.Text.Trim();
                 string clave = txtClave.Text.Trim();
 
-                // 1. Validamos credenciales mediante la capa de negocio
                 Usuario user = usuarioNegocio.ValidarLogin(dni, clave);
 
                 if (user != null)
                 {
-                    // 2. Guardamos los datos en la Sesión Activa Global
                     SesionActiva.IdUsuario = user.Id;
                     SesionActiva.Nombre = user.Nombre;
                     SesionActiva.Apellido = user.Apellido;
-                    SesionActiva.Rol = user.Rol; // "Administrador", "Vendedor", etc.
+                    SesionActiva.Rol = user.Rol;
 
-                    this.Hide(); // Ocultamos el login
+                    this.Hide();
 
+                    // 1. Usamos tu clase CajaDatos en lugar de hacer SQL acá
+                    CajaDatos cajaDatos = new CajaDatos();
+                    int cajaId = cajaDatos.VerificarCajaAbierta(user.Id);
 
-                    // 3. Verificamos si el usuario tiene una caja abierta EXCLUSIVAMENTE HOY
-                    // 3. Verificamos si el usuario tiene un registro de caja creado HOY
-                    int cajaId = 0;
-                    using (Microsoft.Data.SqlClient.SqlConnection conexion = new Microsoft.Data.SqlClient.SqlConnection(ConexionBD.CadenaGlobal))
-                    {
-                        // Buscamos que exista una caja de HOY para este usuario, sin importar qué palabra tenga en "Estado"
-                        string query = "SELECT TOP 1 Id FROM Caja WHERE UsuarioId = @UsuarioId AND CAST(FechaHoraApertura AS DATE) = CAST(GETDATE() AS DATE)";
-                        Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand(query, conexion);
-                        cmd.Parameters.AddWithValue("@UsuarioId", user.Id);
-
-                        conexion.Open();
-                        object result = cmd.ExecuteScalar();
-                        if (result != null)
-                        {
-                            cajaId = Convert.ToInt32(result);
-                        }
-                    }
-
-                    // Si NO tiene caja HOY, lo obligamos a abrirla
+                    // 2. Si no tiene caja abierta (cajaId es 0), lo obligamos a abrirla
                     if (cajaId <= 0)
                     {
                         AperturaCajaForm formCaja = new AperturaCajaForm(user.Id);
-                        formCaja.ShowDialog(); // Frena el código hasta que cierre la ventana
+                        formCaja.ShowDialog();
 
-                        // Verificamos de nuevo: ¿Realmente se guardó el turno de hoy o apretó la "X"?
+                        // 3. Volvemos a consultar a la base para ver si realmente la abrió o cerró la ventana
+                        cajaId = cajaDatos.VerificarCajaAbierta(user.Id);
 
-                        using (Microsoft.Data.SqlClient.SqlConnection conexion = new Microsoft.Data.SqlClient.SqlConnection(ConexionBD.CadenaGlobal))
+                        if (cajaId <= 0)
                         {
-                            string query = "SELECT TOP 1 Id FROM Caja WHERE UsuarioId = @UsuarioId AND CAST(FechaHoraApertura AS DATE) = CAST(GETDATE() AS DATE)";
-                            Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand(query, conexion);
-                            cmd.Parameters.AddWithValue("@UsuarioId", user.Id);
-
-                            conexion.Open();
-                            object result = cmd.ExecuteScalar();
-
-                            // Si sigue siendo null, cerró con la X o el guardado falló
-                            if (result == null)
-                            {
-                                MessageBox.Show("Es obligatorio realizar la apertura de caja del día para comenzar el turno.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                this.Show(); // Mostramos el login de nuevo
-                                return;      // Cortamos para que no abra el menú
-                            }
+                            MessageBox.Show("Es obligatorio realizar la apertura de caja para comenzar el turno.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            this.Show();
+                            return;
                         }
                     }
 
-                    // 4. Si la caja de HOY ya está creada, pasamos al menú principal
+                    // 4. EL PASO CLAVE: Guardamos el ID de la caja en la sesión global
+                    SesionActiva.IdCaja = cajaId;
+
                     PrincipalForm ventanaPrincipal = new PrincipalForm();
                     ventanaPrincipal.FormClosed += (s, args) => Application.Exit();
                     ventanaPrincipal.Show();
