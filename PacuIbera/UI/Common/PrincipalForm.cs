@@ -288,8 +288,8 @@ namespace PacuIbera.UI.Common
             AbrirFormularioPanel(new EmpleadosForm());
         }
 
-       
-            private void btnHistorial_Click(object sender, EventArgs e)
+
+        private void btnHistorial_Click(object sender, EventArgs e)
         {
             HistorialVentasForm historial = new HistorialVentasForm();
             historial.TopLevel = false;
@@ -314,5 +314,15 @@ namespace PacuIbera.UI.Common
             }
         }
 
+        private void btnProveedores_Click(object sender, EventArgs e)
+        {
+            AbrirFormularioPanel(new EnConstruccionForm("Proveedores"));
+        }
+
+        private void btnPagos_Click(object sender, EventArgs e)
+        {
+            AbrirFormularioPanel(new EnConstruccionForm("Pagos"));
+
+        }
     }
 }
