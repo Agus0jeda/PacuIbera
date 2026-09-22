@@ -75,5 +75,50 @@ namespace PacuIbera.Datos
             cmd.Parameters.AddWithValue("@MontoCobrado", monto);
             cmd.ExecuteNonQuery();
         }
+
+        public DataTable ObtenerHistorialVentas()
+        {
+            DataTable tabla = new DataTable();
+            using (SqlConnection conexion = ObtenerConexion())
+            {
+                SqlCommand cmd = new SqlCommand("sp_ObtenerHistorialVentas", conexion);
+                cmd.CommandType = CommandType.StoredProcedure;
+                conexion.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    tabla.Load(reader);
+                }
+            }
+            return tabla;
+        }
+
+        public void AnularVenta(int idVenta)
+        {
+            using (SqlConnection conexion = ObtenerConexion())
+            {
+                SqlCommand cmd = new SqlCommand("sp_AnularVenta", conexion);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@VentaId", idVenta);
+                conexion.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public DataTable ObtenerDetalleVenta(int idVenta)
+        {
+            DataTable tabla = new DataTable();
+            using (SqlConnection conexion = ObtenerConexion())
+            {
+                SqlCommand cmd = new SqlCommand("sp_ObtenerDetalleVenta", conexion);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@VentaId", idVenta);
+                conexion.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    tabla.Load(reader);
+                }
+            }
+            return tabla;
+        }
     }
 }

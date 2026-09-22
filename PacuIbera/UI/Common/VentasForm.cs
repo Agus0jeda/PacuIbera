@@ -381,11 +381,18 @@ namespace PacuIbera.UI.Common
                 {
                     try
                     {
-                        
-                        if (SesionActiva.IdCaja == 0 || SesionActiva.IdUsuario == 0)
+
+                        // Parche temporal: Asignamos la Caja 1 a la fuerza hasta que armemos el módulo de Apertura de Caja
+                        if (SesionActiva.IdCaja == 0)
                         {
                             SesionActiva.IdCaja = 1;
-                            SesionActiva.IdUsuario = 1;
+                        }
+
+                        // Control de seguridad real: Si por algún motivo falla el Login y el usuario llega en 0, frenamos la venta.
+                        if (SesionActiva.IdUsuario == 0)
+                        {
+                            MessageBox.Show("Error crítico: No hay un usuario logueado en el sistema.", "Error de Sesión", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
                         }
 
                         int idCliente = Convert.ToInt32(cmbCliente.SelectedValue);

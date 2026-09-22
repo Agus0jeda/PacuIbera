@@ -46,6 +46,7 @@
             iconCerrar = new PictureBox();
             btnMenu = new PictureBox();
             PanelContenedor = new Panel();
+            btnHistorial = new Button();
             MenuVertical.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)Logo).BeginInit();
             BarraTitulo.SuspendLayout();
@@ -59,6 +60,7 @@
             // MenuVertical
             // 
             MenuVertical.BackColor = Color.LightGreen;
+            MenuVertical.Controls.Add(btnHistorial);
             MenuVertical.Controls.Add(Logo);
             MenuVertical.Controls.Add(btnReportes);
             MenuVertical.Controls.Add(btnPagos);
@@ -325,6 +327,24 @@
             PanelContenedor.Size = new Size(903, 414);
             PanelContenedor.TabIndex = 2;
             // 
+            // btnHistorial
+            // 
+            btnHistorial.FlatAppearance.BorderSize = 0;
+            btnHistorial.FlatAppearance.MouseOverBackColor = Color.WhiteSmoke;
+            btnHistorial.FlatStyle = FlatStyle.Flat;
+            btnHistorial.Font = new Font("Century Gothic", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnHistorial.ForeColor = Color.Black;
+            btnHistorial.Image = (Image)resources.GetObject("btnHistorial.Image");
+            btnHistorial.ImageAlign = ContentAlignment.MiddleLeft;
+            btnHistorial.Location = new Point(3, 414);
+            btnHistorial.Margin = new Padding(3, 2, 3, 2);
+            btnHistorial.Name = "btnHistorial";
+            btnHistorial.Size = new Size(278, 36);
+            btnHistorial.TabIndex = 9;
+            btnHistorial.Text = "Historial de ventas";
+            btnHistorial.UseVisualStyleBackColor = true;
+            btnHistorial.Click += btnHistorial_Click;
+            // 
             // PrincipalForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -367,5 +387,6 @@
         private Button btnPagos;
         private Button btnReportes;
         private PictureBox Logo;
+        private Button btnHistorial;
     }
 }

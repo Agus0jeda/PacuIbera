@@ -248,5 +248,19 @@ namespace PacuIbera.UI.Common
         {
             AbrirFormularioPanel(new EmpleadosForm());
         }
+
+       
+            private void btnHistorial_Click(object sender, EventArgs e)
+        {
+            HistorialVentasForm historial = new HistorialVentasForm();
+            historial.TopLevel = false;
+            historial.Dock = DockStyle.Fill;
+
+            // Reemplazá "pnlContenedor" por el nombre real que tenga tu panel gris derecho
+            PanelContenedor.Controls.Clear();
+            PanelContenedor.Controls.Add(historial);
+            historial.Show();
+        }
+    
     }
 }
