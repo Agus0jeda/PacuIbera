@@ -460,7 +460,7 @@
             dgvEmpleados.RowHeadersWidth = 51;
             dgvEmpleados.Size = new Size(496, 408);
             dgvEmpleados.TabIndex = 19;
-            dgvEmpleados.CellContentClick += dgvEmpleados_CellContentClick;
+            //dgvEmpleados.CellContentClick += dgvEmpleados_CellContentClick;
             dgvEmpleados.DataBindingComplete += dgvEmpleados_DataBindingComplete;
             // 
             // Id
@@ -624,7 +624,6 @@
             btnLimpiar.TabIndex = 28;
             btnLimpiar.Text = "LIMPIAR";
             btnLimpiar.UseVisualStyleBackColor = false;
-            btnLimpiar.Click += btnLimpiar_Click;
             // 
             // EmpleadosForm
             // 

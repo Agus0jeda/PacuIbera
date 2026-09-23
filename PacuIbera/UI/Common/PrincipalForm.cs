@@ -15,13 +15,18 @@ namespace PacuIbera.UI.Common
 {
     public partial class PrincipalForm : Form
     {
+        private Button btnCerrarTurno;
+
+
         public PrincipalForm()
         {
             InitializeComponent();
             CrearBotonCerrarTurno();
-            this.Load += PrincipalForm_Load;
 
+            this.Load += PrincipalForm_Load;
         }
+
+
 
         private void CrearBotonCerrarTurno()
         {
@@ -50,32 +55,49 @@ namespace PacuIbera.UI.Common
         [DllImport("user32.DLL", EntryPoint = "SendMessage")]
         private extern static void SendMessage(System.IntPtr hWnd, int wMsg, int wParam, int lParam);
 
-        private Button btnCerrarTurno;
 
         private void ConfigurarPermisosMenu()
         {
-            // Apagamos los botones sensibles por defecto
+            // Apagamos los botones sensibles por defecto 
             btnEmpleados.Visible = false;
             btnProveedores.Visible = false;
             btnCompras.Visible = false;
             btnReportes.Visible = false;
             btnPagos.Visible = false;
+            if (btnAnalisis != null) btnAnalisis.Visible = false;
+
             // Evaluamos el rol para encender lo que corresponda
             switch (SesionActiva.Rol)
             {
                 case "Gerente":
                 case "SuperAdministrador":
                     btnEmpleados.Visible = true;
-                    btnProveedores.Visible = true;
                     btnReportes.Visible = true;
+                    if (btnAnalisis != null) btnAnalisis.Visible = true; // El gerente sí ve el análisis
+
+                    // Ocultamos explícitamente la parte operativa y clientes/proveedores
+                    btnVentas.Visible = false;
+                    btnProducto.Visible = false;
+                    btnPagos.Visible = false;
+                    btnHistorial.Visible = false;
+                    btnClientes.Visible = false;
+                    btnProveedores.Visible = false;
+                    btnCompras.Visible = false;
+
+                    btnCerrarTurno.Text = "CERRAR SESIÓN";
+                    btnCerrarTurno.BackColor = Color.DimGray;
                     break;
+
                 case "Administrador":
                     btnEmpleados.Visible = true;
                     btnProveedores.Visible = true;
                     btnCompras.Visible = true;
+
+                    if (btnAnalisis != null) btnAnalisis.Visible = false;
                     break;
+
                 case "Vendedor":
-                    // El vendedor solo verá Productos, Clientes, Ventas y Pagos que nunca se ocultaron.
+                    // El vendedor solo verá Productos, Clientes, Ventas, Historial y Pagos
                     break;
             }
         }
@@ -96,18 +118,15 @@ namespace PacuIbera.UI.Common
             int posYActual = posYInicial;
 
             // Agrupamos todos los botones del menú en un array ordenados de arriba hacia abajo
-            Button[] botonesMenu = { btnProducto, btnVentas, btnClientes, btnCompras, btnProveedores, btnEmpleados, btnPagos, btnReportes, btnHistorial };
+            Button[] botonesMenu = { btnProducto, btnVentas, btnClientes, btnCompras, btnProveedores, btnEmpleados, btnPagos, btnReportes, btnAnalisis, btnHistorial };
 
             foreach (var btn in botonesMenu)
             {
-                if (btn != null)
+                if (btn != null && btn.Visible)
                 {
-                    if (btn.Visible)
-                    {
-                        // Si el botón está visible, lo posicionamos en la siguiente línea disponible
-                        btn.Top = posYActual;
-                        posYActual += btn.Height + espacioEntreBotones; // Movemos la referencia hacia abajo para el próximo
-                    }
+                    // Si el botón está visible, lo posicionamos en la siguiente línea disponible
+                    btn.Top = posYActual;
+                    posYActual += btn.Height + espacioEntreBotones; // Movemos la referencia hacia abajo para el próximo
                 }
             }
         }
@@ -116,6 +135,7 @@ namespace PacuIbera.UI.Common
         {
             if (MenuVertical.Width == 250)
             {
+                // Menú Expandido
                 btnProducto.Text = "        Productos";
                 btnProducto.TextAlign = ContentAlignment.MiddleLeft;
                 btnProducto.ImageAlign = ContentAlignment.MiddleLeft;
@@ -156,18 +176,29 @@ namespace PacuIbera.UI.Common
                 btnReportes.ImageAlign = ContentAlignment.MiddleLeft;
                 btnReportes.TextImageRelation = TextImageRelation.ImageBeforeText;
 
+                // --- ACÁ LE DAMOS FORMATO AL NUEVO BOTÓN CUANDO SE AGRANDA ---
+                if (btnAnalisis != null)
+                {
+                    btnAnalisis.Text = "        Análisis Estratégico";
+                    btnAnalisis.TextAlign = ContentAlignment.MiddleLeft;
+                    btnAnalisis.ImageAlign = ContentAlignment.MiddleLeft;
+                    btnAnalisis.TextImageRelation = TextImageRelation.ImageBeforeText;
+                    btnAnalisis.Width = 250; // Aseguramos que ocupe todo el ancho
+                }
+
                 btnHistorial.Text = "        Historial";
                 btnHistorial.TextAlign = ContentAlignment.MiddleLeft;
                 btnHistorial.ImageAlign = ContentAlignment.MiddleLeft;
                 btnHistorial.TextImageRelation = TextImageRelation.ImageBeforeText;
 
-                btnCerrarTurno.Text = "        Cerrar Turno";
+                btnCerrarTurno.Text = SesionActiva.Rol == "Gerente" ? "        Cerrar Sesión" : "        Cerrar Turno";
                 btnCerrarTurno.TextAlign = ContentAlignment.MiddleLeft;
                 btnCerrarTurno.ImageAlign = ContentAlignment.MiddleLeft;
                 btnCerrarTurno.TextImageRelation = TextImageRelation.ImageBeforeText;
             }
             else
             {
+                // Menú Contraído (Chiquito)
                 btnProducto.Text = "";
                 btnProducto.Padding = new Padding(10, 0, 0, 0);
                 btnVentas.Text = "";
@@ -184,6 +215,15 @@ namespace PacuIbera.UI.Common
                 btnPagos.Padding = new Padding(10, 0, 0, 0);
                 btnReportes.Text = "";
                 btnReportes.Padding = new Padding(10, 0, 0, 0);
+
+                // --- ACÁ LE SACAMOS EL TEXTO CUANDO SE ACHICA ---
+                if (btnAnalisis != null)
+                {
+                    btnAnalisis.Text = "";
+                    btnAnalisis.Padding = new Padding(10, 0, 0, 0);
+                    btnAnalisis.Width = 96; // El ancho de tu menú contraído
+                }
+
                 btnHistorial.Text = "";
                 btnHistorial.Padding = new Padding(10, 0, 0, 0);
                 btnCerrarTurno.Text = "";
@@ -211,15 +251,15 @@ namespace PacuIbera.UI.Common
 
         private void PrincipalForm_Load(object sender, EventArgs e)
         {
-            ConfigurarPermisosMenu(); // Los permisos se leen una sola vez al entrar
-            ReorganizarMenu();        // Los botones se ordenan una sola vez al arrancar
+            ConfigurarPermisosMenu(); // 1. Oculta y muestra según el rol
+            ReorganizarMenu();        // 2. Apila los que quedaron visibles uno abajo del otro
             AbrirFormularioPanel(new BienvenidaForm());
         }
+
         private void PrincipalForm_Resize(object sender, EventArgs e)
         {
             AjustarMenu();
         }
-
 
         private void iconCerrar_Click(object sender, EventArgs e)
         {
@@ -244,6 +284,7 @@ namespace PacuIbera.UI.Common
         {
             this.WindowState = FormWindowState.Minimized;
         }
+
         private void BarraTitulo_MouseDown(object sender, MouseEventArgs e)
         {
             ReleaseCapture();
@@ -263,31 +304,19 @@ namespace PacuIbera.UI.Common
             fh.Show();
         }
 
-        private void btnProducto_Click(object sender, EventArgs e)
-        {
-            AbrirFormularioPanel(new ProductoForm());
-        }
+        // EVENTOS DE LOS BOTONES
+        private void btnProducto_Click(object sender, EventArgs e) { AbrirFormularioPanel(new ProductoForm()); }
+        private void btnClientes_Click(object sender, EventArgs e) { AbrirFormularioPanel(new ClientesForm()); }
+        private void btnReportes_Click(object sender, EventArgs e) { AbrirFormularioPanel(new ReportesForm()); }
+        private void btnVentas_Click(object sender, EventArgs e) { AbrirFormularioPanel(new VentasForm()); }
+        private void btnEmpleados_Click(object sender, EventArgs e) { AbrirFormularioPanel(new EmpleadosForm()); }
+        private void btnPagos_Click(object sender, EventArgs e) { AbrirFormularioPanel(new EnConstruccionForm("Pagos")); }
 
-        private void btnClientes_Click(object sender, EventArgs e)
+        // Función del nuevo botón Análisis
+        private void btnAnalisis_Click(object sender, EventArgs e)
         {
-            AbrirFormularioPanel(new ClientesForm());
+            AbrirFormularioPanel(new AnalisisForm());
         }
-
-        private void btnReportes_Click(object sender, EventArgs e)
-        {
-            AbrirFormularioPanel(new ReportesForm());
-        }
-
-        private void btnVentas_Click(object sender, EventArgs e)
-        {
-            AbrirFormularioPanel(new VentasForm());
-        }
-
-        private void btnEmpleados_Click(object sender, EventArgs e)
-        {
-            AbrirFormularioPanel(new EmpleadosForm());
-        }
-
 
         private void btnHistorial_Click(object sender, EventArgs e)
         {
@@ -295,7 +324,6 @@ namespace PacuIbera.UI.Common
             historial.TopLevel = false;
             historial.Dock = DockStyle.Fill;
 
-            // Reemplazá "pnlContenedor" por el nombre real que tenga tu panel gris derecho
             PanelContenedor.Controls.Clear();
             PanelContenedor.Controls.Add(historial);
             historial.Show();
@@ -303,6 +331,13 @@ namespace PacuIbera.UI.Common
 
         private void BtnCerrarTurno_Click(object sender, EventArgs e)
         {
+
+            if (SesionActiva.Rol == "Gerente")
+            {
+                Application.Exit();
+                return;
+            }
+
             CierreCajaForm formCierre = new CierreCajaForm();
             formCierre.ShowDialog();
 
@@ -319,10 +354,9 @@ namespace PacuIbera.UI.Common
             AbrirFormularioPanel(new ProveedorForm());
         }
 
-        private void btnPagos_Click(object sender, EventArgs e)
+        private void btnAnalisis_Click_1(object sender, EventArgs e)
         {
-            AbrirFormularioPanel(new EnConstruccionForm("Pagos"));
-
+            AbrirFormularioPanel(new AnalisisForm());
         }
     }
 }

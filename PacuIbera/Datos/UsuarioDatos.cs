@@ -65,19 +65,21 @@ public DataTable ObtenerTodos()
 
         public void Insertar(Usuario usuario)
         {
-            using (SqlConnection conexion = ObtenerConexion())
+            using (Microsoft.Data.SqlClient.SqlConnection conexion = ObtenerConexion())
             {
                 string query = @"INSERT INTO Usuario (Nombre, Apellido, DNI, Telefono, Email, Direccion, RolId, ClaveHash, Activo, ProvinciaId, LocalidadId) 
                          VALUES (@Nombre, @Apellido, @DNI, @Telefono, @Email, @Direccion, @RolId, @ClaveHash, @Activo, @ProvinciaId, @LocalidadId)";
 
-                SqlCommand cmd = new SqlCommand(query, conexion);
-                cmd.Parameters.AddWithValue("@Nombre", usuario.Nombre);
-                cmd.Parameters.AddWithValue("@Apellido", usuario.Apellido);
-                cmd.Parameters.AddWithValue("@DNI", usuario.DNI);
-                cmd.Parameters.AddWithValue("@Telefono", usuario.Telefono);
-                cmd.Parameters.AddWithValue("@Email", usuario.Email);
-                cmd.Parameters.AddWithValue("@Direccion", usuario.Direccion);
-                cmd.Parameters.AddWithValue("@RolId", ConvertirRolAId(usuario.Rol));
+                Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand(query, conexion);
+                cmd.Parameters.AddWithValue("@Nombre", usuario.Nombre.Trim());
+                cmd.Parameters.AddWithValue("@Apellido", usuario.Apellido.Trim());
+                cmd.Parameters.AddWithValue("@DNI", usuario.DNI.Trim());
+                cmd.Parameters.AddWithValue("@Telefono", string.IsNullOrWhiteSpace(usuario.Telefono) ? (object)DBNull.Value : usuario.Telefono.Trim());
+                cmd.Parameters.AddWithValue("@Email", string.IsNullOrWhiteSpace(usuario.Email) ? (object)DBNull.Value : usuario.Email.Trim());
+                cmd.Parameters.AddWithValue("@Direccion", string.IsNullOrWhiteSpace(usuario.Direccion) ? (object)DBNull.Value : usuario.Direccion.Trim());
+
+                // AHORA RECIBE EL ID DIRECTAMENTE (Ya no adivina el texto)
+                cmd.Parameters.AddWithValue("@RolId", Convert.ToInt32(usuario.Rol));
 
                 cmd.Parameters.AddWithValue("@ClaveHash", usuario.ClaveHash);
                 cmd.Parameters.AddWithValue("@Activo", usuario.Activo ? 1 : 0);
@@ -91,22 +93,27 @@ public DataTable ObtenerTodos()
 
         public void Actualizar(Usuario usuario)
         {
-            using (SqlConnection conexion = ObtenerConexion())
+            using (Microsoft.Data.SqlClient.SqlConnection conexion = ObtenerConexion())
             {
+                // Agregamos ClaveHash para que se pueda actualizar
                 string query = @"UPDATE Usuario SET Nombre=@Nombre, Apellido=@Apellido, DNI=@DNI, 
-                         Telefono=@Telefono, Email=@Email, Direccion=@Direccion, RolId=@RolId, 
+                         Telefono=@Telefono, Email=@Email, Direccion=@Direccion, RolId=@RolId, ClaveHash=@ClaveHash, 
                          Activo=@Activo, ProvinciaId=@ProvinciaId, LocalidadId=@LocalidadId 
                          WHERE Id=@Id";
 
-                SqlCommand cmd = new SqlCommand(query, conexion);
+                Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand(query, conexion);
                 cmd.Parameters.AddWithValue("@Id", usuario.Id);
-                cmd.Parameters.AddWithValue("@Nombre", usuario.Nombre);
-                cmd.Parameters.AddWithValue("@Apellido", usuario.Apellido);
-                cmd.Parameters.AddWithValue("@DNI", usuario.DNI);
-                cmd.Parameters.AddWithValue("@Telefono", usuario.Telefono);
-                cmd.Parameters.AddWithValue("@Email", usuario.Email);
-                cmd.Parameters.AddWithValue("@Direccion", usuario.Direccion);
-                cmd.Parameters.AddWithValue("@RolId", ConvertirRolAId(usuario.Rol));
+                cmd.Parameters.AddWithValue("@Nombre", usuario.Nombre.Trim());
+                cmd.Parameters.AddWithValue("@Apellido", usuario.Apellido.Trim());
+                cmd.Parameters.AddWithValue("@DNI", usuario.DNI.Trim());
+                cmd.Parameters.AddWithValue("@Telefono", string.IsNullOrWhiteSpace(usuario.Telefono) ? (object)DBNull.Value : usuario.Telefono.Trim());
+                cmd.Parameters.AddWithValue("@Email", string.IsNullOrWhiteSpace(usuario.Email) ? (object)DBNull.Value : usuario.Email.Trim());
+                cmd.Parameters.AddWithValue("@Direccion", string.IsNullOrWhiteSpace(usuario.Direccion) ? (object)DBNull.Value : usuario.Direccion.Trim());
+
+                // AHORA RECIBE EL ID DIRECTAMENTE
+                cmd.Parameters.AddWithValue("@RolId", Convert.ToInt32(usuario.Rol));
+
+                cmd.Parameters.AddWithValue("@ClaveHash", usuario.ClaveHash);
                 cmd.Parameters.AddWithValue("@Activo", usuario.Activo ? 1 : 0);
                 cmd.Parameters.AddWithValue("@ProvinciaId", usuario.ProvinciaId);
                 cmd.Parameters.AddWithValue("@LocalidadId", usuario.LocalidadId);
@@ -134,12 +141,5 @@ public DataTable ObtenerTodos()
 
 
 
-        //  transformar el texto al ID
-        private int ConvertirRolAId(string nombreRol)
-        {
-            if (nombreRol == "Administrador") return 1;
-            if (nombreRol == "Vendedor") return 2;
-            return 3; // Gerente
-        }
     }
 }
