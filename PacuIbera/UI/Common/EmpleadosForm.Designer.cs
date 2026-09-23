@@ -30,6 +30,7 @@
         {
             components = new System.ComponentModel.Container();
             panelAñadirEmpleado = new Panel();
+            btnLimpiar = new Button();
             lblFechaNacimiento = new Label();
             dtFechaNacimiento = new DateTimePicker();
             gbEstado = new GroupBox();
@@ -79,7 +80,6 @@
             txtFiltrarRol = new TextBox();
             txtFiltrarNombre = new TextBox();
             usuarioDatosBindingSource = new BindingSource(components);
-            btnLimpiar = new Button();
             panelAñadirEmpleado.SuspendLayout();
             gbEstado.SuspendLayout();
             panelEmpleados.SuspendLayout();
@@ -123,6 +123,21 @@
             panelAñadirEmpleado.Name = "panelAñadirEmpleado";
             panelAñadirEmpleado.Size = new Size(501, 533);
             panelAñadirEmpleado.TabIndex = 0;
+            // 
+            // btnLimpiar
+            // 
+            btnLimpiar.BackColor = Color.Silver;
+            btnLimpiar.FlatAppearance.BorderSize = 0;
+            btnLimpiar.FlatAppearance.MouseOverBackColor = Color.FromArgb(192, 255, 192);
+            btnLimpiar.FlatStyle = FlatStyle.Flat;
+            btnLimpiar.Font = new Font("Microsoft Sans Serif", 10F);
+            btnLimpiar.Location = new Point(192, 465);
+            btnLimpiar.Name = "btnLimpiar";
+            btnLimpiar.Size = new Size(110, 40);
+            btnLimpiar.TabIndex = 28;
+            btnLimpiar.Text = "LIMPIAR";
+            btnLimpiar.UseVisualStyleBackColor = false;
+            btnLimpiar.Click += btnLimpiar_Click;
             // 
             // lblFechaNacimiento
             // 
@@ -460,7 +475,6 @@
             dgvEmpleados.RowHeadersWidth = 51;
             dgvEmpleados.Size = new Size(496, 408);
             dgvEmpleados.TabIndex = 19;
-            //dgvEmpleados.CellContentClick += dgvEmpleados_CellContentClick;
             dgvEmpleados.DataBindingComplete += dgvEmpleados_DataBindingComplete;
             // 
             // Id
@@ -610,20 +624,6 @@
             txtFiltrarNombre.TextChanged += txtFiltrarNombre_TextChanged;
             txtFiltrarNombre.Enter += txtFiltrarNombre_Enter;
             txtFiltrarNombre.Leave += txtFiltrarNombre_Leave;
-            // 
-            // btnLimpiar
-            // 
-            btnLimpiar.BackColor = Color.Silver;
-            btnLimpiar.FlatAppearance.BorderSize = 0;
-            btnLimpiar.FlatAppearance.MouseOverBackColor = Color.FromArgb(192, 255, 192);
-            btnLimpiar.FlatStyle = FlatStyle.Flat;
-            btnLimpiar.Font = new Font("Microsoft Sans Serif", 10F);
-            btnLimpiar.Location = new Point(192, 465);
-            btnLimpiar.Name = "btnLimpiar";
-            btnLimpiar.Size = new Size(110, 40);
-            btnLimpiar.TabIndex = 28;
-            btnLimpiar.Text = "LIMPIAR";
-            btnLimpiar.UseVisualStyleBackColor = false;
             // 
             // EmpleadosForm
             // 

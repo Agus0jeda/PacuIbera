@@ -91,7 +91,7 @@ namespace PacuIbera.UI.Common
                 case "Administrador":
                     btnEmpleados.Visible = true;
                     btnProveedores.Visible = true;
-                    btnCompras.Visible = true;
+                    btnCompras.Visible = false;// por ahora 
 
                     if (btnAnalisis != null) btnAnalisis.Visible = false;
                     break;
