@@ -64,18 +64,19 @@ namespace Datos
 
         public DataTable ObtenerResumenCajas(DateTime fecha)
         {
-            DataTable tabla = new DataTable();
+            DataTable dt = new DataTable();
             using (Microsoft.Data.SqlClient.SqlConnection conexion = ObtenerConexion())
             {
                 Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand("sp_ResumenCajas", conexion);
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@FechaConsulta", fecha.Date);
 
-                // El DataAdapter agarra los resultados de SQL y los mete en la tabla de C#
-                Microsoft.Data.SqlClient.SqlDataAdapter adapter = new Microsoft.Data.SqlClient.SqlDataAdapter(cmd);
-                adapter.Fill(tabla);
+                
+                cmd.Parameters.AddWithValue("@Fecha", fecha);
+
+                Microsoft.Data.SqlClient.SqlDataAdapter da = new Microsoft.Data.SqlClient.SqlDataAdapter(cmd);
+                da.Fill(dt);
             }
-            return tabla;
+            return dt;
         }
     }
 }

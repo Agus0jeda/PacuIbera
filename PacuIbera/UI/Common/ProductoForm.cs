@@ -48,14 +48,10 @@ namespace PacuIbera.UI.Common
 
         private void ProductoForm_Load(object sender, EventArgs e)
         {
-            btnEliminar.Visible = false;
-            CargarCategorias();
-            CargarListaProductos();
-
-            // Forzamos que lea todo en minúsculas y sin espacios para evitar fallos
-            if (SesionActiva.Rol != null && SesionActiva.Rol.Trim().ToLower() == "vendedor")
+            string rolActual = SesionActiva.Rol != null ? SesionActiva.Rol.Trim().ToLower() : "";
+            if (rolActual == "vendedor" || rolActual == "gerente")
             {
-                BloquearParaVendedor();
+                BloquearParaVendedor(); // Esta función ya oculta todo el panel izquierdo
             }
         }
 
