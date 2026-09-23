@@ -316,7 +316,7 @@ namespace PacuIbera.UI.Common
 
         private void btnProveedores_Click(object sender, EventArgs e)
         {
-            AbrirFormularioPanel(new EnConstruccionForm("Proveedores"));
+            AbrirFormularioPanel(new ProveedorForm());
         }
 
         private void btnPagos_Click(object sender, EventArgs e)

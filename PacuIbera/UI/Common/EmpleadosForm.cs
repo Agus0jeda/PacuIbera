@@ -42,8 +42,10 @@ namespace PacuIbera.UI.Common
                 }
             }
             ConfigurarColumnasGrilla();
+            DarFormatoGrilla();
             CargarGrilla();
             CargarCombos();
+            
         }
 
         private void ConfigurarColumnasGrilla()
@@ -236,6 +238,11 @@ namespace PacuIbera.UI.Common
             }
         }
 
+        private void btnLimpiar_Click(object sender, EventArgs e)
+        {
+            LimpiarCampos();
+        }
+
         // Pequeño método para vaciar el panel después de guardar o al darle al botón +
         private void LimpiarCampos()
         {
@@ -264,7 +271,41 @@ namespace PacuIbera.UI.Common
                 cmbRol.Enabled = true; // Para que pueda seleccionar el único rol disponible (Vendedor)
             }
         }
+        private void DarFormatoGrilla()
+        {
+            // Comportamiento general
+            dgvEmpleados.AllowUserToAddRows = false;
+            dgvEmpleados.AllowUserToDeleteRows = false;
+            dgvEmpleados.AllowUserToResizeRows = false;
+            dgvEmpleados.ReadOnly = true;
+            dgvEmpleados.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvEmpleados.MultiSelect = false;
 
+            // Esta es la línea que oculta la flechita de la izquierda
+            dgvEmpleados.RowHeadersVisible = false;
+
+            // Estilo de fondo y bordes
+            dgvEmpleados.BackgroundColor = Color.White;
+            dgvEmpleados.BorderStyle = BorderStyle.None;
+            dgvEmpleados.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            dgvEmpleados.GridColor = Color.LightGray;
+
+            // Estilo de las filas y selección
+            dgvEmpleados.DefaultCellStyle.Font = new Font("Segoe UI", 10);
+            dgvEmpleados.DefaultCellStyle.ForeColor = Color.FromArgb(64, 64, 64);
+            dgvEmpleados.DefaultCellStyle.SelectionBackColor = Color.DarkSlateGray; // Color de selección
+            dgvEmpleados.DefaultCellStyle.SelectionForeColor = Color.White;
+            dgvEmpleados.RowTemplate.Height = 35; // Altura de las filas
+
+            // Estilo del encabezado (Header)
+            dgvEmpleados.EnableHeadersVisualStyles = false;
+            dgvEmpleados.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+            dgvEmpleados.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(40, 40, 40); // Gris oscuro
+            dgvEmpleados.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            dgvEmpleados.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            dgvEmpleados.ColumnHeadersHeight = 40;
+            dgvEmpleados.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+        }
         private bool EsEmailValido(string email)
         {
             try
