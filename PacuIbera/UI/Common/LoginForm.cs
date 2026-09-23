@@ -35,29 +35,33 @@ namespace PacuIbera.UI.Common
 
                     this.Hide();
 
-                    // 1. Usamos tu clase CajaDatos en lugar de hacer SQL acá
-                    CajaDatos cajaDatos = new CajaDatos();
-                    int cajaId = cajaDatos.VerificarCajaAbierta(user.Id);
-
-                    // 2. Si no tiene caja abierta (cajaId es 0), lo obligamos a abrirla
-                    if (cajaId <= 0)
+                    // REGLA NUEVA: La caja es obligatoria ÚNICAMENTE para el Vendedor
+                    if (user.Rol == "Vendedor")
                     {
-                        AperturaCajaForm formCaja = new AperturaCajaForm(user.Id);
-                        formCaja.ShowDialog();
-
-                        // 3. Volvemos a consultar a la base para ver si realmente la abrió o cerró la ventana
-                        cajaId = cajaDatos.VerificarCajaAbierta(user.Id);
+                        CajaDatos cajaDatos = new CajaDatos();
+                        int cajaId = cajaDatos.VerificarCajaAbierta(user.Id);
 
                         if (cajaId <= 0)
                         {
-                            MessageBox.Show("Es obligatorio realizar la apertura de caja para comenzar el turno.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            this.Show();
-                            return;
-                        }
-                    }
+                            AperturaCajaForm formCaja = new AperturaCajaForm(user.Id);
+                            formCaja.ShowDialog();
 
-                    // 4. EL PASO CLAVE: Guardamos el ID de la caja en la sesión global
-                    SesionActiva.IdCaja = cajaId;
+                            cajaId = cajaDatos.VerificarCajaAbierta(user.Id);
+
+                            if (cajaId <= 0)
+                            {
+                                MessageBox.Show("Es obligatorio realizar la apertura de caja para comenzar el turno.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                this.Show();
+                                return;
+                            }
+                        }
+                        SesionActiva.IdCaja = cajaId;
+                    }
+                    else
+                    {
+                        // Si es Administrador o Gerente, no manejan caja operativa de mostrador
+                        SesionActiva.IdCaja = 0;
+                    }
 
                     PrincipalForm ventanaPrincipal = new PrincipalForm();
                     ventanaPrincipal.FormClosed += (s, args) => Application.Exit();

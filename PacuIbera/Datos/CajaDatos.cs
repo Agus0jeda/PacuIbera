@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.Data.SqlClient;
+using PacuIbera.Dominio;
+using PacuIbera.UI.Common;
+using System;
 using System.Data;
-using Microsoft.Data.SqlClient;
 
 namespace Datos 
 {
@@ -21,7 +23,6 @@ namespace Datos
                 {
                     if (reader.Read())
                     {
-                        // Capturamos el ID de la caja que ya estaba abierta
                         cajaId = Convert.ToInt32(reader["Id"]);
                     }
                 }

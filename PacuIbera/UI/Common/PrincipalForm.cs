@@ -332,7 +332,7 @@ namespace PacuIbera.UI.Common
         private void BtnCerrarTurno_Click(object sender, EventArgs e)
         {
 
-            if (SesionActiva.Rol == "Gerente")
+            if (SesionActiva.Rol == "Gerente" || SesionActiva.Rol == "Administrador")
             {
                 Application.Exit();
                 return;
