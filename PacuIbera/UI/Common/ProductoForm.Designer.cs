@@ -515,5 +515,28 @@
         private ListBox listaVencimientos;
         private Label STOCK;
         private Label label10;
+
+        private void btnNuevoProducto_Click(object sender, EventArgs e)
+        {
+            // Limpia todo el formulario para cargar un producto desde cero
+            idProductoSeleccionado = 0;
+            GUARDAR.Text = "GUARDAR";
+            btnEliminar.Visible = false;
+
+            cmbNombreProducto.Text = "";
+
+            // Si no usás este botón como texto, podés borrar esta línea:
+            // btnIngresarStock.Text = ""; 
+
+            textBox4.Clear();
+            nupPrecio.Value = 0;
+            nupStockMin.Value = 0;
+            chkPorPeso.Checked = false;
+
+            if (cmbCategoria.Items.Count > 0) cmbCategoria.SelectedIndex = 0;
+            if (listView1.SelectedItems.Count > 0) listView1.SelectedItems[0].Selected = false;
+
+            cmbNombreProducto.Focus();
+        }
     }
 }

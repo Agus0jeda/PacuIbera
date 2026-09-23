@@ -14,15 +14,18 @@ namespace PacuIbera.UI.Common
         private ClienteNegocio negocio = new ClienteNegocio();
         private ClienteDatos clienteDatos = new ClienteDatos();
 
-        // Variables para las pestañas
         private Button btnTabCartera;
         private Button btnTabTop;
+
+        // --- NUEVO: Control de edición ---
+        private int idClienteSeleccionado = 0;
 
         public ClientesForm()
         {
             InitializeComponent();
             this.Load += ClientesForm_Load;
             btnGuardar.Click += btnGuardar_Click;
+            btnCancelar.Click += btnCancelar_Click; // Conectamos el botón de Limpiar
         }
 
         private void ClientesForm_Load(object sender, EventArgs e)
@@ -30,38 +33,21 @@ namespace PacuIbera.UI.Common
             ConfigurarPestanas();
             CargarGrillaTabs("Cartera");
             EstilizarGrilla();
+
             dgvClientes.CellFormatting += DgvClientes_CellFormatting;
+            dgvClientes.CellClick += DgvClientes_CellClick; // Conectamos el clic en la tabla
         }
 
-        // --- PESTAÑAS DINÁMICAS ---
         private void ConfigurarPestanas()
         {
             int x = dgvClientes.Location.X;
             int y = dgvClientes.Location.Y - 40;
 
-            btnTabCartera = new Button
-            {
-                Text = "👥 Cartera de Clientes",
-                Location = new Point(x, y),
-                Size = new Size(200, 40),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = ColorTranslator.FromHtml("#EAEDED"),
-                Cursor = Cursors.Hand,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
-            };
+            btnTabCartera = new Button { Text = "👥 Cartera de Clientes", Location = new Point(x, y), Size = new Size(200, 40), FlatStyle = FlatStyle.Flat, BackColor = ColorTranslator.FromHtml("#EAEDED"), Cursor = Cursors.Hand, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
             btnTabCartera.FlatAppearance.BorderSize = 0;
             btnTabCartera.Click += (s, ev) => CargarGrillaTabs("Cartera");
 
-            btnTabTop = new Button
-            {
-                Text = "🏆 Top Mejores Clientes",
-                Location = new Point(x + 205, y),
-                Size = new Size(210, 40),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.White,
-                Cursor = Cursors.Hand,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
-            };
+            btnTabTop = new Button { Text = "🏆 Top Mejores Clientes", Location = new Point(x + 205, y), Size = new Size(210, 40), FlatStyle = FlatStyle.Flat, BackColor = Color.White, Cursor = Cursors.Hand, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
             btnTabTop.FlatAppearance.BorderSize = 0;
             btnTabTop.Click += (s, ev) => CargarGrillaTabs("Top");
 
@@ -83,6 +69,10 @@ namespace PacuIbera.UI.Common
                     btnTabCartera.BackColor = ColorTranslator.FromHtml("#EAEDED");
                     btnTabTop.BackColor = Color.White;
                     dgvClientes.DataSource = clienteDatos.ObtenerClientesCRM();
+
+                    // Ocultamos las columnas separadas para que el usuario solo vea la unificada "Cliente"
+                    if (dgvClientes.Columns.Contains("Nombre")) dgvClientes.Columns["Nombre"].Visible = false;
+                    if (dgvClientes.Columns.Contains("Apellido")) dgvClientes.Columns["Apellido"].Visible = false;
                 }
                 else
                 {
@@ -112,60 +102,104 @@ namespace PacuIbera.UI.Common
             }
         }
 
-        // --- BUSCADOR INTELIGENTE UNIFICADO ---
+        // --- NUEVO: Clic para Editar ---
+        private void DgvClientes_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Solo permitimos editar si estamos en la pestaña "Cartera" (no en el Top)
+            if (e.RowIndex >= 0 && btnTabCartera.BackColor != Color.White)
+            {
+                DataGridViewRow fila = dgvClientes.Rows[e.RowIndex];
+
+                idClienteSeleccionado = Convert.ToInt32(fila.Cells["Id"].Value);
+                txtNombreCliente.Text = fila.Cells["Nombre"].Value.ToString();
+                txtApellidoCliente.Text = fila.Cells["Apellido"].Value.ToString();
+                txtTelefonoCliente.Text = fila.Cells["Telefono"].Value.ToString();
+                txtDireccionCliente.Text = fila.Cells["Direccion"].Value.ToString();
+
+                btnGuardar.Text = "ACTUALIZAR";
+            }
+        }
+
         public void FiltrarClientes(string filtro)
         {
             if (dgvClientes.DataSource is DataTable dt)
             {
                 dt.DefaultView.RowFilter = $"Cliente LIKE '%{filtro}%' OR Telefono LIKE '%{filtro}%'";
-
-                if (dt.DefaultView.Count == 0 && !string.IsNullOrWhiteSpace(filtro))
-                {
-                    // Asumimos que tenés un label llamado lblSinResultados. Si te da error, borrá el texto de abajo.
-                    // lblSinResultados.Text = "⚠️ No se encontró ningún cliente con ese criterio.";
-                    // lblSinResultados.Visible = true;
-                }
-                else
-                {
-                    // lblSinResultados.Visible = false;
-                }
             }
         }
 
-        // --- GUARDADO ULTRALIMPIO ---
+        // --- NUEVO: Validación Extrema y Guardado Dual ---
         private void btnGuardar_Click(object sender, EventArgs e)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(txtNombreCliente.Text))
+                // VALIDACIÓN OBLIGATORIA DE TODOS LOS CAMPOS
+                if (string.IsNullOrWhiteSpace(txtNombreCliente.Text) ||
+                    string.IsNullOrWhiteSpace(txtApellidoCliente.Text) ||
+                    string.IsNullOrWhiteSpace(txtTelefonoCliente.Text) ||
+                    string.IsNullOrWhiteSpace(txtDireccionCliente.Text))
                 {
-                    MessageBox.Show("El nombre del cliente es obligatorio.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Por favor, complete TODOS los campos (Nombre, Apellido, Teléfono y Dirección) antes de continuar.", "Datos Incompletos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                Cliente nuevoCliente = new Cliente
+                if (idClienteSeleccionado == 0)
                 {
-                    Nombre = txtNombreCliente.Text.Trim(),
-                    Apellido = txtApellidoCliente.Text.Trim(),
-                    Telefono = txtTelefonoCliente.Text.Trim(),
-                    Direccion = txtDireccionCliente.Text.Trim(),
+                    // MODO: NUEVO CLIENTE
+                    Cliente nuevoCliente = new Cliente
+                    {
+                        Nombre = txtNombreCliente.Text.Trim(),
+                        Apellido = txtApellidoCliente.Text.Trim(),
+                        Telefono = txtTelefonoCliente.Text.Trim(),
+                        Direccion = txtDireccionCliente.Text.Trim(),
+                        ProvinciaId = 1,
+                        LocalidadId = 1,
+                        DNI_CUIT = "",
+                        Email = ""
+                    };
+                    negocio.Registrar(nuevoCliente);
+                    MessageBox.Show("¡Cliente registrado con éxito!", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    // MODO: ACTUALIZAR CLIENTE EXISTENTE
+                    clienteDatos.ModificarClienteCRM(
+                        idClienteSeleccionado,
+                        txtNombreCliente.Text,
+                        txtApellidoCliente.Text,
+                        txtTelefonoCliente.Text,
+                        txtDireccionCliente.Text
+                    );
+                    MessageBox.Show("¡Cliente actualizado con éxito!", "Actualización", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
 
-                    ProvinciaId = 1,
-                    LocalidadId = 1,
-                    DNI_CUIT = "",
-                    Email = ""
-                };
-
-                negocio.Registrar(nuevoCliente);
-
-                MessageBox.Show("¡Cliente registrado con éxito!", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 LimpiarFormulario();
                 CargarGrillaTabs("Cartera");
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al guardar el cliente: " + ex.Message, "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Error en la operación: " + ex.Message, "Atención", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        // --- NUEVO: Botón de Limpieza ---
+        private void btnCancelar_Click(object sender, EventArgs e)
+        {
+            LimpiarFormulario();
+        }
+
+        private void LimpiarFormulario()
+        {
+            idClienteSeleccionado = 0;
+            btnGuardar.Text = "GUARDAR";
+
+            txtNombreCliente.Clear();
+            txtApellidoCliente.Clear();
+            txtTelefonoCliente.Clear();
+            txtDireccionCliente.Clear();
+
+            if (dgvClientes.SelectedRows.Count > 0)
+                dgvClientes.ClearSelection();
         }
 
         private void EstilizarGrilla()
@@ -196,20 +230,11 @@ namespace PacuIbera.UI.Common
             dgvClientes.RowTemplate.Height = 30;
         }
 
-        private void LimpiarFormulario()
-        {
-            txtNombreCliente.Clear();
-            txtApellidoCliente.Clear();
-            txtTelefonoCliente.Clear();
-            txtDireccionCliente.Clear();
-        }
-
         private void btnCerrar_Click(object sender, EventArgs e) { this.Close(); }
         private void txtBuscar_TextChanged(object sender, EventArgs e) { FiltrarClientes(txtBuscar.Text.Trim()); }
         private void label3_Click(object sender, EventArgs e) { }
         private void textBox1_TextChanged(object sender, EventArgs e) { }
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e) { }
-        private void btnCancelar_Click(object sender, EventArgs e) { }
         private void nuevoCliente_Paint(object sender, PaintEventArgs e) { }
     }
 }

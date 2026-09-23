@@ -120,5 +120,23 @@ namespace Datos
             }
             return dt;
         }
+
+        // 4. Modificar un cliente existente (CRM)
+        public void ModificarClienteCRM(int id, string nombre, string apellido, string telefono, string direccion)
+        {
+            using (Microsoft.Data.SqlClient.SqlConnection conexion = ObtenerConexion())
+            {
+                Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand("sp_ActualizarClienteCRM", conexion);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Id", id);
+                cmd.Parameters.AddWithValue("@Nombre", nombre.Trim());
+                cmd.Parameters.AddWithValue("@Apellido", apellido.Trim());
+                cmd.Parameters.AddWithValue("@Telefono", telefono.Trim());
+                cmd.Parameters.AddWithValue("@Direccion", direccion.Trim());
+
+                conexion.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
     }
 }

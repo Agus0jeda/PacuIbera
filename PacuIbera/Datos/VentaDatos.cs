@@ -3,7 +3,6 @@ using System;
 using System.Data;
 using Microsoft.Data.SqlClient;
 
-
 namespace PacuIbera.Datos
 {
     public class VentaDatos : ConexionBD
@@ -35,7 +34,6 @@ namespace PacuIbera.Datos
                         int ventaId = Convert.ToInt32(cmdVenta.ExecuteScalar());
 
                         // 2. Registrar los Pagos Mixtos
-                        // Según tu script: 1 = Efectivo, 2 = Tarjeta, 4 = Transferencia
                         if (pagoEfectivo > 0) InsertarPago(conexion, transaccion, ventaId, 1, pagoEfectivo);
                         if (pagoTarjeta > 0) InsertarPago(conexion, transaccion, ventaId, 2, pagoTarjeta);
                         if (pagoTransferencia > 0) InsertarPago(conexion, transaccion, ventaId, 4, pagoTransferencia);
@@ -76,29 +74,80 @@ namespace PacuIbera.Datos
             cmd.ExecuteNonQuery();
         }
 
-        public DataTable ObtenerHistorialVentas()
+        // --- NUEVO: Historial filtrado por Rol ---
+        // --- SE MODIFICÓ PARA ACEPTAR FECHAS ---
+        public DataTable ObtenerHistorialVentas(string rolActual, int idUsuarioActivo, DateTime fechaDesde, DateTime fechaHasta)
         {
-            DataTable tabla = new DataTable();
-            using (SqlConnection conexion = ObtenerConexion())
+            DataTable dt = new DataTable();
+            using (Microsoft.Data.SqlClient.SqlConnection conexion = ObtenerConexion())
             {
-                SqlCommand cmd = new SqlCommand("sp_ObtenerHistorialVentas", conexion);
-                cmd.CommandType = CommandType.StoredProcedure;
-                conexion.Open();
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    tabla.Load(reader);
-                }
+                string query = @"SELECT V.Id AS [Nro Venta], V.FechaHora AS Fecha, 
+                                    ISNULL(C.Nombre + ' ' + C.Apellido, 'Consumidor Final') AS Cliente, 
+                                    U.Nombre + ' ' + U.Apellido AS Cajero, 
+                                    V.Total, V.Estado
+                             FROM Venta V
+                             LEFT JOIN Cliente C ON V.ClienteId = C.Id
+                             INNER JOIN Usuario U ON V.UsuarioId = U.Id
+                             WHERE CAST(V.FechaHora AS DATE) >= CAST(@Desde AS DATE) 
+                             AND CAST(V.FechaHora AS DATE) <= CAST(@Hasta AS DATE)";
+
+                if (rolActual == "Vendedor") query += " AND V.UsuarioId = @UsuarioId";
+                query += " ORDER BY V.FechaHora DESC";
+
+                Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand(query, conexion);
+                cmd.Parameters.AddWithValue("@Desde", fechaDesde);
+                cmd.Parameters.AddWithValue("@Hasta", fechaHasta);
+                if (rolActual == "Vendedor") cmd.Parameters.AddWithValue("@UsuarioId", idUsuarioActivo);
+
+                Microsoft.Data.SqlClient.SqlDataAdapter da = new Microsoft.Data.SqlClient.SqlDataAdapter(cmd);
+                da.Fill(dt);
             }
-            return tabla;
+            return dt;
         }
 
-        public void AnularVenta(int idVenta)
+        // --- NUEVA FUNCIÓN PARA SUMAR LA CAJA ---
+        public DataTable ObtenerTotalesVentas(string rolActual, int idUsuarioActivo, DateTime fechaDesde, DateTime fechaHasta)
+        {
+            DataTable dt = new DataTable();
+            using (Microsoft.Data.SqlClient.SqlConnection conexion = ObtenerConexion())
+            {
+                // Usamos VentaPago y agrupamos los IDs duplicados que tenés en tu tabla MetodoPago
+                string query = @"
+            SELECT 
+                ISNULL(SUM(CASE WHEN P.MetodoPagoId IN (1, 1002) THEN P.MontoCobrado ELSE 0 END), 0) AS TotalEfectivo,
+                ISNULL(SUM(CASE WHEN P.MetodoPagoId IN (2, 3, 1003, 1004) THEN P.MontoCobrado ELSE 0 END), 0) AS TotalTarjeta,
+                ISNULL(SUM(CASE WHEN P.MetodoPagoId IN (4, 1005) THEN P.MontoCobrado ELSE 0 END), 0) AS TotalTransferencia,
+                ISNULL(SUM(P.MontoCobrado), 0) AS TotalGeneral
+            FROM Venta V
+            INNER JOIN VentaPago P ON V.Id = P.VentaId
+            WHERE V.Estado != 'Anulada' 
+            AND CAST(V.FechaHora AS DATE) >= CAST(@Desde AS DATE) 
+            AND CAST(V.FechaHora AS DATE) <= CAST(@Hasta AS DATE)";
+
+                if (rolActual == "Vendedor") query += " AND V.UsuarioId = @UsuarioId";
+
+                Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand(query, conexion);
+                cmd.Parameters.AddWithValue("@Desde", fechaDesde);
+                cmd.Parameters.AddWithValue("@Hasta", fechaHasta);
+                if (rolActual == "Vendedor") cmd.Parameters.AddWithValue("@UsuarioId", idUsuarioActivo);
+
+                Microsoft.Data.SqlClient.SqlDataAdapter da = new Microsoft.Data.SqlClient.SqlDataAdapter(cmd);
+                da.Fill(dt);
+            }
+            return dt;
+        }
+
+        // --- NUEVO: Anulación con Auditoría ---
+        public void AnularVentaConMotivo(int ventaId, int usuarioId, string motivo)
         {
             using (SqlConnection conexion = ObtenerConexion())
             {
-                SqlCommand cmd = new SqlCommand("sp_AnularVenta", conexion);
+                SqlCommand cmd = new SqlCommand("sp_AnularVentaConMotivo", conexion);
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@VentaId", idVenta);
+                cmd.Parameters.AddWithValue("@VentaId", ventaId);
+                cmd.Parameters.AddWithValue("@UsuarioId", usuarioId);
+                cmd.Parameters.AddWithValue("@Motivo", motivo);
+
                 conexion.Open();
                 cmd.ExecuteNonQuery();
             }

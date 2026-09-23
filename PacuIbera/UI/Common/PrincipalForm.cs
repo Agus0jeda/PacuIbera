@@ -59,7 +59,7 @@ namespace PacuIbera.UI.Common
             btnProveedores.Visible = false;
             btnCompras.Visible = false;
             btnReportes.Visible = false;
-
+            btnPagos.Visible = false;
             // Evaluamos el rol para encender lo que corresponda
             switch (SesionActiva.Rol)
             {
