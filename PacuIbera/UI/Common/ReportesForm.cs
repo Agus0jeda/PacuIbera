@@ -278,7 +278,7 @@ namespace PacuIbera.UI.Common
             if (e.RowIndex >= 0 && tabActiva == "Auditoria")
             {
                 string motivo = grillaStock.Rows[e.RowIndex].Cells["Motivo"].Value.ToString();
-                string vendedor = grillaStock.Rows[e.RowIndex].Cells["Cajero que Anuló"].Value.ToString();
+                string vendedor = grillaStock.Rows[e.RowIndex].Cells["Vendedor que Anuló"].Value.ToString();
 
                 MessageBox.Show($"Motivo de anulación:\n\n\"{motivo}\"", $"Anulado por {vendedor}", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -291,7 +291,7 @@ namespace PacuIbera.UI.Common
                 try
                 {
                     int idVenta = Convert.ToInt32(grillaStock.Rows[e.RowIndex].Cells["Nro Venta"].Value);
-                    string vendedor = grillaStock.Rows[e.RowIndex].Cells["Cajero que Anuló"].Value.ToString();
+                    string vendedor = grillaStock.Rows[e.RowIndex].Cells["Vendedor que Anuló"].Value.ToString();
 
                     // Aseguramos que la fecha se procese correctamente
                     string fecha = Convert.ToDateTime(grillaStock.Rows[e.RowIndex].Cells["Fecha"].Value).ToString("dd/MM/yyyy HH:mm");
@@ -311,7 +311,7 @@ namespace PacuIbera.UI.Common
             }
         }
 
-        private void ReimprimirTicketAuditoria(int idVenta, string fecha, string estado, string cajero, decimal total, DataTable detalle)
+        private void ReimprimirTicketAuditoria(int idVenta, string fecha, string estado, string vendedor, decimal total, DataTable detalle)
         {
             PrintDocument pd = new PrintDocument();
             pd.DefaultPageSettings.PaperSize = new PaperSize("Ticket80mm", 314, 1000);
@@ -327,7 +327,7 @@ namespace PacuIbera.UI.Common
                 g.DrawString("*** TICKET ANULADO ***", fontNormal, Brushes.DarkRed, x + 40, y); y += 30;
                 g.DrawString("Fecha original: " + fecha, fontNormal, Brushes.Black, x, y); y += 20;
                 g.DrawString("Ticket N°: " + idVenta, fontNormal, Brushes.Black, x, y); y += 20;
-                g.DrawString("Cajero: " + cajero, fontNormal, Brushes.Black, x, y); y += 30;
+                g.DrawString("Vendedor: " + vendedor, fontNormal, Brushes.Black, x, y); y += 30;
                 g.DrawString("----------------------------------------", fontNormal, Brushes.Black, x, y); y += 15;
                 g.DrawString("CANT   DESCRIPCION            SUBTOTAL", fontNormal, Brushes.Black, x, y); y += 15;
                 g.DrawString("----------------------------------------", fontNormal, Brushes.Black, x, y); y += 20;

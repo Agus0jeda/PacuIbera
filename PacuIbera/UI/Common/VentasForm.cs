@@ -74,22 +74,35 @@ namespace PacuIbera.UI.Common
         {
             try
             {
+                // Refrescamos los datos desde la BD
                 dtProductosGlobal = productoDatos.ObtenerProductos();
+
+                // Creamos una colección limpia
                 AutoCompleteStringCollection coleccion = new AutoCompleteStringCollection();
 
-                // Blindaje: Verificamos si la columna existe en la consulta SQL actual
-                bool tieneCodigo = dtProductosGlobal.Columns.Contains("CodigoBarras");
+                bool tieneDescripcion = dtProductosGlobal.Columns.Contains("Descripcion");
 
                 foreach (DataRow row in dtProductosGlobal.Rows)
                 {
-                    coleccion.Add(row["Nombre"].ToString());
+                    string nombre = row["Nombre"].ToString().Trim();
+                    string desc = tieneDescripcion && row["Descripcion"] != DBNull.Value ? row["Descripcion"].ToString().Trim() : "";
 
-                    if (tieneCodigo && row["CodigoBarras"] != DBNull.Value && !string.IsNullOrWhiteSpace(row["CodigoBarras"].ToString()))
+                    // CONCATENACIÓN LIMPIA: Solo agregamos "Nombre | Descripción"
+                    string textoFinal = string.IsNullOrWhiteSpace(desc) ? nombre : $"{nombre} | {desc}";
+
+                    if (!coleccion.Contains(textoFinal))
                     {
-                        coleccion.Add(row["CodigoBarras"].ToString());
+                        coleccion.Add(textoFinal);
                     }
                 }
 
+                // Vaciamos primero para borrar la memoria caché de Windows Forms
+                if (txtBuscador.AutoCompleteCustomSource != null)
+                {
+                    txtBuscador.AutoCompleteCustomSource.Clear();
+                }
+
+                // Asignamos la nueva colección limpia
                 txtBuscador.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
                 txtBuscador.AutoCompleteSource = AutoCompleteSource.CustomSource;
                 txtBuscador.AutoCompleteCustomSource = coleccion;
@@ -158,17 +171,19 @@ namespace PacuIbera.UI.Common
                 string busqueda = txtBuscador.Text.Trim();
                 if (string.IsNullOrEmpty(busqueda)) return;
 
-                bool tieneCodigo = dtProductosGlobal.Columns.Contains("CodigoBarras");
+                bool tieneDescripcion = dtProductosGlobal.Columns.Contains("Descripcion");
                 DataRow productoEncontrado = null;
 
-                // Búsqueda tolerante a mayúsculas/minúsculas
                 foreach (DataRow row in dtProductosGlobal.Rows)
                 {
-                    string nombreProd = row["Nombre"].ToString();
-                    string codBarras = tieneCodigo ? row["CodigoBarras"].ToString() : "";
+                    string nombre = row["Nombre"].ToString().Trim();
+                    string desc = tieneDescripcion && row["Descripcion"] != DBNull.Value ? row["Descripcion"].ToString().Trim() : "";
 
-                    if (nombreProd.Equals(busqueda, StringComparison.OrdinalIgnoreCase) ||
-                        codBarras.Equals(busqueda, StringComparison.OrdinalIgnoreCase))
+                    // Reconstruimos el texto exacto que armamos arriba
+                    string textoFinal = string.IsNullOrWhiteSpace(desc) ? nombre : $"{nombre} | {desc}";
+
+                    // Comparamos el texto final con lo que seleccionó el cajero
+                    if (textoFinal.Equals(busqueda, StringComparison.OrdinalIgnoreCase))
                     {
                         productoEncontrado = row;
                         break;
@@ -182,18 +197,18 @@ namespace PacuIbera.UI.Common
                 }
                 else
                 {
-                    MessageBox.Show("Producto no encontrado. Seleccione uno de la lista autocompletable.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    MessageBox.Show("Producto no encontrado. Asegúrese de seleccionarlo de la lista desplegable.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     txtBuscador.SelectAll();
                 }
 
                 txtBuscador.Focus();
             }
         }
-
         private void AgregarAlCarrito(DataRow prod)
         {
             int id = Convert.ToInt32(prod["Id"]);
             string nombre = prod["Nombre"].ToString();
+            string descripcion = prod.Table.Columns.Contains("Descripcion") && prod["Descripcion"] != DBNull.Value ? prod["Descripcion"].ToString() : "";
             decimal precio = Convert.ToDecimal(prod["PrecioVenta"]);
             bool porPeso = Convert.ToBoolean(prod["SeVendePorPeso"]);
             // Busca el stock fijándose primero si viene con el nombre nuevo, y si no, usa el viejo.
@@ -213,7 +228,7 @@ namespace PacuIbera.UI.Common
             if (porPeso)
             {
                 string inputPeso = PromptPeso(nombre);
-                if (string.IsNullOrWhiteSpace(inputPeso)) return; // Si el cajero cancela, no agregamos nada
+                if (string.IsNullOrWhiteSpace(inputPeso)) return; // Si el vendedor cancela, no agregamos nada
 
                 // Filtro a prueba de balas para comas y puntos
                 inputPeso = inputPeso.Replace(".", System.Globalization.NumberFormatInfo.CurrentInfo.NumberDecimalSeparator)
@@ -259,7 +274,7 @@ namespace PacuIbera.UI.Common
             else
             {
                 // Respetamos el orden de las columnas: IdProducto, Nombre, Precio, Cantidad, Subtotal, StockActual (oculto)
-                dtCarrito.Rows.Add(id, nombre, precio, cantidadAIngresar, precio * cantidadAIngresar, stockTotal);
+                dtCarrito.Rows.Add(id, nombre, descripcion, precio, cantidadAIngresar, precio * cantidadAIngresar, stockTotal);
             }
 
             ActualizarTotal();
@@ -311,7 +326,7 @@ namespace PacuIbera.UI.Common
                 // --- DATOS DE VENTA ---
                 g.DrawString("Fecha: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm"), fontNormal, Brushes.Black, x, y); y += 20;
                 g.DrawString("Ticket N°: " + DateTime.Now.ToString("yyMMddHHmm"), fontNormal, Brushes.Black, x, y); y += 20;
-                g.DrawString("Cajero: " + SesionActiva.Nombre + " " + SesionActiva.Apellido, fontNormal, Brushes.Black, x, y); y += 20;
+                g.DrawString("Vendedor: " + SesionActiva.Nombre + " " + SesionActiva.Apellido, fontNormal, Brushes.Black, x, y); y += 20;
 
                 // Cortamos el nombre del cliente si es muy largo para que no rompa el ticket
                 string clienteTicket = nombreCliente.Length > 20 ? nombreCliente.Substring(0, 20) : nombreCliente;
@@ -463,6 +478,7 @@ namespace PacuIbera.UI.Common
             dtCarrito = new DataTable();
             dtCarrito.Columns.Add("IdProducto", typeof(int));
             dtCarrito.Columns.Add("Nombre", typeof(string));
+            dtCarrito.Columns.Add("Descripcion", typeof(string));
             dtCarrito.Columns.Add("Precio", typeof(decimal));
             dtCarrito.Columns.Add("Cantidad", typeof(decimal));
             dtCarrito.Columns.Add("Subtotal", typeof(decimal));
@@ -474,7 +490,8 @@ namespace PacuIbera.UI.Common
             dgvCarrito.Columns["IdProducto"].Visible = false;
             dgvCarrito.Columns["StockActual"].Visible = false;
 
-            dgvCarrito.Columns["Nombre"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            dgvCarrito.Columns["Nombre"].Width = 200; // Le damos ancho fijo al nombre
+            dgvCarrito.Columns["Descripcion"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             dgvCarrito.Columns["Precio"].Width = 140;
             dgvCarrito.Columns["Cantidad"].Width = 110;
             dgvCarrito.Columns["Subtotal"].Width = 160;

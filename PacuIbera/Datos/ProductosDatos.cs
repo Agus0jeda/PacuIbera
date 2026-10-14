@@ -173,35 +173,30 @@ namespace Datos
             }
         }
 
-        public void RegistrarProducto(string nombre, int categoriaId, decimal precioVenta, decimal stockMinimo, bool seVendePorPeso, string descripcion, decimal stock, DateTime? fechaVencimiento)
+        public void RegistrarProducto(string nombre, int categoriaId, decimal precioVenta, decimal stockMinimo, bool seVendePorPeso, string descripcion, decimal stockInicial, DateTime fechaVencimiento)
         {
-            using (SqlConnection conexion = ObtenerConexion())
+            using (SqlConnection con = ObtenerConexion())
             {
-                conexion.Open();
-                string query = @"INSERT INTO Producto (Nombre, CategoriaId, PrecioVenta, StockMinimo, SeVendePorPeso, Descripcion, StockActual, Activo) 
-                                 OUTPUT INSERTED.Id 
-                                 VALUES (@Nombre, @CategoriaId, @PrecioVenta, @StockMinimo, @SeVendePorPeso, @Descripcion, @Stock, 1)";
-                Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand(query, conexion);
-                cmd.Parameters.AddWithValue("@Nombre", nombre.ToUpper());
+                SqlCommand cmd = new SqlCommand("sp_RegistrarProducto", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@Nombre", nombre);
                 cmd.Parameters.AddWithValue("@CategoriaId", categoriaId);
                 cmd.Parameters.AddWithValue("@PrecioVenta", precioVenta);
                 cmd.Parameters.AddWithValue("@StockMinimo", stockMinimo);
                 cmd.Parameters.AddWithValue("@SeVendePorPeso", seVendePorPeso);
-                cmd.Parameters.AddWithValue("@Descripcion", string.IsNullOrEmpty(descripcion) ? (object)DBNull.Value : descripcion);
-                cmd.Parameters.AddWithValue("@Stock", stock);
 
-                int nuevoId = (int)cmd.ExecuteScalar();
+                // Si la descripción está vacía, mandamos un nulo a la base de datos
+                if (string.IsNullOrWhiteSpace(descripcion))
+                    cmd.Parameters.AddWithValue("@Descripcion", DBNull.Value);
+                else
+                    cmd.Parameters.AddWithValue("@Descripcion", descripcion);
 
-                // Si cargó stock inicial, creamos el lote
-                if (stock > 0)
-                {
-                    string queryLote = "INSERT INTO Lote (ProductoId, FechaIngreso, FechaVencimiento, StockInicial, StockActual, Activo) VALUES (@Id, GETDATE(), @Venc, @Stock, @Stock, 1)";
-                    Microsoft.Data.SqlClient.SqlCommand cmdLote = new Microsoft.Data.SqlClient.SqlCommand(queryLote, conexion);
-                    cmdLote.Parameters.AddWithValue("@Id", nuevoId);
-                    cmdLote.Parameters.AddWithValue("@Venc", (object)fechaVencimiento ?? DBNull.Value);
-                    cmdLote.Parameters.AddWithValue("@Stock", stock);
-                    cmdLote.ExecuteNonQuery();
-                }
+                cmd.Parameters.AddWithValue("@StockInicial", stockInicial);
+                cmd.Parameters.AddWithValue("@FechaVencimiento", fechaVencimiento);
+
+                con.Open(); // Abrimos la conexión
+                cmd.ExecuteNonQuery(); // Ejecutamos la transacción
             }
         }
         public void ProcesarLotesVencidos()

@@ -67,17 +67,43 @@ namespace PacuIbera.UI.Common
         }
         private void CargarGrilla()
         {
+            // 1. Cargar los datos desde la base de datos
             dgvProveedores.DataSource = proveedorDatos.ObtenerTodos();
 
+            // 2. Ocultar las columnas internas que el usuario no necesita ver
             if (dgvProveedores.Columns.Contains("Id"))
                 dgvProveedores.Columns["Id"].Visible = false;
 
             if (dgvProveedores.Columns.Contains("Activo"))
                 dgvProveedores.Columns["Activo"].Visible = false;
 
+            // 3. Asignar los anchos proporcionales (FillWeight) a cada columna
+            // Esto asegura que la Razón Social y el Email tengan más espacio que el CUIT o el Estado
             if (dgvProveedores.Columns.Contains("RazonSocial"))
-                dgvProveedores.Columns["RazonSocial"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                dgvProveedores.Columns["RazonSocial"].FillWeight = 180; // Columna más ancha
 
+            if (dgvProveedores.Columns.Contains("CUIT"))
+                dgvProveedores.Columns["CUIT"].FillWeight = 100;
+
+            if (dgvProveedores.Columns.Contains("Telefono"))
+                dgvProveedores.Columns["Telefono"].FillWeight = 90;
+
+            if (dgvProveedores.Columns.Contains("Email"))
+                dgvProveedores.Columns["Email"].FillWeight = 130; // Columna ancha
+
+            if (dgvProveedores.Columns.Contains("Direccion"))
+                dgvProveedores.Columns["Direccion"].FillWeight = 120; // Columna ancha
+
+            if (dgvProveedores.Columns.Contains("Provincia"))
+                dgvProveedores.Columns["Provincia"].FillWeight = 90;
+
+            if (dgvProveedores.Columns.Contains("Localidad"))
+                dgvProveedores.Columns["Localidad"].FillWeight = 100;
+
+            if (dgvProveedores.Columns.Contains("Estado"))
+                dgvProveedores.Columns["Estado"].FillWeight = 70; // Columna más angosta
+
+            // 4. Limpiar cualquier selección previa para que el formulario arranque limpio
             dgvProveedores.ClearSelection();
         }
 
@@ -123,6 +149,8 @@ namespace PacuIbera.UI.Common
             dgvProveedores.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             dgvProveedores.ColumnHeadersHeight = 40;
             dgvProveedores.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+
+            dgvProveedores.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
 
         private void LimpiarCampos()

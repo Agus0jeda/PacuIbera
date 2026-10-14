@@ -118,7 +118,7 @@ namespace PacuIbera.UI.Common
             cmbProvincia.Name = "cmbProvincia";
             cmbProvincia.Size = new Size(195, 28);
             cmbProvincia.TabIndex = 23;
-           
+            cmbProvincia.SelectedIndexChanged += cmbProvincia_SelectedIndexChanged;
             // 
             // lblTelefonoCliente
             // 

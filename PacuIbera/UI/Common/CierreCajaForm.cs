@@ -57,6 +57,7 @@ namespace PacuIbera.UI.Common
 
             btnCerrar = new Button
             {
+
                 Text = "CERRAR TURNO",
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 BackColor = ColorTranslator.FromHtml("#88E788"),

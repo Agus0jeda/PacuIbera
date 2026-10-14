@@ -255,16 +255,16 @@ namespace PacuIbera.UI.Common
                 int idVenta = Convert.ToInt32(dgvHistorial.Rows[e.RowIndex].Cells["Nro Venta"].Value);
                 string fecha = dgvHistorial.Rows[e.RowIndex].Cells["Fecha"].Value?.ToString() ?? "";
                 string cliente = dgvHistorial.Rows[e.RowIndex].Cells["Cliente"].Value?.ToString() ?? "";
-                string cajero = dgvHistorial.Rows[e.RowIndex].Cells["Cajero"].Value?.ToString() ?? "";
+                string vendedor = dgvHistorial.Rows[e.RowIndex].Cells["Vendedor"].Value?.ToString() ?? "";
                 string totalString = dgvHistorial.Rows[e.RowIndex].Cells["Total"].Value?.ToString().Replace("$", "").Trim() ?? "0";
                 decimal total = Convert.ToDecimal(totalString);
 
                 DataTable detalle = ventaDatos.ObtenerDetalleVenta(idVenta);
-                ReimprimirTicket(idVenta, fecha, cliente, cajero, total, detalle);
+                ReimprimirTicket(idVenta, fecha, cliente, vendedor, total, detalle);
             }
         }
 
-        private void ReimprimirTicket(int idVenta, string fecha, string cliente, string cajero, decimal total, DataTable detalle)
+        private void ReimprimirTicket(int idVenta, string fecha, string cliente, string vendedor, decimal total, DataTable detalle)
         {
             PrintDocument pd = new PrintDocument();
             pd.DefaultPageSettings.PaperSize = new PaperSize("Ticket80mm", 314, 1000);
@@ -280,7 +280,7 @@ namespace PacuIbera.UI.Common
                 g.DrawString("** REIMPRESIÓN **", fontNormal, Brushes.Black, x + 60, y); y += 30;
                 g.DrawString("Fecha original: " + fecha, fontNormal, Brushes.Black, x, y); y += 20;
                 g.DrawString("Ticket N°: " + idVenta, fontNormal, Brushes.Black, x, y); y += 20;
-                g.DrawString("Cajero: " + cajero, fontNormal, Brushes.Black, x, y); y += 20;
+                g.DrawString("Vendedor: " + vendedor, fontNormal, Brushes.Black, x, y); y += 20;
 
                 string clienteTicket = cliente.Length > 20 ? cliente.Substring(0, 20) : cliente;
                 g.DrawString("Cliente: " + clienteTicket, fontNormal, Brushes.Black, x, y); y += 30;

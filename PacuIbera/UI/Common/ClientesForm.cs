@@ -14,6 +14,8 @@ namespace PacuIbera.UI.Common
         private ClienteNegocio negocio = new ClienteNegocio();
         private ClienteDatos clienteDatos = new ClienteDatos();
 
+        private OtrosDatos otrosDatos = new OtrosDatos();
+        private UsuarioNegocio usuarioNegocio = new UsuarioNegocio();
         private Button btnTabCartera;
         private Button btnTabTop;
 
@@ -25,12 +27,14 @@ namespace PacuIbera.UI.Common
             InitializeComponent();
             this.Load += ClientesForm_Load;
             btnGuardar.Click += btnGuardar_Click;
-            btnCancelar.Click += btnCancelar_Click; // Conectamos el botón de Limpiar
+            btnCancelar.Click += btnCancelar_Click;
+            cmbProvincia.SelectedIndexChanged += cmbProvincia_SelectedIndexChanged;
         }
 
         private void ClientesForm_Load(object sender, EventArgs e)
         {
             ConfigurarPestanas();
+            CargarCombos();
             CargarGrillaTabs("Cartera");
             EstilizarGrilla();
 
@@ -70,9 +74,19 @@ namespace PacuIbera.UI.Common
                     btnTabTop.BackColor = Color.White;
                     dgvClientes.DataSource = clienteDatos.ObtenerClientesCRM();
 
-                    // Ocultamos las columnas separadas para que el usuario solo vea la unificada "Cliente"
+                    // Ocultamos las columnas separadas
                     if (dgvClientes.Columns.Contains("Nombre")) dgvClientes.Columns["Nombre"].Visible = false;
                     if (dgvClientes.Columns.Contains("Apellido")) dgvClientes.Columns["Apellido"].Visible = false;
+
+                    // Ocultamos el ID
+                    if (dgvClientes.Columns.Contains("Id")) dgvClientes.Columns["Id"].Visible = false;
+
+                    // Asignamos pesos para que se estiren de manera proporcional
+                    if (dgvClientes.Columns.Contains("Cliente")) dgvClientes.Columns["Cliente"].FillWeight = 150;
+                    if (dgvClientes.Columns.Contains("Telefono")) dgvClientes.Columns["Telefono"].FillWeight = 80;
+                    if (dgvClientes.Columns.Contains("Direccion")) dgvClientes.Columns["Direccion"].FillWeight = 120;
+                    if (dgvClientes.Columns.Contains("Provincia")) dgvClientes.Columns["Provincia"].FillWeight = 90;
+                    if (dgvClientes.Columns.Contains("Localidad")) dgvClientes.Columns["Localidad"].FillWeight = 100;
                 }
                 else
                 {
@@ -115,6 +129,11 @@ namespace PacuIbera.UI.Common
                 txtApellidoCliente.Text = fila.Cells["Apellido"].Value.ToString();
                 txtTelefonoCliente.Text = fila.Cells["Telefono"].Value.ToString();
                 txtDireccionCliente.Text = fila.Cells["Direccion"].Value.ToString();
+                if (dgvClientes.Columns.Contains("Provincia") && fila.Cells["Provincia"].Value != null)
+                    cmbProvincia.Text = fila.Cells["Provincia"].Value.ToString();
+
+                if (dgvClientes.Columns.Contains("Localidad") && fila.Cells["Localidad"].Value != null)
+                    cmbLocalidad.Text = fila.Cells["Localidad"].Value.ToString();
 
                 btnGuardar.Text = "ACTUALIZAR";
             }
@@ -128,32 +147,36 @@ namespace PacuIbera.UI.Common
             }
         }
 
-        // --- NUEVO: Validación Extrema y Guardado Dual ---
+
         private void btnGuardar_Click(object sender, EventArgs e)
         {
             try
             {
-                // VALIDACIÓN OBLIGATORIA DE TODOS LOS CAMPOS
+                // 1. VALIDACIÓN: Ningún campo o combo puede estar vacío
                 if (string.IsNullOrWhiteSpace(txtNombreCliente.Text) ||
                     string.IsNullOrWhiteSpace(txtApellidoCliente.Text) ||
                     string.IsNullOrWhiteSpace(txtTelefonoCliente.Text) ||
-                    string.IsNullOrWhiteSpace(txtDireccionCliente.Text))
+                    string.IsNullOrWhiteSpace(txtDireccionCliente.Text) ||
+                    cmbProvincia.SelectedIndex == -1 ||
+                    cmbLocalidad.SelectedIndex == -1)
                 {
-                    MessageBox.Show("Por favor, complete TODOS los campos (Nombre, Apellido, Teléfono y Dirección) antes de continuar.", "Datos Incompletos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Por favor, complete todos los campos y seleccione Provincia y Localidad.", "Datos Incompletos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
+                int provId = Convert.ToInt32(cmbProvincia.SelectedValue);
+                int locId = Convert.ToInt32(cmbLocalidad.SelectedValue);
+
                 if (idClienteSeleccionado == 0)
                 {
-                    // MODO: NUEVO CLIENTE
                     Cliente nuevoCliente = new Cliente
                     {
                         Nombre = txtNombreCliente.Text.Trim(),
                         Apellido = txtApellidoCliente.Text.Trim(),
                         Telefono = txtTelefonoCliente.Text.Trim(),
                         Direccion = txtDireccionCliente.Text.Trim(),
-                        ProvinciaId = 1,
-                        LocalidadId = 1,
+                        ProvinciaId = provId,
+                        LocalidadId = locId,
                         DNI_CUIT = "",
                         Email = ""
                     };
@@ -162,13 +185,14 @@ namespace PacuIbera.UI.Common
                 }
                 else
                 {
-                    // MODO: ACTUALIZAR CLIENTE EXISTENTE
                     clienteDatos.ModificarClienteCRM(
                         idClienteSeleccionado,
-                        txtNombreCliente.Text,
-                        txtApellidoCliente.Text,
-                        txtTelefonoCliente.Text,
-                        txtDireccionCliente.Text
+                        txtNombreCliente.Text.Trim(),
+                        txtApellidoCliente.Text.Trim(),
+                        txtTelefonoCliente.Text.Trim(),
+                        txtDireccionCliente.Text.Trim(),
+                        provId,
+                        locId
                     );
                     MessageBox.Show("¡Cliente actualizado con éxito!", "Actualización", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
@@ -207,27 +231,38 @@ namespace PacuIbera.UI.Common
             dgvClientes.BackgroundColor = Color.White;
             dgvClientes.BorderStyle = BorderStyle.None;
             dgvClientes.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            dgvClientes.GridColor = Color.FromArgb(230, 230, 230);
+            dgvClientes.GridColor = Color.LightGray; // Gris suave como en proveedores
+
             dgvClientes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvClientes.MultiSelect = false;
             dgvClientes.RowHeadersVisible = false;
             dgvClientes.ReadOnly = true;
             dgvClientes.AllowUserToAddRows = false;
+            dgvClientes.AllowUserToDeleteRows = false;
+            dgvClientes.AllowUserToResizeRows = false;
+
+            // AutoSize en Fill para que los FillWeight funcionen
             dgvClientes.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
             dgvClientes.EnableHeadersVisualStyles = false;
             dgvClientes.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-            dgvClientes.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(46, 204, 113);
+
+            // Cabecera oscura igual a proveedores
+            dgvClientes.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(40, 40, 40);
             dgvClientes.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             dgvClientes.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            dgvClientes.ColumnHeadersHeight = 35;
+            dgvClientes.ColumnHeadersHeight = 40;
+            dgvClientes.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
 
             dgvClientes.DefaultCellStyle.BackColor = Color.White;
             dgvClientes.DefaultCellStyle.ForeColor = Color.FromArgb(64, 64, 64);
-            dgvClientes.DefaultCellStyle.SelectionBackColor = Color.FromArgb(39, 174, 96);
+
+            // Color de selección gris oscuro/azulado igual a proveedores
+            dgvClientes.DefaultCellStyle.SelectionBackColor = Color.DarkSlateGray;
             dgvClientes.DefaultCellStyle.SelectionForeColor = Color.White;
-            dgvClientes.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
-            dgvClientes.RowTemplate.Height = 30;
+
+            dgvClientes.DefaultCellStyle.Font = new Font("Segoe UI", 10);
+            dgvClientes.RowTemplate.Height = 35;
         }
 
         private void btnCerrar_Click(object sender, EventArgs e) { this.Close(); }
@@ -236,5 +271,32 @@ namespace PacuIbera.UI.Common
         private void textBox1_TextChanged(object sender, EventArgs e) { }
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e) { }
         private void nuevoCliente_Paint(object sender, PaintEventArgs e) { }
+
+        private void CargarCombos()
+        {
+            cmbProvincia.DataSource = otrosDatos.ObtenerProvincias();
+            cmbProvincia.DisplayMember = "Nombre";
+            cmbProvincia.ValueMember = "Id";
+            cmbProvincia.SelectedIndex = -1;
+        }
+
+        private void cmbProvincia_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Cuando el usuario elige una provincia, cargamos sus localidades
+            if (cmbProvincia.SelectedValue != null && int.TryParse(cmbProvincia.SelectedValue.ToString(), out int provinciaId))
+            {
+                try
+                {
+                    cmbLocalidad.DataSource = usuarioNegocio.ListarLocalidades(provinciaId);
+                    cmbLocalidad.DisplayMember = "Nombre";
+                    cmbLocalidad.ValueMember = "Id";
+                    cmbLocalidad.SelectedIndex = -1;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error al cargar localidades: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
     }
 }

@@ -24,6 +24,7 @@ namespace PacuIbera.UI.Common
         public ProductoForm()
         {
             InitializeComponent();
+            CargarCategorias();
             this.Load += ProductoForm_Load;
 
             CrearPanelFlotantePorCodigo();
@@ -245,7 +246,7 @@ namespace PacuIbera.UI.Common
 
                 textBox4.Text = item.SubItems[8].Text;
 
-                if (SesionActiva.Rol != "Vendedor")
+                if (SesionActiva.Rol != "Administrador")
                 {
                     GUARDAR.Text = "ACTUALIZAR";
                     btnEliminar.Visible = true;
@@ -257,34 +258,81 @@ namespace PacuIbera.UI.Common
         {
             try
             {
+                // ==========================================
+                // 1. VALIDACIONES DE CAMPOS VACÍOS
+                // ==========================================
                 if (string.IsNullOrWhiteSpace(cmbNombreProducto.Text))
                 {
                     MessageBox.Show("El nombre del producto es obligatorio.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                if (cmbCategoria.SelectedValue == null || cmbCategoria.SelectedIndex == -1)
+                if (cmbCategoria.SelectedValue == null || Convert.ToInt32(cmbCategoria.SelectedValue) <= 0)
                 {
                     MessageBox.Show("Debe seleccionar una categoría válida.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
+                if (string.IsNullOrWhiteSpace(btnIngresarStock.Text)) // ACÁ ESTÁ CORREGIDO TU CONTROL
+                {
+                    MessageBox.Show("Debe ingresar una cantidad de stock inicial.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // ==========================================
+                // 2. VALIDACIONES DE NÚMEROS (Precio y Stock)
+                // ==========================================
                 if (nupPrecio.Value <= 0)
                 {
                     MessageBox.Show("El precio de venta debe ser mayor a cero.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                decimal stockNuevo = 0;
-                DateTime? fechaVenc = null;
+                // Convertimos el stock usando tu control btnIngresarStock
+                string inputStock = btnIngresarStock.Text.Trim().Replace(".", System.Globalization.NumberFormatInfo.CurrentInfo.NumberDecimalSeparator).Replace(",", System.Globalization.NumberFormatInfo.CurrentInfo.NumberDecimalSeparator);
 
-                string nombre = cmbNombreProducto.Text;
-                string descripcion = textBox4.Text;
+                if (!decimal.TryParse(inputStock, out decimal stockInicial))
+                {
+                    MessageBox.Show("El formato del stock no es válido. Use solo números.", "Error de Formato", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                if (stockInicial <= 0 && idProductoSeleccionado == 0) // Solo exigimos stock > 0 al crear uno nuevo
+                {
+                    MessageBox.Show("No se puede registrar un producto nuevo con stock 0.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // ==========================================
+                // 3. VALIDACIÓN DE VENCIMIENTO
+                // ==========================================
+                DateTime? fechaVenc = null;
+                if (chkVencimiento.Checked)
+                {
+                    if (dtpVencimiento.Value.Date < DateTime.Today)
+                    {
+                        MessageBox.Show("La fecha de vencimiento no puede ser una fecha pasada.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+                    fechaVenc = dtpVencimiento.Value.Date;
+                }
+                else
+                {
+                    // Fecha lejana por defecto para que no rompa el FIFO si no vence
+                    fechaVenc = new DateTime(2099, 12, 31);
+                }
+
+                // ==========================================
+                // 4. CAPTURA DE DATOS RESTANTES Y GUARDADO
+                // ==========================================
+                string nombre = cmbNombreProducto.Text.Trim();
+                string descripcion = textBox4.Text.Trim();
                 decimal precioActual = nupPrecio.Value;
                 int categoriaId = Convert.ToInt32(cmbCategoria.SelectedValue);
                 decimal stockMinimo = nupStockMin.Value;
                 bool seVendePorPeso = chkPorPeso.Checked;
 
+                // Si estamos modificando un producto que ya existía y cambió el precio
                 if (idProductoSeleccionado > 0 && precioActual != precioOriginal)
                 {
                     DialogResult resp = MessageBox.Show($"El precio cambió de ${precioOriginal} a ${precioActual}.\n\n¿Desea actualizar el precio en el sistema?", "Cambio de Precio", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -293,21 +341,22 @@ namespace PacuIbera.UI.Common
 
                 if (idProductoSeleccionado == 0)
                 {
-                    productoDatos.RegistrarProducto(nombre, categoriaId, precioActual, stockMinimo, seVendePorPeso, descripcion, stockNuevo, fechaVenc);
-                    MessageBox.Show("¡Producto guardado exitosamente!", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    // MODO: NUEVO PRODUCTO (Llama al SP unificado que inserta Producto y Lote juntos)
+                    productoDatos.RegistrarProducto(nombre, categoriaId, precioActual, stockMinimo, seVendePorPeso, descripcion, stockInicial, fechaVenc.Value);
+                    MessageBox.Show("¡Producto guardado exitosamente con su stock!", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    productoDatos.ModificarProducto(idProductoSeleccionado, nombre, categoriaId, precioActual, stockMinimo, seVendePorPeso, descripcion, stockNuevo, fechaVenc);
+                    productoDatos.ModificarProducto(idProductoSeleccionado, nombre, categoriaId, precioActual, stockMinimo, seVendePorPeso, descripcion, stockInicial, fechaVenc.Value);
                     MessageBox.Show("¡Producto actualizado exitosamente!", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
 
-                btnCancelarCliente_Click(null, null);
-                CargarListaProductos();
+                btnCancelarCliente_Click(null, null); // Limpia los campos
+                CargarListaProductos(); // Refresca la grilla
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al guardar: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Error al guardar", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -458,7 +507,7 @@ namespace PacuIbera.UI.Common
                     chkPorPeso.Checked = Convert.ToBoolean(row["SeVendePorPeso"]);
                     textBox4.Text = row["Descripcion"].ToString();
 
-                    if (SesionActiva.Rol != "Vendedor")
+                    if (SesionActiva.Rol == "Administrador")
                     {
                         GUARDAR.Text = "ACTUALIZAR";
                         btnEliminar.Visible = true;

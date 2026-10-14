@@ -8,6 +8,9 @@ namespace PacuIbera.UI.Common
     {
         private int usuarioIdSesion;
 
+        public bool AperturaExitosa { get; private set; } = false;
+        public int CajaIdApertura { get; private set; } = 0;
+
         // Modificamos el constructor para recibir el ID del usuario logueado
         public AperturaCajaForm(int usuarioId)
         {
@@ -34,8 +37,12 @@ namespace PacuIbera.UI.Common
                 CajaDatos cajaDatos = new CajaDatos();
                 int nuevaCajaId = cajaDatos.AbrirCaja(usuarioIdSesion, montoInicial);
 
+                CajaIdApertura = nuevaCajaId;
+                AperturaExitosa = true;
+
                 MessageBox.Show($"¡Caja abierta con éxito! (ID de Caja: {nuevaCajaId}) - Saldo inicial: ${montoInicial}", "Apertura de Caja", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
+                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)

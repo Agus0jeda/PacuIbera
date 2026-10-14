@@ -2,7 +2,6 @@
 using System.Windows.Forms;
 using PacuIbera.Dominio;
 using Negocio;
-using Datos; // Para usar CajaDatos
 
 namespace PacuIbera.UI.Common
 {
@@ -33,29 +32,21 @@ namespace PacuIbera.UI.Common
                     SesionActiva.Apellido = user.Apellido;
                     SesionActiva.Rol = user.Rol;
 
-                    this.Hide();
-
-                    // REGLA NUEVA: La caja es obligatoria ÚNICAMENTE para el Vendedor
                     if (user.Rol == "Vendedor")
                     {
-                        CajaDatos cajaDatos = new CajaDatos();
-                        int cajaId = cajaDatos.VerificarCajaAbierta(user.Id);
+                        this.Hide();
 
-                        if (cajaId <= 0)
+                        AperturaCajaForm formCaja = new AperturaCajaForm(user.Id);
+                        formCaja.ShowDialog();
+
+                        if (!formCaja.AperturaExitosa)
                         {
-                            AperturaCajaForm formCaja = new AperturaCajaForm(user.Id);
-                            formCaja.ShowDialog();
-
-                            cajaId = cajaDatos.VerificarCajaAbierta(user.Id);
-
-                            if (cajaId <= 0)
-                            {
-                                MessageBox.Show("Es obligatorio realizar la apertura de caja para comenzar el turno.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                this.Show();
-                                return;
-                            }
+                            MessageBox.Show("Es obligatorio realizar la apertura de caja para comenzar el turno.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            this.Show();
+                            return;
                         }
-                        SesionActiva.IdCaja = cajaId;
+
+                        SesionActiva.IdCaja = formCaja.CajaIdApertura;
                     }
                     else
                     {

@@ -92,8 +92,10 @@ namespace PacuIbera.UI.Common
                     btnEmpleados.Visible = true;
                     btnProveedores.Visible = true;
                     btnCompras.Visible = false;// por ahora 
-
+                    btnVentas.Visible = false;
                     if (btnAnalisis != null) btnAnalisis.Visible = false;
+                    btnCerrarTurno.Text = "CERRAR SESIÓN";
+                    btnCerrarTurno.BackColor = Color.DimGray;
                     break;
 
                 case "Vendedor":

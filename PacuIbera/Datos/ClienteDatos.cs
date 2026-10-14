@@ -122,19 +122,22 @@ namespace Datos
         }
 
         // 4. Modificar un cliente existente (CRM)
-        public void ModificarClienteCRM(int id, string nombre, string apellido, string telefono, string direccion)
+        public void ModificarClienteCRM(int id, string nombre, string apellido, string telefono, string direccion, int provinciaId, int localidadId)
         {
-            using (Microsoft.Data.SqlClient.SqlConnection conexion = ObtenerConexion())
+            using (SqlConnection con = ObtenerConexion())
             {
-                Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand("sp_ActualizarClienteCRM", conexion);
+                SqlCommand cmd = new SqlCommand("sp_ActualizarClienteCRM", con);
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@Id", id);
-                cmd.Parameters.AddWithValue("@Nombre", nombre.Trim());
-                cmd.Parameters.AddWithValue("@Apellido", apellido.Trim());
-                cmd.Parameters.AddWithValue("@Telefono", telefono.Trim());
-                cmd.Parameters.AddWithValue("@Direccion", direccion.Trim());
+                cmd.Parameters.AddWithValue("@Nombre", nombre);
+                cmd.Parameters.AddWithValue("@Apellido", apellido);
+                cmd.Parameters.AddWithValue("@Telefono", telefono);
+                cmd.Parameters.AddWithValue("@Direccion", direccion);
+                cmd.Parameters.AddWithValue("@ProvinciaId", provinciaId);
+                cmd.Parameters.AddWithValue("@LocalidadId", localidadId);
 
-                conexion.Open();
+                con.Open();
+
                 cmd.ExecuteNonQuery();
             }
         }

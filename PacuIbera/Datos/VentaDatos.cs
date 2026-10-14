@@ -83,7 +83,7 @@ namespace PacuIbera.Datos
             {
                 string query = @"SELECT V.Id AS [Nro Venta], V.FechaHora AS Fecha, 
                                     ISNULL(C.Nombre + ' ' + C.Apellido, 'Consumidor Final') AS Cliente, 
-                                    U.Nombre + ' ' + U.Apellido AS Cajero, 
+                                    U.Nombre + ' ' + U.Apellido AS Vendedor, 
                                     V.Total, V.Estado
                              FROM Venta V
                              LEFT JOIN Cliente C ON V.ClienteId = C.Id
