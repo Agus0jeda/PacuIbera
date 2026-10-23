@@ -50,6 +50,7 @@ namespace PacuIbera.UI.Common
             txtApellidoCliente = new TextBox();
             txtNombreCliente = new TextBox();
             lblNuevoCliente = new Label();
+            btnEliminar = new Button();
             panel1 = new Panel();
             label1 = new Label();
             txtBuscar = new TextBox();
@@ -92,31 +93,29 @@ namespace PacuIbera.UI.Common
             nuevoCliente.Controls.Add(txtApellidoCliente);
             nuevoCliente.Controls.Add(txtNombreCliente);
             nuevoCliente.Controls.Add(lblNuevoCliente);
+            nuevoCliente.Controls.Add(btnEliminar);
             nuevoCliente.Dock = DockStyle.Left;
             nuevoCliente.Font = new Font("Microsoft Sans Serif", 12F);
             nuevoCliente.Location = new Point(0, 0);
-            nuevoCliente.Margin = new Padding(3, 2, 3, 2);
             nuevoCliente.Name = "nuevoCliente";
-            nuevoCliente.Size = new Size(306, 400);
+            nuevoCliente.Size = new Size(350, 533);
             nuevoCliente.TabIndex = 0;
             nuevoCliente.Paint += nuevoCliente_Paint;
             // 
             // cmbLocalidad
             // 
             cmbLocalidad.FormattingEnabled = true;
-            cmbLocalidad.Location = new Point(87, 236);
-            cmbLocalidad.Margin = new Padding(3, 2, 3, 2);
+            cmbLocalidad.Location = new Point(99, 315);
             cmbLocalidad.Name = "cmbLocalidad";
-            cmbLocalidad.Size = new Size(195, 28);
+            cmbLocalidad.Size = new Size(222, 33);
             cmbLocalidad.TabIndex = 24;
             // 
             // cmbProvincia
             // 
             cmbProvincia.FormattingEnabled = true;
-            cmbProvincia.Location = new Point(87, 199);
-            cmbProvincia.Margin = new Padding(3, 2, 3, 2);
+            cmbProvincia.Location = new Point(99, 265);
             cmbProvincia.Name = "cmbProvincia";
-            cmbProvincia.Size = new Size(195, 28);
+            cmbProvincia.Size = new Size(222, 33);
             cmbProvincia.TabIndex = 23;
             cmbProvincia.SelectedIndexChanged += cmbProvincia_SelectedIndexChanged;
             // 
@@ -124,9 +123,9 @@ namespace PacuIbera.UI.Common
             // 
             lblTelefonoCliente.AutoSize = true;
             lblTelefonoCliente.Font = new Font("Microsoft Sans Serif", 9F);
-            lblTelefonoCliente.Location = new Point(15, 131);
+            lblTelefonoCliente.Location = new Point(17, 175);
             lblTelefonoCliente.Name = "lblTelefonoCliente";
-            lblTelefonoCliente.Size = new Size(61, 15);
+            lblTelefonoCliente.Size = new Size(74, 18);
             lblTelefonoCliente.TabIndex = 22;
             lblTelefonoCliente.Text = "Telefono :";
             // 
@@ -134,21 +133,20 @@ namespace PacuIbera.UI.Common
             // 
             txtTelefonoCliente.CharacterCasing = CharacterCasing.Upper;
             txtTelefonoCliente.Font = new Font("Microsoft Sans Serif", 9F);
-            txtTelefonoCliente.Location = new Point(87, 125);
-            txtTelefonoCliente.Margin = new Padding(3, 2, 3, 2);
+            txtTelefonoCliente.Location = new Point(99, 167);
             txtTelefonoCliente.MaxLength = 100;
             txtTelefonoCliente.Multiline = true;
             txtTelefonoCliente.Name = "txtTelefonoCliente";
-            txtTelefonoCliente.Size = new Size(195, 21);
+            txtTelefonoCliente.Size = new Size(222, 27);
             txtTelefonoCliente.TabIndex = 21;
             // 
             // lblDireccionCliente
             // 
             lblDireccionCliente.AutoSize = true;
             lblDireccionCliente.Font = new Font("Microsoft Sans Serif", 9F);
-            lblDireccionCliente.Location = new Point(15, 168);
+            lblDireccionCliente.Location = new Point(17, 224);
             lblDireccionCliente.Name = "lblDireccionCliente";
-            lblDireccionCliente.Size = new Size(65, 15);
+            lblDireccionCliente.Size = new Size(79, 18);
             lblDireccionCliente.TabIndex = 18;
             lblDireccionCliente.Text = "Direccion :";
             // 
@@ -156,21 +154,20 @@ namespace PacuIbera.UI.Common
             // 
             txtDireccionCliente.CharacterCasing = CharacterCasing.Upper;
             txtDireccionCliente.Font = new Font("Microsoft Sans Serif", 9F);
-            txtDireccionCliente.Location = new Point(87, 162);
-            txtDireccionCliente.Margin = new Padding(3, 2, 3, 2);
+            txtDireccionCliente.Location = new Point(99, 216);
             txtDireccionCliente.MaxLength = 100;
             txtDireccionCliente.Multiline = true;
             txtDireccionCliente.Name = "txtDireccionCliente";
-            txtDireccionCliente.Size = new Size(195, 21);
+            txtDireccionCliente.Size = new Size(222, 27);
             txtDireccionCliente.TabIndex = 17;
             // 
             // lblLocCliente
             // 
             lblLocCliente.AutoSize = true;
             lblLocCliente.Font = new Font("Microsoft Sans Serif", 9F);
-            lblLocCliente.Location = new Point(15, 249);
+            lblLocCliente.Location = new Point(17, 332);
             lblLocCliente.Name = "lblLocCliente";
-            lblLocCliente.Size = new Size(67, 15);
+            lblLocCliente.Size = new Size(79, 18);
             lblLocCliente.TabIndex = 17;
             lblLocCliente.Text = "Localidad :";
             // 
@@ -178,9 +175,9 @@ namespace PacuIbera.UI.Common
             // 
             lblProvCliente.AutoSize = true;
             lblProvCliente.Font = new Font("Microsoft Sans Serif", 9F);
-            lblProvCliente.Location = new Point(15, 212);
+            lblProvCliente.Location = new Point(17, 283);
             lblProvCliente.Name = "lblProvCliente";
-            lblProvCliente.Size = new Size(63, 15);
+            lblProvCliente.Size = new Size(77, 18);
             lblProvCliente.TabIndex = 16;
             lblProvCliente.Text = "Provincia :";
             // 
@@ -188,9 +185,9 @@ namespace PacuIbera.UI.Common
             // 
             lblApellidoCliente.AutoSize = true;
             lblApellidoCliente.Font = new Font("Microsoft Sans Serif", 9F);
-            lblApellidoCliente.Location = new Point(15, 92);
+            lblApellidoCliente.Location = new Point(17, 123);
             lblApellidoCliente.Name = "lblApellidoCliente";
-            lblApellidoCliente.Size = new Size(57, 15);
+            lblApellidoCliente.Size = new Size(67, 18);
             lblApellidoCliente.TabIndex = 14;
             lblApellidoCliente.Text = "Apellido :";
             // 
@@ -198,9 +195,9 @@ namespace PacuIbera.UI.Common
             // 
             lblNombreCliente.AutoSize = true;
             lblNombreCliente.Font = new Font("Microsoft Sans Serif", 9F);
-            lblNombreCliente.Location = new Point(15, 58);
+            lblNombreCliente.Location = new Point(17, 77);
             lblNombreCliente.Name = "lblNombreCliente";
-            lblNombreCliente.Size = new Size(58, 15);
+            lblNombreCliente.Size = new Size(70, 18);
             lblNombreCliente.TabIndex = 13;
             lblNombreCliente.Text = "Nombre :";
             lblNombreCliente.Click += label3_Click;
@@ -212,11 +209,11 @@ namespace PacuIbera.UI.Common
             btnCancelar.FlatAppearance.BorderSize = 0;
             btnCancelar.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 192, 192);
             btnCancelar.FlatStyle = FlatStyle.Flat;
-            btnCancelar.Font = new Font("Microsoft Sans Serif", 9F);
-            btnCancelar.Location = new Point(166, 346);
-            btnCancelar.Margin = new Padding(3, 2, 3, 2);
+            btnCancelar.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold);
+            btnCancelar.ForeColor = Color.WhiteSmoke;
+            btnCancelar.Location = new Point(174, 415);
             btnCancelar.Name = "btnCancelar";
-            btnCancelar.Size = new Size(96, 30);
+            btnCancelar.Size = new Size(110, 40);
             btnCancelar.TabIndex = 12;
             btnCancelar.Text = "CANCELAR";
             btnCancelar.UseVisualStyleBackColor = false;
@@ -228,35 +225,34 @@ namespace PacuIbera.UI.Common
             btnGuardar.FlatAppearance.BorderSize = 0;
             btnGuardar.FlatAppearance.MouseOverBackColor = Color.FromArgb(192, 255, 192);
             btnGuardar.FlatStyle = FlatStyle.Flat;
-            btnGuardar.Font = new Font("Microsoft Sans Serif", 9F);
-            btnGuardar.Location = new Point(30, 346);
-            btnGuardar.Margin = new Padding(3, 2, 3, 2);
+            btnGuardar.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold);
+            btnGuardar.ForeColor = Color.WhiteSmoke;
+            btnGuardar.Location = new Point(34, 461);
             btnGuardar.Name = "btnGuardar";
-            btnGuardar.Size = new Size(96, 30);
+            btnGuardar.Size = new Size(110, 40);
             btnGuardar.TabIndex = 11;
             btnGuardar.Text = "GUARDAR";
             btnGuardar.UseVisualStyleBackColor = false;
+            btnGuardar.Click += btnGuardar_Click;
             // 
             // txtApellidoCliente
             // 
             txtApellidoCliente.CharacterCasing = CharacterCasing.Upper;
             txtApellidoCliente.Font = new Font("Microsoft Sans Serif", 9F);
-            txtApellidoCliente.Location = new Point(87, 86);
-            txtApellidoCliente.Margin = new Padding(3, 2, 3, 2);
+            txtApellidoCliente.Location = new Point(99, 115);
             txtApellidoCliente.MaxLength = 100;
             txtApellidoCliente.Name = "txtApellidoCliente";
-            txtApellidoCliente.Size = new Size(195, 21);
+            txtApellidoCliente.Size = new Size(222, 24);
             txtApellidoCliente.TabIndex = 8;
             // 
             // txtNombreCliente
             // 
             txtNombreCliente.CharacterCasing = CharacterCasing.Upper;
             txtNombreCliente.Font = new Font("Microsoft Sans Serif", 9F);
-            txtNombreCliente.Location = new Point(87, 52);
-            txtNombreCliente.Margin = new Padding(3, 2, 3, 2);
+            txtNombreCliente.Location = new Point(99, 69);
             txtNombreCliente.MaxLength = 100;
             txtNombreCliente.Name = "txtNombreCliente";
-            txtNombreCliente.Size = new Size(195, 21);
+            txtNombreCliente.Size = new Size(222, 24);
             txtNombreCliente.TabIndex = 6;
             txtNombreCliente.TextChanged += textBox1_TextChanged;
             // 
@@ -264,11 +260,28 @@ namespace PacuIbera.UI.Common
             // 
             lblNuevoCliente.AutoSize = true;
             lblNuevoCliente.Font = new Font("Microsoft Sans Serif", 12F);
-            lblNuevoCliente.Location = new Point(87, 15);
+            lblNuevoCliente.Location = new Point(99, 20);
             lblNuevoCliente.Name = "lblNuevoCliente";
-            lblNuevoCliente.Size = new Size(107, 20);
+            lblNuevoCliente.Size = new Size(135, 25);
             lblNuevoCliente.TabIndex = 0;
             lblNuevoCliente.Text = "Nuevo Cliente";
+            // 
+            // btnEliminar
+            // 
+            btnEliminar.BackColor = Color.Red;
+            btnEliminar.Cursor = Cursors.Hand;
+            btnEliminar.FlatAppearance.BorderSize = 0;
+            btnEliminar.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 192, 192);
+            btnEliminar.FlatStyle = FlatStyle.Flat;
+            btnEliminar.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold);
+            btnEliminar.ForeColor = Color.WhiteSmoke;
+            btnEliminar.Location = new Point(231, 461);
+            btnEliminar.Name = "btnEliminar";
+            btnEliminar.Size = new Size(110, 40);
+            btnEliminar.TabIndex = 13;
+            btnEliminar.Text = "ELIMINAR";
+            btnEliminar.UseVisualStyleBackColor = false;
+            btnEliminar.Click += btnEliminar_Click;
             // 
             // panel1
             // 
@@ -277,28 +290,26 @@ namespace PacuIbera.UI.Common
             panel1.Controls.Add(btnCerrar);
             panel1.Controls.Add(lblTituloCliente);
             panel1.Dock = DockStyle.Top;
-            panel1.Location = new Point(306, 0);
-            panel1.Margin = new Padding(3, 2, 3, 2);
+            panel1.Location = new Point(350, 0);
             panel1.Name = "panel1";
-            panel1.Size = new Size(566, 52);
+            panel1.Size = new Size(647, 69);
             panel1.TabIndex = 1;
             // 
             // label1
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Microsoft Sans Serif", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label1.Location = new Point(5, 34);
+            label1.Location = new Point(6, 45);
             label1.Name = "label1";
-            label1.Size = new Size(234, 16);
+            label1.Size = new Size(299, 20);
             label1.TabIndex = 11;
             label1.Text = "Filtrar (Nombre/ Apellido /DNI_CUIT):  ";
             // 
             // txtBuscar
             // 
-            txtBuscar.Location = new Point(237, 31);
-            txtBuscar.Margin = new Padding(3, 2, 3, 2);
+            txtBuscar.Location = new Point(271, 41);
             txtBuscar.Name = "txtBuscar";
-            txtBuscar.Size = new Size(206, 23);
+            txtBuscar.Size = new Size(235, 27);
             txtBuscar.TabIndex = 10;
             txtBuscar.TextChanged += txtBuscar_TextChanged;
             // 
@@ -309,9 +320,9 @@ namespace PacuIbera.UI.Common
             btnCerrar.Cursor = Cursors.Hand;
             btnCerrar.Font = new Font("Segoe UI", 11F);
             btnCerrar.ForeColor = SystemColors.ControlDarkDark;
-            btnCerrar.Location = new Point(536, 7);
+            btnCerrar.Location = new Point(613, 9);
             btnCerrar.Name = "btnCerrar";
-            btnCerrar.Size = new Size(18, 20);
+            btnCerrar.Size = new Size(23, 25);
             btnCerrar.TabIndex = 9;
             btnCerrar.Text = "X";
             btnCerrar.Click += btnCerrar_Click;
@@ -320,9 +331,9 @@ namespace PacuIbera.UI.Common
             // 
             lblTituloCliente.AutoSize = true;
             lblTituloCliente.Font = new Font("Microsoft Sans Serif", 12F);
-            lblTituloCliente.Location = new Point(224, 7);
+            lblTituloCliente.Location = new Point(256, 9);
             lblTituloCliente.Name = "lblTituloCliente";
-            lblTituloCliente.Size = new Size(87, 20);
+            lblTituloCliente.Size = new Size(110, 25);
             lblTituloCliente.TabIndex = 0;
             lblTituloCliente.Text = "CLIENTES";
             // 
@@ -334,10 +345,9 @@ namespace PacuIbera.UI.Common
             dgvClientes.DataSource = usuarioDatosBindingSource;
             dgvClientes.Dock = DockStyle.Fill;
             dgvClientes.Location = new Point(0, 0);
-            dgvClientes.Margin = new Padding(3, 2, 3, 2);
             dgvClientes.Name = "dgvClientes";
             dgvClientes.RowHeadersWidth = 51;
-            dgvClientes.Size = new Size(566, 348);
+            dgvClientes.Size = new Size(647, 464);
             dgvClientes.TabIndex = 2;
             dgvClientes.CellContentClick += dataGridView1_CellContentClick;
             // 
@@ -400,9 +410,9 @@ namespace PacuIbera.UI.Common
             // lblSinResultados
             // 
             lblSinResultados.AutoSize = true;
-            lblSinResultados.Location = new Point(108, 64);
+            lblSinResultados.Location = new Point(123, 85);
             lblSinResultados.Name = "lblSinResultados";
-            lblSinResultados.Size = new Size(17, 15);
+            lblSinResultados.Size = new Size(21, 20);
             lblSinResultados.TabIndex = 12;
             lblSinResultados.Text = "\"\"";
             lblSinResultados.Visible = false;
@@ -412,22 +422,20 @@ namespace PacuIbera.UI.Common
             panel2.Controls.Add(lblSinResultados);
             panel2.Controls.Add(dgvClientes);
             panel2.Dock = DockStyle.Fill;
-            panel2.Location = new Point(306, 52);
-            panel2.Margin = new Padding(3, 2, 3, 2);
+            panel2.Location = new Point(350, 69);
             panel2.Name = "panel2";
-            panel2.Size = new Size(566, 348);
+            panel2.Size = new Size(647, 464);
             panel2.TabIndex = 3;
             // 
             // ClientesForm
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(872, 400);
+            ClientSize = new Size(997, 533);
             Controls.Add(panel2);
             Controls.Add(panel1);
             Controls.Add(nuevoCliente);
             FormBorderStyle = FormBorderStyle.None;
-            Margin = new Padding(3, 2, 3, 2);
             Name = "ClientesForm";
             Text = "ClientesForm";
             nuevoCliente.ResumeLayout(false);
@@ -444,6 +452,7 @@ namespace PacuIbera.UI.Common
         #endregion
 
         private Panel nuevoCliente;
+        private Button btnEliminar;
         private Panel panel1;
         private Label lblTituloCliente;
         private TextBox txtApellidoCliente;

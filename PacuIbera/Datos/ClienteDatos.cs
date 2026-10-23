@@ -2,9 +2,9 @@
 using System;
 using System.Data;
 using PacuIbera.Dominio;
-using PacuIbera.Datos;
+using Datos;
 
-namespace Datos
+namespace PacuIbera.Datos
 {
     public class ClienteDatos : ConexionBD
     {
@@ -139,6 +139,19 @@ namespace Datos
                 con.Open();
 
                 cmd.ExecuteNonQuery();
+            }
+        }
+
+        public void EliminarCliente(int id)
+        {
+            using (SqlConnection con = ObtenerConexion())
+            {
+                using (SqlCommand cmd = new SqlCommand("UPDATE Cliente SET Activo = 0 WHERE Id = @Id", con))
+                {
+                    cmd.Parameters.AddWithValue("@Id", id);
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
             }
         }
     }

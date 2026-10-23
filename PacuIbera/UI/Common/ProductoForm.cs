@@ -31,7 +31,7 @@ namespace PacuIbera.UI.Common
 
             bucarNombreProducto.TextChanged += Filtros_Changed;
             buscarCatProd.SelectedIndexChanged += Filtros_Changed;
-            listView1.SelectedIndexChanged += listView1_SelectedIndexChanged;
+            dgvProductos.SelectedIndexChanged += listView1_SelectedIndexChanged;
             btnEliminar.Click += btnEliminar_Click;
             cmbNombreProducto.SelectedIndexChanged += cmbNombreProducto_SelectedIndexChanged;
 
@@ -101,20 +101,20 @@ namespace PacuIbera.UI.Common
             productoDatos.ProcesarLotesVencidos();
             try
             {
-                listView1.Clear();
-                listView1.View = View.Details;
-                listView1.GridLines = true;
-                listView1.FullRowSelect = true;
+                dgvProductos.Clear();
+                dgvProductos.View = View.Details;
+                dgvProductos.GridLines = true;
+                dgvProductos.FullRowSelect = true;
 
-                listView1.Columns.Add("ID", 40);
-                listView1.Columns.Add("Nombre", 180);
-                listView1.Columns.Add("Categoría", 120);
-                listView1.Columns.Add("Precio", 80);
-                listView1.Columns.Add("Stock", 60);
-                listView1.Columns.Add("Stock Min", 80);
-                listView1.Columns.Add("X Peso", 60);
-                listView1.Columns.Add("Próx. Venc.", 90);
-                listView1.Columns.Add("Descripción", 180);
+                dgvProductos.Columns.Add("ID", 40);
+                dgvProductos.Columns.Add("Nombre", 180);
+                dgvProductos.Columns.Add("Categoría", 120);
+                dgvProductos.Columns.Add("Precio", 80);
+                dgvProductos.Columns.Add("Stock", 60);
+                dgvProductos.Columns.Add("Stock Min", 80);
+                dgvProductos.Columns.Add("X Peso", 60);
+                dgvProductos.Columns.Add("Próx. Venc.", 90);
+                dgvProductos.Columns.Add("Descripción", 180);
 
                 dtProductosGlobal = productoDatos.ObtenerProductos();
                 bucarNombreProducto.Items.Clear();
@@ -192,7 +192,7 @@ namespace PacuIbera.UI.Common
             DataView dv = dtProductosGlobal.DefaultView;
             dv.RowFilter = filtro;
 
-            listView1.Items.Clear();
+            dgvProductos.Items.Clear();
             foreach (DataRowView rowView in dv)
             {
                 DataRow row = rowView.Row;
@@ -219,15 +219,15 @@ namespace PacuIbera.UI.Common
                 if (stockActual <= stockMinimo) { item.BackColor = System.Drawing.Color.LightCoral; }
                 else if (lotesPorVencer > 0) { item.BackColor = System.Drawing.Color.LightYellow; }
 
-                listView1.Items.Add(item);
+                dgvProductos.Items.Add(item);
             }
         }
 
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (listView1.SelectedItems.Count > 0)
+            if (dgvProductos.SelectedItems.Count > 0)
             {
-                ListViewItem item = listView1.SelectedItems[0];
+                ListViewItem item = dgvProductos.SelectedItems[0];
                 idProductoSeleccionado = Convert.ToInt32(item.Text);
 
                 cmbNombreProducto.Text = item.SubItems[1].Text;
@@ -392,7 +392,7 @@ namespace PacuIbera.UI.Common
             chkPorPeso.Checked = false;
             if (cmbCategoria.Items.Count > 0) cmbCategoria.SelectedIndex = 0;
 
-            if (listView1.SelectedItems.Count > 0) listView1.SelectedItems[0].Selected = false;
+            if (dgvProductos.SelectedItems.Count > 0) dgvProductos.SelectedItems[0].Selected = false;
         }
 
         private void btnNuevaCat_Click(object sender, EventArgs e)
@@ -445,14 +445,14 @@ namespace PacuIbera.UI.Common
 
         private void listView1_DoubleClick_1(object sender, EventArgs e)
         {
-            if (listView1.SelectedItems.Count > 0)
+            if (dgvProductos.SelectedItems.Count > 0)
             {
-                Point mousePos = listView1.PointToClient(Control.MousePosition);
-                ListViewHitTestInfo hit = listView1.HitTest(mousePos);
+                Point mousePos = dgvProductos.PointToClient(Control.MousePosition);
+                ListViewHitTestInfo hit = dgvProductos.HitTest(mousePos);
                 int columnaClickeada = hit.Item.SubItems.IndexOf(hit.SubItem);
 
-                int prodId = Convert.ToInt32(listView1.SelectedItems[0].Text);
-                string prodNombre = listView1.SelectedItems[0].SubItems[1].Text;
+                int prodId = Convert.ToInt32(dgvProductos.SelectedItems[0].Text);
+                string prodNombre = dgvProductos.SelectedItems[0].SubItems[1].Text;
 
                 if (columnaClickeada == 7)
                 {
@@ -551,6 +551,9 @@ namespace PacuIbera.UI.Common
             dgvLotes.ReadOnly = true;
             dgvLotes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvLotes.BackgroundColor = Color.White;
+
+            // Aplicar estilo estandarizado
+            EstiloUI.AplicarEstiloGrid(dgvLotes);
 
             dgvLotes.CellClick += (s, ev) =>
             {

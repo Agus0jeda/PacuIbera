@@ -60,7 +60,7 @@
             STOCK = new Label();
             listaVencimientos = new ListBox();
             listaStockBajo = new ListBox();
-            listView1 = new ListView();
+            dgvProductos = new ListView();
             panelNuevoProducto.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)nupStockMin).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nupPrecio).BeginInit();
@@ -72,9 +72,9 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Microsoft Sans Serif", 12F);
-            label1.Location = new Point(316, 8);
+            label1.Location = new Point(361, 11);
             label1.Name = "label1";
-            label1.Size = new Size(110, 20);
+            label1.Size = new Size(140, 25);
             label1.TabIndex = 6;
             label1.Text = "PRODUCTOS";
             label1.Click += label1_Click;
@@ -86,9 +86,9 @@
             btnCerrar.Cursor = Cursors.Hand;
             btnCerrar.Font = new Font("Segoe UI", 11F);
             btnCerrar.ForeColor = SystemColors.ControlDarkDark;
-            btnCerrar.Location = new Point(822, 8);
+            btnCerrar.Location = new Point(938, 11);
             btnCerrar.Name = "btnCerrar";
-            btnCerrar.Size = new Size(18, 20);
+            btnCerrar.Size = new Size(23, 25);
             btnCerrar.TabIndex = 8;
             btnCerrar.Text = "X";
             btnCerrar.Click += btnCerrar_Click;
@@ -119,24 +119,25 @@
             panelNuevoProducto.Dock = DockStyle.Left;
             panelNuevoProducto.Font = new Font("Microsoft Sans Serif", 12F);
             panelNuevoProducto.Location = new Point(0, 0);
-            panelNuevoProducto.Margin = new Padding(3, 2, 3, 2);
             panelNuevoProducto.Name = "panelNuevoProducto";
-            panelNuevoProducto.Size = new Size(306, 426);
+            panelNuevoProducto.Size = new Size(350, 568);
             panelNuevoProducto.TabIndex = 9;
             // 
             // dtpVencimiento
             // 
             dtpVencimiento.Format = DateTimePickerFormat.Short;
-            dtpVencimiento.Location = new Point(187, 316);
+            dtpVencimiento.Location = new Point(214, 421);
+            dtpVencimiento.Margin = new Padding(3, 4, 3, 4);
             dtpVencimiento.Name = "dtpVencimiento";
-            dtpVencimiento.Size = new Size(100, 26);
+            dtpVencimiento.Size = new Size(114, 30);
             dtpVencimiento.TabIndex = 35;
             // 
             // btnIngresarStock
             // 
-            btnIngresarStock.Location = new Point(92, 229);
+            btnIngresarStock.Location = new Point(105, 305);
+            btnIngresarStock.Margin = new Padding(3, 4, 3, 4);
             btnIngresarStock.Name = "btnIngresarStock";
-            btnIngresarStock.Size = new Size(195, 26);
+            btnIngresarStock.Size = new Size(222, 30);
             btnIngresarStock.TabIndex = 34;
             // 
             // chkVencimiento
@@ -144,9 +145,10 @@
             chkVencimiento.AutoSize = true;
             chkVencimiento.Checked = true;
             chkVencimiento.CheckState = CheckState.Checked;
-            chkVencimiento.Location = new Point(12, 317);
+            chkVencimiento.Location = new Point(14, 423);
+            chkVencimiento.Margin = new Padding(3, 4, 3, 4);
             chkVencimiento.Name = "chkVencimiento";
-            chkVencimiento.Size = new Size(159, 24);
+            chkVencimiento.Size = new Size(197, 29);
             chkVencimiento.TabIndex = 36;
             chkVencimiento.Text = "Tiene Vencimiento";
             chkVencimiento.UseVisualStyleBackColor = true;
@@ -154,9 +156,10 @@
             // 
             // btnNuevoProducto
             // 
-            btnNuevoProducto.Location = new Point(92, 43);
+            btnNuevoProducto.Location = new Point(105, 57);
+            btnNuevoProducto.Margin = new Padding(3, 4, 3, 4);
             btnNuevoProducto.Name = "btnNuevoProducto";
-            btnNuevoProducto.Size = new Size(28, 28);
+            btnNuevoProducto.Size = new Size(32, 37);
             btnNuevoProducto.TabIndex = 33;
             btnNuevoProducto.Text = "+";
             btnNuevoProducto.UseVisualStyleBackColor = true;
@@ -165,9 +168,10 @@
             // cmbNombreProducto
             // 
             cmbNombreProducto.FormattingEnabled = true;
-            cmbNombreProducto.Location = new Point(127, 43);
+            cmbNombreProducto.Location = new Point(145, 57);
+            cmbNombreProducto.Margin = new Padding(3, 4, 3, 4);
             cmbNombreProducto.Name = "cmbNombreProducto";
-            cmbNombreProducto.Size = new Size(160, 28);
+            cmbNombreProducto.Size = new Size(182, 33);
             cmbNombreProducto.TabIndex = 32;
             cmbNombreProducto.SelectedIndexChanged += cmbNombreProducto_SelectedIndexChanged;
             // 
@@ -175,17 +179,18 @@
             // 
             label9.AutoSize = true;
             label9.Font = new Font("Microsoft Sans Serif", 8.999999F);
-            label9.Location = new Point(12, 240);
+            label9.Location = new Point(14, 320);
             label9.Name = "label9";
-            label9.Size = new Size(40, 15);
+            label9.Size = new Size(51, 18);
             label9.TabIndex = 31;
             label9.Text = "Stock:";
             // 
             // btnNuevaCat
             // 
-            btnNuevaCat.Location = new Point(93, 95);
+            btnNuevaCat.Location = new Point(106, 127);
+            btnNuevaCat.Margin = new Padding(3, 4, 3, 4);
             btnNuevaCat.Name = "btnNuevaCat";
-            btnNuevaCat.Size = new Size(28, 28);
+            btnNuevaCat.Size = new Size(32, 37);
             btnNuevaCat.TabIndex = 27;
             btnNuevaCat.Text = "+";
             btnNuevaCat.UseVisualStyleBackColor = true;
@@ -194,17 +199,19 @@
             // cmbCategoria
             // 
             cmbCategoria.FormattingEnabled = true;
-            cmbCategoria.Location = new Point(127, 95);
+            cmbCategoria.Location = new Point(145, 127);
+            cmbCategoria.Margin = new Padding(3, 4, 3, 4);
             cmbCategoria.Name = "cmbCategoria";
-            cmbCategoria.Size = new Size(160, 28);
+            cmbCategoria.Size = new Size(182, 33);
             cmbCategoria.TabIndex = 26;
             // 
             // chkPorPeso
             // 
             chkPorPeso.AutoSize = true;
-            chkPorPeso.Location = new Point(12, 353);
+            chkPorPeso.Location = new Point(14, 471);
+            chkPorPeso.Margin = new Padding(3, 4, 3, 4);
             chkPorPeso.Name = "chkPorPeso";
-            chkPorPeso.Size = new Size(161, 24);
+            chkPorPeso.Size = new Size(199, 29);
             chkPorPeso.TabIndex = 25;
             chkPorPeso.Text = "Se vende por peso";
             chkPorPeso.UseVisualStyleBackColor = true;
@@ -213,28 +220,28 @@
             // 
             label8.AutoSize = true;
             label8.Font = new Font("Microsoft Sans Serif", 8.999999F);
-            label8.Location = new Point(9, 286);
+            label8.Location = new Point(10, 381);
             label8.Name = "label8";
-            label8.Size = new Size(64, 15);
+            label8.Size = new Size(79, 18);
             label8.TabIndex = 24;
             label8.Text = "Stock Min:";
             // 
             // nupStockMin
             // 
             nupStockMin.DecimalPlaces = 3;
-            nupStockMin.Location = new Point(93, 275);
+            nupStockMin.Location = new Point(106, 367);
+            nupStockMin.Margin = new Padding(3, 4, 3, 4);
             nupStockMin.Name = "nupStockMin";
-            nupStockMin.Size = new Size(195, 26);
+            nupStockMin.Size = new Size(223, 30);
             nupStockMin.TabIndex = 23;
             // 
             // nupPrecio
             // 
             nupPrecio.DecimalPlaces = 2;
-            nupPrecio.Location = new Point(93, 138);
-            nupPrecio.Margin = new Padding(3, 2, 3, 2);
+            nupPrecio.Location = new Point(106, 184);
             nupPrecio.Maximum = new decimal(new int[] { 999999, 0, 0, 0 });
             nupPrecio.Name = "nupPrecio";
-            nupPrecio.Size = new Size(194, 26);
+            nupPrecio.Size = new Size(222, 30);
             nupPrecio.TabIndex = 22;
             nupPrecio.TextAlign = HorizontalAlignment.Right;
             nupPrecio.ThousandsSeparator = true;
@@ -247,11 +254,11 @@
             btnEliminar.FlatAppearance.BorderSize = 0;
             btnEliminar.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 192, 192);
             btnEliminar.FlatStyle = FlatStyle.Flat;
-            btnEliminar.Font = new Font("Microsoft Sans Serif", 9F);
-            btnEliminar.Location = new Point(175, 392);
-            btnEliminar.Margin = new Padding(3, 2, 3, 2);
+            btnEliminar.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold);
+            btnEliminar.ForeColor = Color.WhiteSmoke;
+            btnEliminar.Location = new Point(200, 523);
             btnEliminar.Name = "btnEliminar";
-            btnEliminar.Size = new Size(96, 30);
+            btnEliminar.Size = new Size(110, 40);
             btnEliminar.TabIndex = 21;
             btnEliminar.Text = "ELIMINAR";
             btnEliminar.UseVisualStyleBackColor = false;
@@ -262,11 +269,11 @@
             GUARDAR.FlatAppearance.BorderSize = 0;
             GUARDAR.FlatAppearance.MouseOverBackColor = Color.FromArgb(192, 255, 192);
             GUARDAR.FlatStyle = FlatStyle.Flat;
-            GUARDAR.Font = new Font("Microsoft Sans Serif", 9F);
-            GUARDAR.Location = new Point(43, 392);
-            GUARDAR.Margin = new Padding(3, 2, 3, 2);
+            GUARDAR.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold);
+            GUARDAR.ForeColor = Color.WhiteSmoke;
+            GUARDAR.Location = new Point(49, 523);
             GUARDAR.Name = "GUARDAR";
-            GUARDAR.Size = new Size(96, 30);
+            GUARDAR.Size = new Size(110, 40);
             GUARDAR.TabIndex = 20;
             GUARDAR.Text = "GUARDAR";
             GUARDAR.UseVisualStyleBackColor = false;
@@ -275,13 +282,12 @@
             // textBox4
             // 
             textBox4.CharacterCasing = CharacterCasing.Upper;
-            textBox4.Location = new Point(93, 186);
-            textBox4.Margin = new Padding(3, 2, 3, 2);
+            textBox4.Location = new Point(106, 248);
             textBox4.MaxLength = 100;
             textBox4.Multiline = true;
             textBox4.Name = "textBox4";
             textBox4.ScrollBars = ScrollBars.Vertical;
-            textBox4.Size = new Size(195, 26);
+            textBox4.Size = new Size(222, 33);
             textBox4.TabIndex = 19;
             textBox4.DoubleClick += textBox4_DoubleClick;
             // 
@@ -289,9 +295,9 @@
             // 
             label7.AutoSize = true;
             label7.Font = new Font("Microsoft Sans Serif", 8.999999F);
-            label7.Location = new Point(9, 192);
+            label7.Location = new Point(10, 256);
             label7.Name = "label7";
-            label7.Size = new Size(81, 15);
+            label7.Size = new Size(99, 18);
             label7.TabIndex = 18;
             label7.Text = "Descripcion  :";
             // 
@@ -299,9 +305,9 @@
             // 
             label5.AutoSize = true;
             label5.Font = new Font("Microsoft Sans Serif", 8.999999F);
-            label5.Location = new Point(9, 144);
+            label5.Location = new Point(10, 192);
             label5.Name = "label5";
-            label5.Size = new Size(48, 15);
+            label5.Size = new Size(59, 18);
             label5.TabIndex = 15;
             label5.Text = "Precio :";
             label5.Click += label5_Click;
@@ -310,9 +316,9 @@
             // 
             label4.AutoSize = true;
             label4.Font = new Font("Microsoft Sans Serif", 8.999999F);
-            label4.Location = new Point(9, 100);
+            label4.Location = new Point(10, 133);
             label4.Name = "label4";
-            label4.Size = new Size(66, 15);
+            label4.Size = new Size(80, 18);
             label4.TabIndex = 14;
             label4.Text = "Categoria :";
             // 
@@ -320,9 +326,9 @@
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Microsoft Sans Serif", 8.999999F);
-            label3.Location = new Point(9, 56);
+            label3.Location = new Point(10, 75);
             label3.Name = "label3";
-            label3.Size = new Size(58, 15);
+            label3.Size = new Size(70, 18);
             label3.TabIndex = 13;
             label3.Text = "Nombre :";
             // 
@@ -330,9 +336,9 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Microsoft Sans Serif", 12F);
-            label2.Location = new Point(70, 6);
+            label2.Location = new Point(80, 8);
             label2.Name = "label2";
-            label2.Size = new Size(122, 20);
+            label2.Size = new Size(152, 25);
             label2.TabIndex = 8;
             label2.Text = "Nuevo Producto";
             label2.TextAlign = ContentAlignment.TopCenter;
@@ -346,10 +352,9 @@
             panel2.Controls.Add(label1);
             panel2.Controls.Add(label6);
             panel2.Dock = DockStyle.Top;
-            panel2.Location = new Point(306, 0);
-            panel2.Margin = new Padding(3, 2, 3, 2);
+            panel2.Location = new Point(350, 0);
             panel2.Name = "panel2";
-            panel2.Size = new Size(852, 60);
+            panel2.Size = new Size(973, 80);
             panel2.TabIndex = 10;
             panel2.Paint += panel2_Paint;
             // 
@@ -358,10 +363,9 @@
             bucarNombreProducto.Font = new Font("Microsoft Sans Serif", 8.999999F);
             bucarNombreProducto.ForeColor = SystemColors.ButtonShadow;
             bucarNombreProducto.FormattingEnabled = true;
-            bucarNombreProducto.Location = new Point(78, 38);
-            bucarNombreProducto.Margin = new Padding(3, 2, 3, 2);
+            bucarNombreProducto.Location = new Point(89, 51);
             bucarNombreProducto.Name = "bucarNombreProducto";
-            bucarNombreProducto.Size = new Size(224, 23);
+            bucarNombreProducto.Size = new Size(255, 26);
             bucarNombreProducto.TabIndex = 18;
             bucarNombreProducto.Text = "Nombre del Producto";
             // 
@@ -370,10 +374,9 @@
             buscarCatProd.Font = new Font("Microsoft Sans Serif", 8.999999F);
             buscarCatProd.ForeColor = SystemColors.ButtonShadow;
             buscarCatProd.FormattingEnabled = true;
-            buscarCatProd.Location = new Point(326, 38);
-            buscarCatProd.Margin = new Padding(3, 2, 3, 2);
+            buscarCatProd.Location = new Point(373, 51);
             buscarCatProd.Name = "buscarCatProd";
-            buscarCatProd.Size = new Size(224, 23);
+            buscarCatProd.Size = new Size(255, 26);
             buscarCatProd.TabIndex = 17;
             buscarCatProd.Text = "Categoria";
             // 
@@ -381,9 +384,9 @@
             // 
             label6.AutoSize = true;
             label6.Font = new Font("Microsoft Sans Serif", 8.999999F);
-            label6.Location = new Point(14, 39);
+            label6.Location = new Point(16, 52);
             label6.Name = "label6";
-            label6.Size = new Size(38, 15);
+            label6.Size = new Size(45, 18);
             label6.TabIndex = 16;
             label6.Text = "Filtrar";
             // 
@@ -394,20 +397,19 @@
             panel3.Controls.Add(STOCK);
             panel3.Controls.Add(listaVencimientos);
             panel3.Controls.Add(listaStockBajo);
-            panel3.Controls.Add(listView1);
-            panel3.Location = new Point(306, 60);
-            panel3.Margin = new Padding(3, 2, 3, 2);
+            panel3.Controls.Add(dgvProductos);
+            panel3.Location = new Point(350, 80);
             panel3.Name = "panel3";
-            panel3.Size = new Size(852, 366);
+            panel3.Size = new Size(974, 488);
             panel3.TabIndex = 11;
             // 
             // label10
             // 
             label10.AutoSize = true;
             label10.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label10.Location = new Point(594, 238);
+            label10.Location = new Point(679, 317);
             label10.Name = "label10";
-            label10.Size = new Size(128, 15);
+            label10.Size = new Size(163, 20);
             label10.TabIndex = 4;
             label10.Text = "PRÓXIMOS A VENCER";
             label10.TextAlign = ContentAlignment.TopCenter;
@@ -416,9 +418,9 @@
             // 
             STOCK.AutoSize = true;
             STOCK.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            STOCK.Location = new Point(168, 238);
+            STOCK.Location = new Point(192, 317);
             STOCK.Name = "STOCK";
-            STOCK.Size = new Size(78, 15);
+            STOCK.Size = new Size(99, 20);
             STOCK.TabIndex = 3;
             STOCK.Text = "STOCK BAJO";
             STOCK.TextAlign = ContentAlignment.TopCenter;
@@ -428,10 +430,10 @@
             // 
             listaVencimientos.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             listaVencimientos.FormattingEnabled = true;
-            listaVencimientos.ItemHeight = 15;
-            listaVencimientos.Location = new Point(453, 256);
+            listaVencimientos.Location = new Point(518, 341);
+            listaVencimientos.Margin = new Padding(3, 4, 3, 4);
             listaVencimientos.Name = "listaVencimientos";
-            listaVencimientos.Size = new Size(387, 94);
+            listaVencimientos.Size = new Size(442, 124);
             listaVencimientos.TabIndex = 2;
             listaVencimientos.Tag = "";
             // 
@@ -439,35 +441,33 @@
             // 
             listaStockBajo.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             listaStockBajo.FormattingEnabled = true;
-            listaStockBajo.ItemHeight = 15;
-            listaStockBajo.Location = new Point(14, 256);
+            listaStockBajo.Location = new Point(16, 341);
+            listaStockBajo.Margin = new Padding(3, 4, 3, 4);
             listaStockBajo.Name = "listaStockBajo";
-            listaStockBajo.Size = new Size(387, 94);
+            listaStockBajo.Size = new Size(442, 124);
             listaStockBajo.TabIndex = 1;
             // 
-            // listView1
+            // dgvProductos
             // 
-            listView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            listView1.CausesValidation = false;
-            listView1.Font = new Font("Microsoft Sans Serif", 8.999999F);
-            listView1.Location = new Point(14, 34);
-            listView1.Margin = new Padding(3, 2, 3, 2);
-            listView1.Name = "listView1";
-            listView1.Size = new Size(826, 161);
-            listView1.TabIndex = 0;
-            listView1.UseCompatibleStateImageBehavior = false;
-            listView1.DoubleClick += listView1_DoubleClick_1;
+            dgvProductos.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvProductos.CausesValidation = false;
+            dgvProductos.Font = new Font("Microsoft Sans Serif", 8.999999F);
+            dgvProductos.Location = new Point(16, 45);
+            dgvProductos.Name = "dgvProductos";
+            dgvProductos.Size = new Size(943, 213);
+            dgvProductos.TabIndex = 0;
+            dgvProductos.UseCompatibleStateImageBehavior = false;
+            dgvProductos.DoubleClick += listView1_DoubleClick_1;
             // 
             // ProductoForm
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1158, 426);
+            ClientSize = new Size(1323, 568);
             Controls.Add(panel3);
             Controls.Add(panel2);
             Controls.Add(panelNuevoProducto);
             FormBorderStyle = FormBorderStyle.None;
-            Margin = new Padding(3, 2, 3, 2);
             Name = "ProductoForm";
             Text = "ProductoForm";
             panelNuevoProducto.ResumeLayout(false);
@@ -492,7 +492,7 @@
         private Label label5;
         private Label label4;
         private Label label3;
-        private ListView listView1;
+        private ListView dgvProductos;
         private ComboBox buscarCatProd;
         private ComboBox bucarNombreProducto;
         private TextBox textBox4;
@@ -534,7 +534,7 @@
             chkPorPeso.Checked = false;
 
             if (cmbCategoria.Items.Count > 0) cmbCategoria.SelectedIndex = 0;
-            if (listView1.SelectedItems.Count > 0) listView1.SelectedItems[0].Selected = false;
+            if (dgvProductos.SelectedItems.Count > 0) dgvProductos.SelectedItems[0].Selected = false;
 
             cmbNombreProducto.Focus();
         }

@@ -130,7 +130,8 @@
             btnLimpiar.FlatAppearance.BorderSize = 0;
             btnLimpiar.FlatAppearance.MouseOverBackColor = Color.FromArgb(192, 255, 192);
             btnLimpiar.FlatStyle = FlatStyle.Flat;
-            btnLimpiar.Font = new Font("Microsoft Sans Serif", 10F);
+            btnLimpiar.Font = new Font("Microsoft Sans Serif", 10F, FontStyle.Bold);
+            btnLimpiar.ForeColor = Color.WhiteSmoke;
             btnLimpiar.Location = new Point(192, 465);
             btnLimpiar.Name = "btnLimpiar";
             btnLimpiar.Size = new Size(110, 40);
@@ -268,7 +269,8 @@
             btnEliminar.FlatAppearance.BorderSize = 0;
             btnEliminar.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 192, 192);
             btnEliminar.FlatStyle = FlatStyle.Flat;
-            btnEliminar.Font = new Font("Microsoft Sans Serif", 10F);
+            btnEliminar.Font = new Font("Microsoft Sans Serif", 10F, FontStyle.Bold);
+            btnEliminar.ForeColor = Color.WhiteSmoke;
             btnEliminar.Location = new Point(362, 465);
             btnEliminar.Name = "btnEliminar";
             btnEliminar.Size = new Size(110, 40);
@@ -283,7 +285,8 @@
             btnGuardar.FlatAppearance.BorderSize = 0;
             btnGuardar.FlatAppearance.MouseOverBackColor = Color.FromArgb(192, 255, 192);
             btnGuardar.FlatStyle = FlatStyle.Flat;
-            btnGuardar.Font = new Font("Microsoft Sans Serif", 10F);
+            btnGuardar.Font = new Font("Microsoft Sans Serif", 10F, FontStyle.Bold);
+            btnGuardar.ForeColor = Color.WhiteSmoke;
             btnGuardar.Location = new Point(25, 465);
             btnGuardar.Name = "btnGuardar";
             btnGuardar.Size = new Size(110, 40);

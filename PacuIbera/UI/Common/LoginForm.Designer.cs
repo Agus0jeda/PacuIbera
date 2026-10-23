@@ -34,20 +34,20 @@
             // 
             txtUsuario.BorderStyle = BorderStyle.FixedSingle;
             txtUsuario.Font = new Font("Segoe UI", 11F);
-            txtUsuario.Location = new Point(280, 282);
+            txtUsuario.Location = new Point(345, 281);
             txtUsuario.Margin = new Padding(3, 4, 3, 4);
             txtUsuario.Name = "txtUsuario";
-            txtUsuario.Size = new Size(300, 32);
+            txtUsuario.Size = new Size(180, 32);
             txtUsuario.TabIndex = 0;
             // 
             // txtClave
             // 
             txtClave.BorderStyle = BorderStyle.FixedSingle;
             txtClave.Font = new Font("Segoe UI", 11F);
-            txtClave.Location = new Point(280, 354);
+            txtClave.Location = new Point(345, 353);
             txtClave.Margin = new Padding(3, 4, 3, 4);
             txtClave.Name = "txtClave";
-            txtClave.Size = new Size(300, 32);
+            txtClave.Size = new Size(180, 32);
             txtClave.TabIndex = 1;
             txtClave.UseSystemPasswordChar = true;
             // 
@@ -59,7 +59,7 @@
             btnIngresar.FlatStyle = FlatStyle.Flat;
             btnIngresar.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
             btnIngresar.ForeColor = Color.White;
-            btnIngresar.Location = new Point(454, 450);
+            btnIngresar.Location = new Point(428, 450);
             btnIngresar.Margin = new Padding(3, 4, 3, 4);
             btnIngresar.Name = "btnIngresar";
             btnIngresar.Size = new Size(126, 42);
@@ -74,7 +74,7 @@
             btnSalir.FlatAppearance.BorderSize = 0;
             btnSalir.FlatStyle = FlatStyle.Flat;
             btnSalir.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnSalir.Location = new Point(196, 450);
+            btnSalir.Location = new Point(213, 450);
             btnSalir.Margin = new Padding(3, 4, 3, 4);
             btnSalir.Name = "btnSalir";
             btnSalir.Size = new Size(126, 42);
@@ -87,9 +87,9 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            label1.Location = new Point(148, 359);
+            label1.Location = new Point(213, 358);
             label1.Name = "label1";
-            label1.Size = new Size(105, 23);
+            label1.Size = new Size(99, 23);
             label1.TabIndex = 5;
             label1.Text = "Contraseña";
             // 
@@ -110,7 +110,7 @@
             label2.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
             label2.Location = new Point(218, 202);
             label2.Name = "label2";
-            label2.Size = new Size(329, 37);
+            label2.Size = new Size(336, 37);
             label2.TabIndex = 7;
             label2.Text = "Bienvenidos a Pacú Iberá";
             // 
@@ -128,9 +128,9 @@
             // 
             txt.AutoSize = true;
             txt.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            txt.Location = new Point(171, 285);
+            txt.Location = new Point(236, 284);
             txt.Name = "txt";
-            txt.Size = new Size(78, 23);
+            txt.Size = new Size(70, 23);
             txt.TabIndex = 4;
             txt.Text = "Usuario";
             // 
@@ -139,8 +139,8 @@
             AcceptButton = btnIngresar;
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            CancelButton = btnSalir;
             BackColor = Color.WhiteSmoke;
+            CancelButton = btnSalir;
             ClientSize = new Size(760, 650);
             Controls.Add(lblFecha);
             Controls.Add(label2);

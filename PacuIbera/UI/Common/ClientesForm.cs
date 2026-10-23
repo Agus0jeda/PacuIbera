@@ -29,6 +29,16 @@ namespace PacuIbera.UI.Common
             btnGuardar.Click += btnGuardar_Click;
             btnCancelar.Click += btnCancelar_Click;
             cmbProvincia.SelectedIndexChanged += cmbProvincia_SelectedIndexChanged;
+
+            // Activar scroll en el panel izquierdo
+            try
+            {
+                if (nuevoCliente != null)
+                {
+                    nuevoCliente.AutoScroll = true;
+                }
+            }
+            catch { }
         }
 
         private void ClientesForm_Load(object sender, EventArgs e)
@@ -38,9 +48,14 @@ namespace PacuIbera.UI.Common
             CargarGrillaTabs("Cartera");
             EstilizarGrilla();
 
+            // Aplicar EstiloUI al btnCerrar y al dgv
+            EstiloUI.CrearBotonCerrar(this);
+            EstiloUI.AplicarEstiloGrid(dgvClientes);
+
             dgvClientes.CellFormatting += DgvClientes_CellFormatting;
-            dgvClientes.CellClick += DgvClientes_CellClick; // Conectamos el clic en la tabla
+            dgvClientes.CellClick += DgvClientes_CellClick;
         }
+
 
         private void ConfigurarPestanas()
         {
@@ -79,7 +94,12 @@ namespace PacuIbera.UI.Common
                     if (dgvClientes.Columns.Contains("Apellido")) dgvClientes.Columns["Apellido"].Visible = false;
 
                     // Ocultamos el ID
-                    if (dgvClientes.Columns.Contains("Id")) dgvClientes.Columns["Id"].Visible = false;
+                    try
+                    {
+                        if (dgvClientes.Columns.Contains("Id")) dgvClientes.Columns["Id"].Visible = false;
+                        else if (dgvClientes.Columns.Count > 0) dgvClientes.Columns[0].Visible = false;
+                    }
+                    catch { }
 
                     // Asignamos pesos para que se estiren de manera proporcional
                     if (dgvClientes.Columns.Contains("Cliente")) dgvClientes.Columns["Cliente"].FillWeight = 150;
@@ -93,6 +113,14 @@ namespace PacuIbera.UI.Common
                     btnTabTop.BackColor = ColorTranslator.FromHtml("#EAEDED");
                     btnTabCartera.BackColor = Color.White;
                     dgvClientes.DataSource = clienteDatos.ObtenerTopClientes();
+
+                    // Ocultar ID en Top tambien
+                    try
+                    {
+                        if (dgvClientes.Columns.Contains("Id")) dgvClientes.Columns["Id"].Visible = false;
+                        else if (dgvClientes.Columns.Count > 0) dgvClientes.Columns[0].Visible = false;
+                    }
+                    catch { }
                 }
             }
             catch (Exception ex)
@@ -228,41 +256,8 @@ namespace PacuIbera.UI.Common
 
         private void EstilizarGrilla()
         {
-            dgvClientes.BackgroundColor = Color.White;
-            dgvClientes.BorderStyle = BorderStyle.None;
-            dgvClientes.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            dgvClientes.GridColor = Color.LightGray; // Gris suave como en proveedores
-
-            dgvClientes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvClientes.MultiSelect = false;
-            dgvClientes.RowHeadersVisible = false;
-            dgvClientes.ReadOnly = true;
-            dgvClientes.AllowUserToAddRows = false;
-            dgvClientes.AllowUserToDeleteRows = false;
-            dgvClientes.AllowUserToResizeRows = false;
-
-            // AutoSize en Fill para que los FillWeight funcionen
-            dgvClientes.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-
-            dgvClientes.EnableHeadersVisualStyles = false;
-            dgvClientes.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-
-            // Cabecera oscura igual a proveedores
-            dgvClientes.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(40, 40, 40);
-            dgvClientes.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dgvClientes.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            dgvClientes.ColumnHeadersHeight = 40;
-            dgvClientes.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-
-            dgvClientes.DefaultCellStyle.BackColor = Color.White;
-            dgvClientes.DefaultCellStyle.ForeColor = Color.FromArgb(64, 64, 64);
-
-            // Color de selección gris oscuro/azulado igual a proveedores
-            dgvClientes.DefaultCellStyle.SelectionBackColor = Color.DarkSlateGray;
-            dgvClientes.DefaultCellStyle.SelectionForeColor = Color.White;
-
-            dgvClientes.DefaultCellStyle.Font = new Font("Segoe UI", 10);
-            dgvClientes.RowTemplate.Height = 35;
+            // Dejo el método para retrocompatibilidad pero delego la mayor parte a EstiloUI
+            EstiloUI.AplicarEstiloGrid(dgvClientes);
         }
 
         private void btnCerrar_Click(object sender, EventArgs e) { this.Close(); }
@@ -296,6 +291,28 @@ namespace PacuIbera.UI.Common
                 {
                     MessageBox.Show("Error al cargar localidades: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+            }
+        }
+
+        private void btnEliminar_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (dgvClientes.CurrentRow == null) return;
+                int idSel = Convert.ToInt32(dgvClientes.CurrentRow.Cells[0].Value);
+                // Lógica de eliminación (invocar clienteDatos u otro)
+                var confirm = MessageBox.Show("¿Confirma la eliminación del cliente?", "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (confirm == DialogResult.Yes)
+                {
+                    var clienteDatos = new PacuIbera.Datos.ClienteDatos();
+                    clienteDatos.EliminarCliente(idSel);
+                    MessageBox.Show("Cliente eliminado", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    CargarGrillaTabs("Cartera");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al eliminar cliente: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

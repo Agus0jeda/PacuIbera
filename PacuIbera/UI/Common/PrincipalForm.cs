@@ -62,6 +62,7 @@ namespace PacuIbera.UI.Common
             btnEmpleados.Visible = false;
             btnProveedores.Visible = false;
             btnCompras.Visible = false;
+            if (btnDeposito != null) btnDeposito.Visible = false;
             btnReportes.Visible = false;
             btnPagos.Visible = false;
             if (btnAnalisis != null) btnAnalisis.Visible = false;
@@ -83,6 +84,7 @@ namespace PacuIbera.UI.Common
                     btnClientes.Visible = false;
                     btnProveedores.Visible = false;
                     btnCompras.Visible = false;
+                    btnDeposito.Visible = false;
 
                     btnCerrarTurno.Text = "CERRAR SESIÓN";
                     btnCerrarTurno.BackColor = Color.DimGray;
@@ -91,7 +93,8 @@ namespace PacuIbera.UI.Common
                 case "Administrador":
                     btnEmpleados.Visible = true;
                     btnProveedores.Visible = true;
-                    btnCompras.Visible = false;// por ahora 
+                    btnCompras.Visible = true;// por ahora (Pedidos)
+                    btnDeposito.Visible = true;
                     btnVentas.Visible = false;
                     if (btnAnalisis != null) btnAnalisis.Visible = false;
                     btnCerrarTurno.Text = "CERRAR SESIÓN";
@@ -120,7 +123,8 @@ namespace PacuIbera.UI.Common
             int posYActual = posYInicial;
 
             // Agrupamos todos los botones del menú en un array ordenados de arriba hacia abajo
-            Button[] botonesMenu = { btnProducto, btnVentas, btnClientes, btnCompras, btnProveedores, btnEmpleados, btnPagos, btnReportes, btnAnalisis, btnHistorial };
+            // Ahora incluimos btnDeposito entre Proveedores y Empleados
+            Button[] botonesMenu = { btnProducto, btnVentas, btnClientes, btnCompras, btnProveedores, btnDeposito, btnEmpleados, btnPagos, btnReportes, btnAnalisis, btnHistorial };
 
             foreach (var btn in botonesMenu)
             {
@@ -128,6 +132,9 @@ namespace PacuIbera.UI.Common
                 {
                     // Si el botón está visible, lo posicionamos en la siguiente línea disponible
                     btn.Top = posYActual;
+                    // Asegurar altura y margen uniforme
+                    btn.Height = 45;
+                    btn.Margin = new Padding(3);
                     posYActual += btn.Height + espacioEntreBotones; // Movemos la referencia hacia abajo para el próximo
                 }
             }
@@ -142,26 +149,40 @@ namespace PacuIbera.UI.Common
                 btnProducto.TextAlign = ContentAlignment.MiddleLeft;
                 btnProducto.ImageAlign = ContentAlignment.MiddleLeft;
                 btnProducto.TextImageRelation = TextImageRelation.ImageBeforeText;
+                btnProducto.Height = 45;
 
                 btnVentas.Text = "        Ventas";
                 btnVentas.TextAlign = ContentAlignment.MiddleLeft;
                 btnVentas.ImageAlign = ContentAlignment.MiddleLeft;
                 btnVentas.TextImageRelation = TextImageRelation.ImageBeforeText;
+                btnVentas.Height = 45;
 
                 btnClientes.Text = "        Clientes";
                 btnClientes.TextAlign = ContentAlignment.MiddleLeft;
                 btnClientes.ImageAlign = ContentAlignment.MiddleLeft;
                 btnClientes.TextImageRelation = TextImageRelation.ImageBeforeText;
+                btnClientes.Height = 45;
 
                 btnCompras.Text = "        Compras";
                 btnCompras.TextAlign = ContentAlignment.MiddleLeft;
                 btnCompras.ImageAlign = ContentAlignment.MiddleLeft;
                 btnCompras.TextImageRelation = TextImageRelation.ImageBeforeText;
+                btnCompras.Height = 45;
 
                 btnProveedores.Text = "        Proveedores";
                 btnProveedores.TextAlign = ContentAlignment.MiddleLeft;
                 btnProveedores.ImageAlign = ContentAlignment.MiddleLeft;
                 btnProveedores.TextImageRelation = TextImageRelation.ImageBeforeText;
+                btnProveedores.Height = 45;
+
+                if (btnDeposito != null)
+                {
+                    btnDeposito.Text = "        Depósito";
+                    btnDeposito.TextAlign = ContentAlignment.MiddleLeft;
+                    btnDeposito.ImageAlign = ContentAlignment.MiddleLeft;
+                    btnDeposito.TextImageRelation = TextImageRelation.ImageBeforeText;
+                    btnDeposito.Height = 45;
+                }
 
                 btnEmpleados.Text = "       Empleados";
                 btnEmpleados.TextAlign = ContentAlignment.MiddleLeft;
@@ -203,18 +224,26 @@ namespace PacuIbera.UI.Common
                 // Menú Contraído (Chiquito)
                 btnProducto.Text = "";
                 btnProducto.Padding = new Padding(10, 0, 0, 0);
+                btnProducto.Height = 45;
                 btnVentas.Text = "";
                 btnVentas.Padding = new Padding(10, 0, 0, 0);
+                btnVentas.Height = 45;
                 btnClientes.Text = "";
                 btnClientes.Padding = new Padding(10, 0, 0, 0);
+                btnClientes.Height = 45;
                 btnCompras.Text = "";
                 btnCompras.Padding = new Padding(10, 0, 0, 0);
+                btnCompras.Height = 45;
                 btnProveedores.Text = "";
                 btnProveedores.Padding = new Padding(10, 0, 0, 0);
+                btnProveedores.Height = 45;
+                if (btnDeposito != null) { btnDeposito.Text = ""; btnDeposito.Padding = new Padding(10, 0, 0, 0); btnDeposito.Height = 45; }
                 btnEmpleados.Text = "";
                 btnEmpleados.Padding = new Padding(10, 0, 0, 0);
+                btnEmpleados.Height = 45;
                 btnPagos.Text = "";
                 btnPagos.Padding = new Padding(10, 0, 0, 0);
+                btnPagos.Height = 45;
                 btnReportes.Text = "";
                 btnReportes.Padding = new Padding(10, 0, 0, 0);
 
@@ -313,6 +342,8 @@ namespace PacuIbera.UI.Common
         private void btnVentas_Click(object sender, EventArgs e) { AbrirFormularioPanel(new VentasForm()); }
         private void btnEmpleados_Click(object sender, EventArgs e) { AbrirFormularioPanel(new EmpleadosForm()); }
         private void btnPagos_Click(object sender, EventArgs e) { AbrirFormularioPanel(new EnConstruccionForm("Pagos")); }
+        private void btnCompras_Click(object sender, EventArgs e) { AbrirFormularioPanel(new FormPedidos()); }
+        private void btnDeposito_Click(object sender, EventArgs e) { AbrirFormularioPanel(new FormDeposito()); }
 
         // Función del nuevo botón Análisis
         private void btnAnalisis_Click(object sender, EventArgs e)

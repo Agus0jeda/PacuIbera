@@ -37,6 +37,7 @@
             btnEmpleados = new Button();
             btnProveedores = new Button();
             btnCompras = new Button();
+            btnDeposito = new Button();
             btnClientes = new Button();
             btnVentas = new Button();
             btnProducto = new Button();
@@ -61,6 +62,7 @@
             // MenuVertical
             // 
             MenuVertical.BackColor = Color.LightGreen;
+            // Order: top->bottom
             MenuVertical.Controls.Add(btnAnalisis);
             MenuVertical.Controls.Add(btnHistorial);
             MenuVertical.Controls.Add(Logo);
@@ -68,7 +70,8 @@
             MenuVertical.Controls.Add(btnPagos);
             MenuVertical.Controls.Add(btnEmpleados);
             MenuVertical.Controls.Add(btnProveedores);
-            MenuVertical.Controls.Add(btnCompras);
+            MenuVertical.Controls.Add(btnCompras); // shown as "Pedidos"
+            MenuVertical.Controls.Add(btnDeposito); // new Deposito button
             MenuVertical.Controls.Add(btnClientes);
             MenuVertical.Controls.Add(btnVentas);
             MenuVertical.Controls.Add(btnProducto);
@@ -180,7 +183,7 @@
             btnProveedores.UseVisualStyleBackColor = true;
             btnProveedores.Click += btnProveedores_Click;
             // 
-            // btnCompras
+            // btnCompras (renamed visible text to Pedidos)
             // 
             btnCompras.FlatAppearance.BorderSize = 0;
             btnCompras.FlatAppearance.MouseOverBackColor = Color.WhiteSmoke;
@@ -194,8 +197,28 @@
             btnCompras.Name = "btnCompras";
             btnCompras.Size = new Size(278, 36);
             btnCompras.TabIndex = 3;
-            btnCompras.Text = "Compras";
+            btnCompras.Text = "Pedidos";
             btnCompras.UseVisualStyleBackColor = true;
+            btnCompras.Click += btnCompras_Click;
+            // 
+            // btnDeposito (nuevo)
+            // 
+            btnDeposito.FlatAppearance.BorderSize = 0;
+            btnDeposito.FlatAppearance.MouseOverBackColor = Color.WhiteSmoke;
+            btnDeposito.FlatStyle = FlatStyle.Flat;
+            btnDeposito.Font = new Font("Century Gothic", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnDeposito.ForeColor = Color.Black;
+            // reuse proveedor image as placeholder
+            btnDeposito.Image = (Image)resources.GetObject("btnProveedores.Image");
+            btnDeposito.ImageAlign = ContentAlignment.MiddleLeft;
+            btnDeposito.Location = new Point(0, 224);
+            btnDeposito.Margin = new Padding(3, 2, 3, 2);
+            btnDeposito.Name = "btnDeposito";
+            btnDeposito.Size = new Size(278, 36);
+            btnDeposito.TabIndex = 11;
+            btnDeposito.Text = "Depósito";
+            btnDeposito.UseVisualStyleBackColor = true;
+            btnDeposito.Click += btnDeposito_Click;
             // 
             // btnClientes
             // 
@@ -406,6 +429,7 @@
         private Button btnEmpleados;
         private Button btnProveedores;
         private Button btnCompras;
+        private Button btnDeposito;
         private Button btnPagos;
         private Button btnReportes;
         private PictureBox Logo;
