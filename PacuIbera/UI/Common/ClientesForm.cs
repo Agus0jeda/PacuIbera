@@ -22,22 +22,17 @@ namespace PacuIbera.UI.Common
         public ClientesForm()
         {
             InitializeComponent();
-            this.Load += ClientesForm_Load;
-            btnGuardar.Click += btnGuardar_Click;
-            btnCancelar.Click += btnCancelar_Click;
-            btnEliminar.Click += btnEliminar_Click;
-            cmbProvincia.SelectedIndexChanged += cmbProvincia_SelectedIndexChanged;
-            dgvClientes.DataBindingComplete += DgvClientes_DataBindingComplete;
 
-            // Activar scroll en el panel izquierdo
-            try
-            {
-                if (nuevoCliente != null)
-                {
-                    nuevoCliente.AutoScroll = true;
-                }
-            }
-            catch { }
+            // El Designer ya conecta los botones, la provincia y el buscador.
+            // Acá conectamos únicamente los eventos que no están en el Designer.
+            Load += ClientesForm_Load;
+            dgvClientes.DataBindingComplete += DgvClientes_DataBindingComplete;
+            dgvClientes.CellFormatting += DgvClientes_CellFormatting;
+            dgvClientes.CellClick += DgvClientes_CellClick;
+
+            // Activar scroll en el panel izquierdo.
+            if (nuevoCliente != null)
+                nuevoCliente.AutoScroll = true;
         }
 
         private void ClientesForm_Load(object sender, EventArgs e)
@@ -55,12 +50,34 @@ namespace PacuIbera.UI.Common
             int x = dgvClientes.Location.X;
             int y = dgvClientes.Location.Y - 40;
 
-            btnTabCartera = new Button { Text = "👥 Cartera de Clientes", Location = new Point(x, y), Size = new Size(200, 40), FlatStyle = FlatStyle.Flat, BackColor = ColorTranslator.FromHtml("#EAEDED"), Cursor = Cursors.Hand, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
+            btnTabCartera = new Button
+            {
+                Text = "Cartera de Clientes",
+                Location = new Point(x, y),
+                Size = new Size(200, 36),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = ColorTranslator.FromHtml("#EAEDED"),
+                Cursor = Cursors.Hand,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold)
+            };
             btnTabCartera.FlatAppearance.BorderSize = 0;
             btnTabCartera.Click += (s, ev) => CargarGrillaTabs("Cartera");
 
-            this.Controls.Add(btnTabCartera);
-            this.Controls.Add(btnTabTop);
+            btnTabTop = new Button
+            {
+                Text = "Top Mejores Clientes",
+                Location = new Point(x + 205, y),
+                Size = new Size(200, 36),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.White,
+                Cursor = Cursors.Hand,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold)
+            };
+            btnTabTop.FlatAppearance.BorderSize = 0;
+            btnTabTop.Click += (s, ev) => CargarGrillaTabs("Top");
+
+            Controls.Add(btnTabCartera);
+            Controls.Add(btnTabTop);
             btnTabCartera.BringToFront();
             btnTabTop.BringToFront();
         }
@@ -69,47 +86,55 @@ namespace PacuIbera.UI.Common
         {
             try
             {
+                bool esCartera = tipo == "Cartera";
+                dgvClientes.DataSource = null;
                 dgvClientes.Columns.Clear();
                 dgvClientes.AutoGenerateColumns = true;
 
-                if (tipo == "Cartera")
+                btnTabCartera.BackColor = esCartera
+                    ? ColorTranslator.FromHtml("#EAEDED")
+                    : Color.White;
+                btnTabTop.BackColor = esCartera
+                    ? Color.White
+                    : ColorTranslator.FromHtml("#EAEDED");
+
+                dgvClientes.DataSource = esCartera
+                    ? clienteDatos.ObtenerClientesCRM()
+                    : clienteDatos.ObtenerTopClientes();
+
+                if (dgvClientes.Columns.Contains("Id"))
+                    dgvClientes.Columns["Id"].Visible = false;
+                else if (dgvClientes.Columns.Count > 0)
+                    dgvClientes.Columns[0].Visible = false;
+
+                if (esCartera)
                 {
-                    dgvClientes.DataSource = clienteDatos.ObtenerClientesCRM();
+                    if (dgvClientes.Columns.Contains("Nombre"))
+                        dgvClientes.Columns["Nombre"].Visible = false;
+                    if (dgvClientes.Columns.Contains("Apellido"))
+                        dgvClientes.Columns["Apellido"].Visible = false;
 
-                    if (dgvClientes.Columns.Contains("Nombre")) dgvClientes.Columns["Nombre"].Visible = false;
-                    if (dgvClientes.Columns.Contains("Apellido")) dgvClientes.Columns["Apellido"].Visible = false;
-
-                    // Ocultamos el ID
-                    try
-                    {
-                        if (dgvClientes.Columns.Contains("Id")) dgvClientes.Columns["Id"].Visible = false;
-                        else if (dgvClientes.Columns.Count > 0) dgvClientes.Columns[0].Visible = false;
-                    }
-
-                    // Asignamos pesos para que se estiren de manera proporcional
-                    if (dgvClientes.Columns.Contains("Cliente")) dgvClientes.Columns["Cliente"].FillWeight = 150;
-                    if (dgvClientes.Columns.Contains("Telefono")) dgvClientes.Columns["Telefono"].FillWeight = 80;
-                    if (dgvClientes.Columns.Contains("Direccion")) dgvClientes.Columns["Direccion"].FillWeight = 120;
-                    if (dgvClientes.Columns.Contains("Provincia")) dgvClientes.Columns["Provincia"].FillWeight = 90;
-                    if (dgvClientes.Columns.Contains("Localidad")) dgvClientes.Columns["Localidad"].FillWeight = 100;
+                    if (dgvClientes.Columns.Contains("Cliente"))
+                        dgvClientes.Columns["Cliente"].FillWeight = 150;
+                    if (dgvClientes.Columns.Contains("Telefono"))
+                        dgvClientes.Columns["Telefono"].FillWeight = 80;
+                    if (dgvClientes.Columns.Contains("Direccion"))
+                        dgvClientes.Columns["Direccion"].FillWeight = 120;
+                    if (dgvClientes.Columns.Contains("Provincia"))
+                        dgvClientes.Columns["Provincia"].FillWeight = 90;
+                    if (dgvClientes.Columns.Contains("Localidad"))
+                        dgvClientes.Columns["Localidad"].FillWeight = 100;
                 }
-                else
-                {
-                    btnTabTop.BackColor = ColorTranslator.FromHtml("#EAEDED");
-                    btnTabCartera.BackColor = Color.White;
-                    dgvClientes.DataSource = clienteDatos.ObtenerTopClientes();
 
-                    // Ocultar ID en Top tambien
-                    try
-                    {
-                        if (dgvClientes.Columns.Contains("Id")) dgvClientes.Columns["Id"].Visible = false;
-                        else if (dgvClientes.Columns.Count > 0) dgvClientes.Columns[0].Visible = false;
-                    }
-                }
+                dgvClientes.ClearSelection();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al cargar la grilla: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    "Error al cargar la grilla: " + ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
         }
 
@@ -130,24 +155,28 @@ namespace PacuIbera.UI.Common
 
         private void DgvClientes_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
-            if (!dgvClientes.Columns.Contains("Estado")) return;
+            if (!dgvClientes.Columns.Contains("Estado"))
+                return;
 
             foreach (DataGridViewRow fila in dgvClientes.Rows)
             {
-                if (fila.Cells["Estado"].Value != null)
+                if (fila.IsNewRow)
+                    continue;
+
+                string estado = fila.Cells["Estado"].Value?.ToString();
+
+                if (estado == "Inactivo")
                 {
-                    string estado = fila.Cells["Estado"].Value.ToString();
-                    if (estado == "Inactivo")
-                    {
-                        fila.DefaultCellStyle.BackColor = Color.LightCoral;
-                        fila.DefaultCellStyle.ForeColor = Color.White;
-                    }
-                    else
-                    {
-                        fila.DefaultCellStyle.BackColor = Color.White;
-                        fila.DefaultCellStyle.ForeColor = Color.FromArgb(64, 64, 64);
-                    }
+                    fila.DefaultCellStyle.BackColor = Color.LightCoral;
+                    fila.DefaultCellStyle.ForeColor = Color.White;
                 }
+                else
+                {
+                    fila.DefaultCellStyle.BackColor = Color.White;
+                    fila.DefaultCellStyle.ForeColor = Color.FromArgb(64, 64, 64);
+                }
+            }
+
             dgvClientes.ClearSelection();
         }
 
