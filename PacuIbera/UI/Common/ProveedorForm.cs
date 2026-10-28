@@ -215,9 +215,42 @@ namespace PacuIbera.UI.Common
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(txtEmail.Text) && !EsEmailValido(txtEmail.Text.Trim()))
+            string cuitSinGuiones = txtCuit.Text.Replace("-", "").Trim();
+            if (cuitSinGuiones.Length != 11 || !Validaciones.EsNumeroValido(cuitSinGuiones))
+            {
+                MessageBox.Show("El CUIT debe contener exactamente 11 dígitos.", "CUIT inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtCuit.Focus();
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(txtTelefono.Text) &&
+                !Validaciones.EsNumeroValido(txtTelefono.Text.Trim()))
+            {
+                MessageBox.Show("El teléfono debe contener solamente números.", "Teléfono inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtTelefono.Focus();
+                return;
+            }
+
+            if (!EsEmailValido(txtEmail.Text.Trim()))
             {
                 MessageBox.Show("Ingrese un correo electrónico válido.", "Email inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtEmail.Focus();
+                return;
+            }
+
+            if (cmbProvincia.SelectedValue == null ||
+                !int.TryParse(cmbProvincia.SelectedValue.ToString(), out int provinciaId))
+            {
+                MessageBox.Show("Debe seleccionar una provincia.", "Provincia obligatoria", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                cmbProvincia.Focus();
+                return;
+            }
+
+            if (cmbLocalidad.SelectedValue == null ||
+                !int.TryParse(cmbLocalidad.SelectedValue.ToString(), out int localidadId))
+            {
+                MessageBox.Show("Debe seleccionar una localidad válida para la provincia elegida.", "Localidad obligatoria", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                cmbLocalidad.Focus();
                 return;
             }
 
@@ -231,8 +264,8 @@ namespace PacuIbera.UI.Common
                     Telefono = txtTelefono.Text.Trim(),
                     Email = txtEmail.Text.Trim(),
                     Direccion = txtDireccion.Text.Trim(),
-                    ProvinciaId = Convert.ToInt32(cmbProvincia.SelectedValue),
-                    LocalidadId = Convert.ToInt32(cmbLocalidad.SelectedValue),
+                    ProvinciaId = provinciaId,
+                    LocalidadId = localidadId,
                     Activo = rbActivo.Checked
                 };
 
