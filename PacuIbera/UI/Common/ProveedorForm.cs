@@ -20,8 +20,11 @@ namespace PacuIbera.UI.Common
         {
             InitializeComponent();
 
-            // Conectamos el evento Load (te faltaba esto para que arranque con formato)
+            // Conectamos el evento Load (te faltaba esto para que arranke con formato)
             this.Load += ProveedorForm_Load;
+
+            // Configurar validaciones de campos numéricos
+            Validaciones.ConfigurarSoloNumeros(txtTelefono);
         }
 
         private void ProveedorForm_Load(object sender, EventArgs e)
@@ -264,6 +267,13 @@ namespace PacuIbera.UI.Common
         {
             if (idProveedorSeleccionado > 0)
             {
+                // Evitar bajas duplicadas sobre registros ya dados de baja
+                if (rbInactivo.Checked)
+                {
+                    MessageBox.Show("Este proveedor ya se encuentra dado de baja.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 DialogResult respuesta = MessageBox.Show($"¿Está seguro que desea dar de baja al proveedor '{txtRazonSocial.Text}'?",
                                                          "Confirmar Baja",
                                                          MessageBoxButtons.YesNo,
@@ -426,15 +436,7 @@ namespace PacuIbera.UI.Common
 
         private bool EsEmailValido(string email)
         {
-            try
-            {
-                var correo = new System.Net.Mail.MailAddress(email);
-                return correo.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
+            return Validaciones.EsEmailValido(email);
         }
 
         private void lblGestionProveedor_Click(object sender, EventArgs e)

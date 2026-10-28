@@ -364,6 +364,17 @@ namespace PacuIbera.UI.Common
         {
             if (idProductoSeleccionado > 0)
             {
+                // Verificar si el producto ya está inactivo para evitar bajas duplicadas
+                if (dgvProductos.SelectedItems.Count > 0)
+                {
+                    ListViewItem item = dgvProductos.SelectedItems[0];
+                    if (item.BackColor == System.Drawing.Color.LightCoral)
+                    {
+                        MessageBox.Show("Este producto ya se encuentra dado de baja.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+                }
+
                 DialogResult respuesta = MessageBox.Show("¿Está seguro que desea dar de baja este producto?", "Confirmar Baja", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (respuesta == DialogResult.Yes)
                 {

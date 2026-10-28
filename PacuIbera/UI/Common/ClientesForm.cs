@@ -28,7 +28,9 @@ namespace PacuIbera.UI.Common
             this.Load += ClientesForm_Load;
             btnGuardar.Click += btnGuardar_Click;
             btnCancelar.Click += btnCancelar_Click;
+            btnEliminar.Click += btnEliminar_Click;
             cmbProvincia.SelectedIndexChanged += cmbProvincia_SelectedIndexChanged;
+            dgvClientes.DataBindingComplete += DgvClientes_DataBindingComplete;
 
             // Activar scroll en el panel izquierdo
             try
@@ -142,6 +144,31 @@ namespace PacuIbera.UI.Common
                 dgvClientes.Rows[e.RowIndex].DefaultCellStyle.BackColor = ColorTranslator.FromHtml("#FEF9E7");
                 dgvClientes.Rows[e.RowIndex].DefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             }
+        }
+
+        // Pintar en rojo las filas dadas de baja (Inactivo), como funcionaba antes
+        private void DgvClientes_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            if (!dgvClientes.Columns.Contains("Estado")) return;
+
+            foreach (DataGridViewRow fila in dgvClientes.Rows)
+            {
+                if (fila.Cells["Estado"].Value != null)
+                {
+                    string estado = fila.Cells["Estado"].Value.ToString();
+                    if (estado == "Inactivo")
+                    {
+                        fila.DefaultCellStyle.BackColor = Color.LightCoral;
+                        fila.DefaultCellStyle.ForeColor = Color.White;
+                    }
+                    else
+                    {
+                        fila.DefaultCellStyle.BackColor = Color.White;
+                        fila.DefaultCellStyle.ForeColor = Color.FromArgb(64, 64, 64);
+                    }
+                }
+            }
+            dgvClientes.ClearSelection();
         }
 
         // --- NUEVO: Clic para Editar ---
@@ -299,14 +326,23 @@ namespace PacuIbera.UI.Common
             try
             {
                 if (dgvClientes.CurrentRow == null) return;
-                int idSel = Convert.ToInt32(dgvClientes.CurrentRow.Cells[0].Value);
-                // Lógica de eliminación (invocar clienteDatos u otro)
+
+                // Evitar bajas duplicadas sobre registros ya dados de baja
+                if (dgvClientes.Columns.Contains("Estado") &&
+                    dgvClientes.CurrentRow.Cells["Estado"].Value?.ToString() == "Inactivo")
+                {
+                    MessageBox.Show("Este cliente ya se encuentra dado de baja.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                int idSel = Convert.ToInt32(dgvClientes.CurrentRow.Cells["Id"].Value);
+                // Lógica de eliminación (baja lógica, invocar clienteDatos)
                 var confirm = MessageBox.Show("¿Confirma la eliminación del cliente?", "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (confirm == DialogResult.Yes)
                 {
-                    var clienteDatos = new PacuIbera.Datos.ClienteDatos();
                     clienteDatos.EliminarCliente(idSel);
                     MessageBox.Show("Cliente eliminado", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    LimpiarFormulario();
                     CargarGrillaTabs("Cartera");
                 }
             }

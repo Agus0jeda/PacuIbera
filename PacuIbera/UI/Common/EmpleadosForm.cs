@@ -24,6 +24,11 @@ namespace PacuIbera.UI.Common
 
             // Conectamos el clic rápido de la grilla
             dgvEmpleados.CellClick += dgvEmpleados_CellClick;
+            dgvEmpleados.DataBindingComplete += dgvEmpleados_DataBindingComplete;
+
+            // Configurar validaciones de campos numéricos
+            Validaciones.ConfigurarSoloNumeros(txtDni);
+            Validaciones.ConfigurarSoloNumeros(txtTelefono);
         }
 
         private void EmpleadosForm_Load(object sender, EventArgs e)
@@ -239,6 +244,13 @@ namespace PacuIbera.UI.Common
         {
             if (idEmpleadoSeleccionado > 0)
             {
+                // Evitar bajas duplicadas sobre registros ya dados de baja
+                if (rbInactivo.Checked)
+                {
+                    MessageBox.Show("Este empleado ya se encuentra dado de baja.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 DialogResult respuesta = MessageBox.Show($"¿Está seguro que desea dar de baja al empleado {txtNombre.Text} {txtApellido.Text}?", "Confirmar Baja", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (respuesta == DialogResult.Yes)
                 {
