@@ -13,13 +13,10 @@ namespace PacuIbera.UI.Common
     {
         private ClienteNegocio negocio = new ClienteNegocio();
         private ClienteDatos clienteDatos = new ClienteDatos();
-
         private OtrosDatos otrosDatos = new OtrosDatos();
         private UsuarioNegocio usuarioNegocio = new UsuarioNegocio();
         private Button btnTabCartera;
         private Button btnTabTop;
-
-        // --- NUEVO: Control de edición ---
         private int idClienteSeleccionado = 0;
 
         public ClientesForm()
@@ -48,16 +45,10 @@ namespace PacuIbera.UI.Common
             ConfigurarPestanas();
             CargarCombos();
             CargarGrillaTabs("Cartera");
-            EstilizarGrilla();
 
-            // Aplicar EstiloUI al btnCerrar y al dgv
             EstiloUI.CrearBotonCerrar(this);
             EstiloUI.AplicarEstiloGrid(dgvClientes);
-
-            dgvClientes.CellFormatting += DgvClientes_CellFormatting;
-            dgvClientes.CellClick += DgvClientes_CellClick;
         }
-
 
         private void ConfigurarPestanas()
         {
@@ -67,10 +58,6 @@ namespace PacuIbera.UI.Common
             btnTabCartera = new Button { Text = "👥 Cartera de Clientes", Location = new Point(x, y), Size = new Size(200, 40), FlatStyle = FlatStyle.Flat, BackColor = ColorTranslator.FromHtml("#EAEDED"), Cursor = Cursors.Hand, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
             btnTabCartera.FlatAppearance.BorderSize = 0;
             btnTabCartera.Click += (s, ev) => CargarGrillaTabs("Cartera");
-
-            btnTabTop = new Button { Text = "🏆 Top Mejores Clientes", Location = new Point(x + 205, y), Size = new Size(210, 40), FlatStyle = FlatStyle.Flat, BackColor = Color.White, Cursor = Cursors.Hand, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
-            btnTabTop.FlatAppearance.BorderSize = 0;
-            btnTabTop.Click += (s, ev) => CargarGrillaTabs("Top");
 
             this.Controls.Add(btnTabCartera);
             this.Controls.Add(btnTabTop);
@@ -87,11 +74,8 @@ namespace PacuIbera.UI.Common
 
                 if (tipo == "Cartera")
                 {
-                    btnTabCartera.BackColor = ColorTranslator.FromHtml("#EAEDED");
-                    btnTabTop.BackColor = Color.White;
                     dgvClientes.DataSource = clienteDatos.ObtenerClientesCRM();
 
-                    // Ocultamos las columnas separadas
                     if (dgvClientes.Columns.Contains("Nombre")) dgvClientes.Columns["Nombre"].Visible = false;
                     if (dgvClientes.Columns.Contains("Apellido")) dgvClientes.Columns["Apellido"].Visible = false;
 
@@ -101,7 +85,6 @@ namespace PacuIbera.UI.Common
                         if (dgvClientes.Columns.Contains("Id")) dgvClientes.Columns["Id"].Visible = false;
                         else if (dgvClientes.Columns.Count > 0) dgvClientes.Columns[0].Visible = false;
                     }
-                    catch { }
 
                     // Asignamos pesos para que se estiren de manera proporcional
                     if (dgvClientes.Columns.Contains("Cliente")) dgvClientes.Columns["Cliente"].FillWeight = 150;
@@ -122,7 +105,6 @@ namespace PacuIbera.UI.Common
                         if (dgvClientes.Columns.Contains("Id")) dgvClientes.Columns["Id"].Visible = false;
                         else if (dgvClientes.Columns.Count > 0) dgvClientes.Columns[0].Visible = false;
                     }
-                    catch { }
                 }
             }
             catch (Exception ex)
@@ -146,7 +128,6 @@ namespace PacuIbera.UI.Common
             }
         }
 
-        // Pintar en rojo las filas dadas de baja (Inactivo), como funcionaba antes
         private void DgvClientes_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
             if (!dgvClientes.Columns.Contains("Estado")) return;
@@ -167,14 +148,11 @@ namespace PacuIbera.UI.Common
                         fila.DefaultCellStyle.ForeColor = Color.FromArgb(64, 64, 64);
                     }
                 }
-            }
             dgvClientes.ClearSelection();
         }
 
-        // --- NUEVO: Clic para Editar ---
         private void DgvClientes_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            // Solo permitimos editar si estamos en la pestaña "Cartera" (no en el Top)
             if (e.RowIndex >= 0 && btnTabCartera.BackColor != Color.White)
             {
                 DataGridViewRow fila = dgvClientes.Rows[e.RowIndex];
@@ -201,7 +179,6 @@ namespace PacuIbera.UI.Common
                 dt.DefaultView.RowFilter = $"Cliente LIKE '%{filtro}%' OR Telefono LIKE '%{filtro}%'";
             }
         }
-
 
         private void btnGuardar_Click(object sender, EventArgs e)
         {
@@ -261,7 +238,6 @@ namespace PacuIbera.UI.Common
             }
         }
 
-        // --- NUEVO: Botón de Limpieza ---
         private void btnCancelar_Click(object sender, EventArgs e)
         {
             LimpiarFormulario();
@@ -281,19 +257,6 @@ namespace PacuIbera.UI.Common
                 dgvClientes.ClearSelection();
         }
 
-        private void EstilizarGrilla()
-        {
-            // Dejo el método para retrocompatibilidad pero delego la mayor parte a EstiloUI
-            EstiloUI.AplicarEstiloGrid(dgvClientes);
-        }
-
-        private void btnCerrar_Click(object sender, EventArgs e) { this.Close(); }
-        private void txtBuscar_TextChanged(object sender, EventArgs e) { FiltrarClientes(txtBuscar.Text.Trim()); }
-        private void label3_Click(object sender, EventArgs e) { }
-        private void textBox1_TextChanged(object sender, EventArgs e) { }
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e) { }
-        private void nuevoCliente_Paint(object sender, PaintEventArgs e) { }
-
         private void CargarCombos()
         {
             cmbProvincia.DataSource = otrosDatos.ObtenerProvincias();
@@ -304,7 +267,6 @@ namespace PacuIbera.UI.Common
 
         private void cmbProvincia_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Cuando el usuario elige una provincia, cargamos sus localidades
             if (cmbProvincia.SelectedValue != null && int.TryParse(cmbProvincia.SelectedValue.ToString(), out int provinciaId))
             {
                 try
@@ -327,7 +289,6 @@ namespace PacuIbera.UI.Common
             {
                 if (dgvClientes.CurrentRow == null) return;
 
-                // Evitar bajas duplicadas sobre registros ya dados de baja
                 if (dgvClientes.Columns.Contains("Estado") &&
                     dgvClientes.CurrentRow.Cells["Estado"].Value?.ToString() == "Inactivo")
                 {
@@ -336,7 +297,6 @@ namespace PacuIbera.UI.Common
                 }
 
                 int idSel = Convert.ToInt32(dgvClientes.CurrentRow.Cells["Id"].Value);
-                // Lógica de eliminación (baja lógica, invocar clienteDatos)
                 var confirm = MessageBox.Show("¿Confirma la eliminación del cliente?", "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (confirm == DialogResult.Yes)
                 {
