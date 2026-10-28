@@ -312,6 +312,32 @@ namespace PacuIbera.UI.Common
             }
         }
 
+        // Eventos referenciados por ClientesForm.Designer.cs.
+        private void label3_Click(object sender, EventArgs e)
+        {
+            // Sin acción: etiqueta decorativa.
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            // Sin acción: evento visual del campo de nombre.
+        }
+
+        private void txtBuscar_TextChanged(object sender, EventArgs e)
+        {
+            FiltrarClientes(txtBuscar.Text.Trim());
+        }
+
+        private void btnCerrar_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            DgvClientes_CellClick(sender, e);
+        }
+
         private void btnEliminar_Click(object sender, EventArgs e)
         {
             try
