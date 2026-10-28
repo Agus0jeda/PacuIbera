@@ -116,13 +116,18 @@ namespace PacuIbera.UI.Common
                 dgvProductos.Columns.Add("Próx. Venc.", 90);
                 dgvProductos.Columns.Add("Descripción", 180);
 
-                dtProductosGlobal = productoDatos.ObtenerProductos();
+                dtProductosGlobal = productoDatos.ObtenerProductosAdministracion();
                 bucarNombreProducto.Items.Clear();
                 bucarNombreProducto.Items.Add("TODOS LOS PRODUCTOS");
                 cmbNombreProducto.Items.Clear();
 
+                // Los combos de creación/edición ofrecen solo productos activos.
+                // Los productos inactivos siguen visibles en la lista administrativa.
                 foreach (DataRow row in dtProductosGlobal.Rows)
                 {
+                    if (!Convert.ToBoolean(row["Activo"]))
+                        continue;
+
                     string nombreProd = row["Nombre"].ToString();
                     bucarNombreProducto.Items.Add(nombreProd);
                     cmbNombreProducto.Items.Add(nombreProd);
@@ -152,6 +157,10 @@ namespace PacuIbera.UI.Common
 
             foreach (DataRow row in dtProductosGlobal.Rows)
             {
+                // Los productos dados de baja no generan alertas operativas.
+                if (row.Table.Columns.Contains("Activo") && !Convert.ToBoolean(row["Activo"]))
+                    continue;
+
                 string nombre = row["Nombre"].ToString();
                 decimal stockActual = Convert.ToDecimal(row["StockActual"]);
                 decimal stockMin = Convert.ToDecimal(row["StockMinimo"]);
@@ -197,6 +206,8 @@ namespace PacuIbera.UI.Common
             {
                 DataRow row = rowView.Row;
                 ListViewItem item = new ListViewItem(row["Id"].ToString());
+                bool productoActivo = row.Table.Columns.Contains("Activo") && Convert.ToBoolean(row["Activo"]);
+                item.Tag = productoActivo; // Estado real, independiente del color de la fila.
                 item.SubItems.Add(row["Nombre"].ToString());
                 item.SubItems.Add(row["Categoria"].ToString());
                 item.SubItems.Add(Convert.ToDecimal(row["PrecioVenta"]).ToString("N2"));
@@ -216,8 +227,20 @@ namespace PacuIbera.UI.Common
                 decimal stockMinimo = Convert.ToDecimal(row["StockMinimo"]);
                 int lotesPorVencer = Convert.ToInt32(row["LotesPorVencer"]);
 
-                if (stockActual <= stockMinimo) { item.BackColor = System.Drawing.Color.LightCoral; }
-                else if (lotesPorVencer > 0) { item.BackColor = System.Drawing.Color.LightYellow; }
+                if (!productoActivo)
+                {
+                    item.BackColor = System.Drawing.Color.LightCoral;
+                    item.ForeColor = System.Drawing.Color.White;
+                }
+                else if (stockActual <= stockMinimo)
+                {
+                    item.BackColor = System.Drawing.Color.LightCoral;
+                    item.ForeColor = System.Drawing.Color.White;
+                }
+                else if (lotesPorVencer > 0)
+                {
+                    item.BackColor = System.Drawing.Color.LightYellow;
+                }
 
                 dgvProductos.Items.Add(item);
             }
@@ -229,6 +252,11 @@ namespace PacuIbera.UI.Common
             {
                 ListViewItem item = dgvProductos.SelectedItems[0];
                 idProductoSeleccionado = Convert.ToInt32(item.Text);
+
+                // No permitir editar ni dar de baja nuevamente un registro inactivo.
+                bool productoActivo = item.Tag is bool activo && activo;
+                GUARDAR.Enabled = productoActivo;
+                btnEliminar.Enabled = productoActivo;
 
                 cmbNombreProducto.Text = item.SubItems[1].Text;
                 cmbCategoria.Text = item.SubItems[2].Text;
@@ -364,15 +392,19 @@ namespace PacuIbera.UI.Common
         {
             if (idProductoSeleccionado > 0)
             {
-                // Verificar si el producto ya está inactivo para evitar bajas duplicadas
-                if (dgvProductos.SelectedItems.Count > 0)
+                // Verificar el estado real del producto, nunca su color:
+                // LightCoral también se usa para alertar sobre stock bajo.
+                if (dgvProductos.SelectedItems.Count == 0)
                 {
-                    ListViewItem item = dgvProductos.SelectedItems[0];
-                    if (item.BackColor == System.Drawing.Color.LightCoral)
-                    {
-                        MessageBox.Show("Este producto ya se encuentra dado de baja.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return;
-                    }
+                    MessageBox.Show("Seleccione un producto de la lista.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                ListViewItem productoSeleccionado = dgvProductos.SelectedItems[0];
+                if (!(productoSeleccionado.Tag is bool productoActivo) || !productoActivo)
+                {
+                    MessageBox.Show("Este producto ya se encuentra dado de baja.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
                 }
 
                 DialogResult respuesta = MessageBox.Show("¿Está seguro que desea dar de baja este producto?", "Confirmar Baja", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -394,7 +426,9 @@ namespace PacuIbera.UI.Common
         {
             idProductoSeleccionado = 0;
             GUARDAR.Text = "GUARDAR";
+            GUARDAR.Enabled = true;
             btnEliminar.Visible = false;
+            btnEliminar.Enabled = true;
 
             cmbNombreProducto.Text = "";
             textBox4.Clear();

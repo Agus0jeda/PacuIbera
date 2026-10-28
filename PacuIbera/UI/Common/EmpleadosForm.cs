@@ -171,9 +171,47 @@ namespace PacuIbera.UI.Common
                     return;
                 }
 
+                if (!Validaciones.EsNumeroValido(txtDni.Text.Trim()))
+                {
+                    MessageBox.Show("El DNI debe contener solamente números.", "DNI inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtDni.Focus();
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(txtTelefono.Text) &&
+                    !Validaciones.EsNumeroValido(txtTelefono.Text.Trim()))
+                {
+                    MessageBox.Show("El teléfono debe contener solamente números.", "Teléfono inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtTelefono.Focus();
+                    return;
+                }
+
+                if (!Validaciones.EsEmailValido(txtEmail.Text.Trim()))
+                {
+                    MessageBox.Show("Ingrese un correo electrónico válido.", "Email inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtEmail.Focus();
+                    return;
+                }
+
                 if (cmbRol.SelectedValue == null)
                 {
                     MessageBox.Show("Debe seleccionar un Rol válido.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (cmbProvincia.SelectedValue == null ||
+                    !int.TryParse(cmbProvincia.SelectedValue.ToString(), out int provinciaId))
+                {
+                    MessageBox.Show("Debe seleccionar una provincia.", "Provincia obligatoria", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    cmbProvincia.Focus();
+                    return;
+                }
+
+                if (cmbLocalidad.SelectedValue == null ||
+                    !int.TryParse(cmbLocalidad.SelectedValue.ToString(), out int localidadId))
+                {
+                    MessageBox.Show("Debe seleccionar una localidad válida para la provincia elegida.", "Localidad obligatoria", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    cmbLocalidad.Focus();
                     return;
                 }
 
@@ -190,8 +228,8 @@ namespace PacuIbera.UI.Common
                     Rol = cmbRol.SelectedValue.ToString(), // <-- EL TRUCO ESTÁ ACÁ
                     ClaveHash = txtClave.Text,
                     Activo = rbActivo.Checked,
-                    ProvinciaId = Convert.ToInt32(cmbProvincia.SelectedValue),
-                    LocalidadId = Convert.ToInt32(cmbLocalidad.SelectedValue)
+                    ProvinciaId = provinciaId,
+                    LocalidadId = localidadId
                 };
 
                 if (idEmpleadoSeleccionado == 0)
