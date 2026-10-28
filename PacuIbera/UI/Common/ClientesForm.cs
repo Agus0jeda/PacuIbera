@@ -16,6 +16,7 @@ namespace PacuIbera.UI.Common
 
         private OtrosDatos otrosDatos = new OtrosDatos();
         private UsuarioNegocio usuarioNegocio = new UsuarioNegocio();
+
         private Button btnTabCartera;
         private Button btnTabTop;
 
@@ -25,12 +26,24 @@ namespace PacuIbera.UI.Common
         public ClientesForm()
         {
             InitializeComponent();
+            AsignarEventos();
+            InicializarScrollPanel();
+        }
+
+        private void AsignarEventos()
+        {
             this.Load += ClientesForm_Load;
             btnGuardar.Click += btnGuardar_Click;
             btnCancelar.Click += btnCancelar_Click;
             cmbProvincia.SelectedIndexChanged += cmbProvincia_SelectedIndexChanged;
+            dgvClientes.DataBindingComplete += DgvClientes_DataBindingComplete;
+            dgvClientes.CellFormatting += DgvClientes_CellFormatting;
+            dgvClientes.CellClick += DgvClientes_CellClick;
+            txtBuscar.TextChanged += txtBuscar_TextChanged;
+        }
 
-            // Activar scroll en el panel izquierdo
+        private void InicializarScrollPanel()
+        {
             try
             {
                 if (nuevoCliente != null)
@@ -62,9 +75,8 @@ namespace PacuIbera.UI.Common
             int x = dgvClientes.Location.X;
             int y = dgvClientes.Location.Y - 40;
 
-            btnTabCartera = new Button { Text = "👥 Cartera de Clientes", Location = new Point(x, y), Size = new Size(200, 40), FlatStyle = FlatStyle.Flat, BackColor = ColorTranslator.FromHtml("#EAEDED"), Cursor = Cursors.Hand, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
-            btnTabCartera.FlatAppearance.BorderSize = 0;
-            btnTabCartera.Click += (s, ev) => CargarGrillaTabs("Cartera");
+            btnTabCartera = CrearBotonTab("👥 Cartera de Clientes", new Point(x, y), 200, () => CargarGrillaTabs("Cartera"));
+            btnTabTop = CrearBotonTab("🏆 Top Mejores Clientes", new Point(x + 205, y), 210, () => CargarGrillaTabs("Top"));
 
             btnTabTop = new Button { Text = "🏆 Top Mejores Clientes", Location = new Point(x + 205, y), Size = new Size(210, 40), FlatStyle = FlatStyle.Flat, BackColor = Color.White, Cursor = Cursors.Hand, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
             btnTabTop.FlatAppearance.BorderSize = 0;
@@ -76,6 +88,24 @@ namespace PacuIbera.UI.Common
             btnTabTop.BringToFront();
         }
 
+        private Button CrearBotonTab(string texto, Point ubicacion, int ancho, Action accionClick)
+        {
+            var btn = new Button
+            {
+                Text = texto,
+                Location = ubicacion,
+                Size = new Size(ancho, 40),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.White,
+                Cursor = Cursors.Hand,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            btn.FlatAppearance.BorderSize = 0;
+            // Aquí envolvemos la Action para que cumpla con el evento Click
+            btn.Click += (s, e) => accionClick();
+            return btn;
+        }
+
         private void CargarGrillaTabs(string tipo)
         {
             try
@@ -83,7 +113,12 @@ namespace PacuIbera.UI.Common
                 dgvClientes.Columns.Clear();
                 dgvClientes.AutoGenerateColumns = true;
 
-                if (tipo == "Cartera")
+                bool esCartera = (tipo == "Cartera");
+
+                btnTabCartera.BackColor = esCartera ? ColorTranslator.FromHtml("#EAEDED") : Color.White;
+                btnTabTop.BackColor = esCartera ? Color.White : ColorTranslator.FromHtml("#EAEDED");
+
+                if (esCartera)
                 {
                     btnTabCartera.BackColor = ColorTranslator.FromHtml("#EAEDED");
                     btnTabTop.BackColor = Color.White;
@@ -99,29 +134,8 @@ namespace PacuIbera.UI.Common
                         if (dgvClientes.Columns.Contains("Id")) dgvClientes.Columns["Id"].Visible = false;
                         else if (dgvClientes.Columns.Count > 0) dgvClientes.Columns[0].Visible = false;
                     }
-                    catch { }
 
-                    // Asignamos pesos para que se estiren de manera proporcional
-                    if (dgvClientes.Columns.Contains("Cliente")) dgvClientes.Columns["Cliente"].FillWeight = 150;
-                    if (dgvClientes.Columns.Contains("Telefono")) dgvClientes.Columns["Telefono"].FillWeight = 80;
-                    if (dgvClientes.Columns.Contains("Direccion")) dgvClientes.Columns["Direccion"].FillWeight = 120;
-                    if (dgvClientes.Columns.Contains("Provincia")) dgvClientes.Columns["Provincia"].FillWeight = 90;
-                    if (dgvClientes.Columns.Contains("Localidad")) dgvClientes.Columns["Localidad"].FillWeight = 100;
-                }
-                else
-                {
-                    btnTabTop.BackColor = ColorTranslator.FromHtml("#EAEDED");
-                    btnTabCartera.BackColor = Color.White;
-                    dgvClientes.DataSource = clienteDatos.ObtenerTopClientes();
-
-                    // Ocultar ID en Top tambien
-                    try
-                    {
-                        if (dgvClientes.Columns.Contains("Id")) dgvClientes.Columns["Id"].Visible = false;
-                        else if (dgvClientes.Columns.Count > 0) dgvClientes.Columns[0].Visible = false;
-                    }
-                    catch { }
-                }
+                OcultarIdColumna();
             }
             catch (Exception ex)
             {
@@ -129,9 +143,29 @@ namespace PacuIbera.UI.Common
             }
         }
 
+                    // Ocultar ID en Top tambien
+                    try
+                    {
+                        if (dgvClientes.Columns.Contains("Id")) dgvClientes.Columns["Id"].Visible = false;
+                        else if (dgvClientes.Columns.Count > 0) dgvClientes.Columns[0].Visible = false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (dgvClientes.Columns.Contains("Id"))
+                    dgvClientes.Columns["Id"].Visible = false;
+                else if (dgvClientes.Columns.Count > 0)
+                    dgvClientes.Columns[0].Visible = false;
+            }
+            catch { }
+        }
+
         private void DgvClientes_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (dgvClientes.Columns[e.ColumnIndex].Name == "TotalGastado" && e.Value != DBNull.Value)
+            if (e.RowIndex < 0) return;
+
+            if (dgvClientes.Columns[e.ColumnIndex].Name == "TotalGastado" && e.Value != DBNull.Value && e.Value != null)
             {
                 e.Value = string.Format("${0:N2}", e.Value);
                 e.FormattingApplied = true;
@@ -144,7 +178,29 @@ namespace PacuIbera.UI.Common
             }
         }
 
-        // --- NUEVO: Clic para Editar ---
+        private void DgvClientes_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            if (!dgvClientes.Columns.Contains("Estado")) return;
+
+            foreach (DataGridViewRow fila in dgvClientes.Rows)
+            {
+                if (fila.Cells["Estado"].Value != null)
+                {
+                    string estado = fila.Cells["Estado"].Value.ToString();
+                    if (estado == "Inactivo")
+                    {
+                        fila.DefaultCellStyle.BackColor = Color.LightCoral;
+                        fila.DefaultCellStyle.ForeColor = Color.White;
+                    }
+                    else
+                    {
+                        fila.DefaultCellStyle.BackColor = Color.White;
+                        fila.DefaultCellStyle.ForeColor = Color.FromArgb(64, 64, 64);
+                    }
+                }
+            dgvClientes.ClearSelection();
+        }
+
         private void DgvClientes_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             // Solo permitimos editar si estamos en la pestaña "Cartera" (no en el Top)
@@ -152,11 +208,12 @@ namespace PacuIbera.UI.Common
             {
                 DataGridViewRow fila = dgvClientes.Rows[e.RowIndex];
 
-                idClienteSeleccionado = Convert.ToInt32(fila.Cells["Id"].Value);
-                txtNombreCliente.Text = fila.Cells["Nombre"].Value.ToString();
-                txtApellidoCliente.Text = fila.Cells["Apellido"].Value.ToString();
-                txtTelefonoCliente.Text = fila.Cells["Telefono"].Value.ToString();
-                txtDireccionCliente.Text = fila.Cells["Direccion"].Value.ToString();
+                idClienteSeleccionado = Convert.ToInt32(fila.Cells["Id"].Value ?? 0);
+                txtNombreCliente.Text = fila.Cells["Nombre"]?.Value?.ToString() ?? string.Empty;
+                txtApellidoCliente.Text = fila.Cells["Apellido"]?.Value?.ToString() ?? string.Empty;
+                txtTelefonoCliente.Text = fila.Cells["Telefono"]?.Value?.ToString() ?? string.Empty;
+                txtDireccionCliente.Text = fila.Cells["Direccion"]?.Value?.ToString() ?? string.Empty;
+
                 if (dgvClientes.Columns.Contains("Provincia") && fila.Cells["Provincia"].Value != null)
                     cmbProvincia.Text = fila.Cells["Provincia"].Value.ToString();
 
@@ -180,13 +237,7 @@ namespace PacuIbera.UI.Common
         {
             try
             {
-                // 1. VALIDACIÓN: Ningún campo o combo puede estar vacío
-                if (string.IsNullOrWhiteSpace(txtNombreCliente.Text) ||
-                    string.IsNullOrWhiteSpace(txtApellidoCliente.Text) ||
-                    string.IsNullOrWhiteSpace(txtTelefonoCliente.Text) ||
-                    string.IsNullOrWhiteSpace(txtDireccionCliente.Text) ||
-                    cmbProvincia.SelectedIndex == -1 ||
-                    cmbLocalidad.SelectedIndex == -1)
+                if (ValidarCamposVacios())
                 {
                     MessageBox.Show("Por favor, complete todos los campos y seleccione Provincia y Localidad.", "Datos Incompletos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
@@ -197,7 +248,7 @@ namespace PacuIbera.UI.Common
 
                 if (idClienteSeleccionado == 0)
                 {
-                    Cliente nuevoCliente = new Cliente
+                    Cliente nuevoClienteObj = new Cliente
                     {
                         Nombre = txtNombreCliente.Text.Trim(),
                         Apellido = txtApellidoCliente.Text.Trim(),
@@ -208,7 +259,7 @@ namespace PacuIbera.UI.Common
                         DNI_CUIT = "",
                         Email = ""
                     };
-                    negocio.Registrar(nuevoCliente);
+                    negocio.Registrar(nuevoClienteObj);
                     MessageBox.Show("¡Cliente registrado con éxito!", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
@@ -232,6 +283,16 @@ namespace PacuIbera.UI.Common
             {
                 MessageBox.Show("Error en la operación: " + ex.Message, "Atención", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private bool ValidarCamposVacios()
+        {
+            return string.IsNullOrWhiteSpace(txtNombreCliente.Text) ||
+                   string.IsNullOrWhiteSpace(txtApellidoCliente.Text) ||
+                   string.IsNullOrWhiteSpace(txtTelefonoCliente.Text) ||
+                   string.IsNullOrWhiteSpace(txtDireccionCliente.Text) ||
+                   cmbProvincia.SelectedIndex == -1 ||
+                   cmbLocalidad.SelectedIndex == -1;
         }
 
         // --- NUEVO: Botón de Limpieza ---
@@ -302,6 +363,7 @@ namespace PacuIbera.UI.Common
                 int idSel = Convert.ToInt32(dgvClientes.CurrentRow.Cells[0].Value);
                 // Lógica de eliminación (invocar clienteDatos u otro)
                 var confirm = MessageBox.Show("¿Confirma la eliminación del cliente?", "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
                 if (confirm == DialogResult.Yes)
                 {
                     var clienteDatos = new PacuIbera.Datos.ClienteDatos();
@@ -314,6 +376,11 @@ namespace PacuIbera.UI.Common
             {
                 MessageBox.Show("Error al eliminar cliente: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void txtBuscar_TextChanged(object sender, EventArgs e)
+        {
+            FiltrarClientes(txtBuscar.Text.Trim());
         }
     }
 }
