@@ -426,7 +426,9 @@ namespace PacuIbera.UI.Common
         {
             idProductoSeleccionado = 0;
             GUARDAR.Text = "GUARDAR";
+            GUARDAR.Enabled = true;
             btnEliminar.Visible = false;
+            btnEliminar.Enabled = true;
 
             cmbNombreProducto.Text = "";
             textBox4.Clear();
