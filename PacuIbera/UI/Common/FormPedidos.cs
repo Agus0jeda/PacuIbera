@@ -58,11 +58,13 @@ namespace PacuIbera.UI.Common
             // 
             btnNuevoPedido.Location = new Point(10, 6);
             btnNuevoPedido.Name = "btnNuevoPedido";
-            btnNuevoPedido.Size = new Size(120, 30);
+            btnNuevoPedido.Text = "Nuevo pedido";
+            btnNuevoPedido.Size = new Size(140, 30);
             btnNuevoPedido.TabIndex = 1;
             btnNuevoPedido.Click += BtnNuevoPedido_Click;
             
             panelHeader.Controls.Add(btnNuevoPedido);
+            btnNuevoPedido.BringToFront();
             // 
             // FormPedidos
             // 
@@ -88,13 +90,12 @@ namespace PacuIbera.UI.Common
             EstiloUI.CrearBotonCerrar(this);
             EstiloUI.AplicarEstiloGrid(dgvPedidos);
 
-            // Estilizar botÛn Nuevo
+            // Estilizar bot√≥n Nuevo
             EstiloUI.AplicarEstiloBotonAccion(btnNuevoPedido, EstiloUI.TipoAccion.Positivo);
 
             CargarPedidos();
 
-            // Alinear boton inferior bajo la grilla
-            try { EstiloUI.AlinearBotonesInferiores(this, this.ClientSize.Height - 60, btnNuevoPedido); } catch { }
+            // El bot√≥n pertenece al encabezado; no moverlo al pie de la grilla.
         }
 
         private void DgvPedidos_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -113,7 +114,7 @@ namespace PacuIbera.UI.Common
                             break;
                         case "Pendiente":
                             row.DefaultCellStyle.BackColor = Color.FromArgb(254, 243, 199);
-                            row.DefaultCellStyle.ForeColor = Color.FromArgb(133, 94, 66); // cafÈ/·mbar
+                            row.DefaultCellStyle.ForeColor = Color.FromArgb(133, 94, 66); // caf√©/√°mbar
                             break;
                         case "Parcialmente Recibido":
                             row.DefaultCellStyle.BackColor = Color.FromArgb(219, 234, 254);
@@ -191,13 +192,13 @@ namespace PacuIbera.UI.Common
 
             if (valorId == null || valorId == DBNull.Value)
             {
-                MessageBox.Show("El ID del pedido est· vacÌo.");
+                MessageBox.Show("El ID del pedido est√° vac√≠o.");
                 return;
             }
 
             if (!int.TryParse(valorId.ToString(), out int pedidoId))
             {
-                MessageBox.Show("El ID del pedido no es un n˙mero entero.");
+                MessageBox.Show("El ID del pedido no es un n√∫mero entero.");
                 return;
             }
 
