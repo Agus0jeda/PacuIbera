@@ -3,12 +3,21 @@ using PacuIbera.Dominio;
 using System;
 using System.Data;
 using System.Linq;
+using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace PacuIbera.UI.Common
 {
     public class NuevoPedidoForm : Form
     {
+        [DllImport("user32.DLL", EntryPoint = "ReleaseCapture")]
+        private static extern void ReleaseCapture();
+        [DllImport("user32.DLL", EntryPoint = "SendMessage")]
+        private static extern void SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
+        private Panel panelTitulo;
+        private Label lblTitulo;
+        private Button btnCerrar;
         private ComboBox cbProveedores;
         private DataGridView dgvItems;
         private Button btnAgregarProducto;
@@ -30,6 +39,9 @@ namespace PacuIbera.UI.Common
 
         private void InitializeComponent()
         {
+            panelTitulo = new Panel();
+            lblTitulo = new Label();
+            btnCerrar = new Button();
             cbProveedores = new ComboBox();
             dgvItems = new DataGridView();
             dataGridViewTextBoxColumn1 = new DataGridViewTextBoxColumn();
@@ -41,108 +53,104 @@ namespace PacuIbera.UI.Common
             panel1 = new Panel();
             panel2 = new Panel();
             ((System.ComponentModel.ISupportInitialize)dgvItems).BeginInit();
-            panel1.SuspendLayout();
-            panel2.SuspendLayout();
             SuspendLayout();
-            // 
-            // cbProveedores
-            // 
-            cbProveedores.ForeColor = SystemColors.WindowFrame;
-            cbProveedores.Location = new Point(403, 26);
+
+            panelTitulo.BackColor = Color.FromArgb(45, 55, 65);
+            panelTitulo.Dock = DockStyle.Top;
+            panelTitulo.Height = 42;
+            panelTitulo.MouseDown += PanelTitulo_MouseDown;
+            lblTitulo.Text = "CREAR NUEVO PEDIDO";
+            lblTitulo.ForeColor = Color.White;
+            lblTitulo.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            lblTitulo.AutoSize = true;
+            lblTitulo.Location = new Point(14, 11);
+            lblTitulo.MouseDown += PanelTitulo_MouseDown;
+            btnCerrar.Text = "X";
+            btnCerrar.Size = new Size(38, 30);
+            btnCerrar.Location = new Point(Width - 48, 6);
+            btnCerrar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnCerrar.FlatStyle = FlatStyle.Flat;
+            btnCerrar.FlatAppearance.BorderSize = 0;
+            btnCerrar.BackColor = Color.FromArgb(45, 55, 65);
+            btnCerrar.ForeColor = Color.White;
+            btnCerrar.Click += (s, e) => Close();
+            panelTitulo.Controls.Add(lblTitulo);
+            panelTitulo.Controls.Add(btnCerrar);
+
+            cbProveedores.DropDownStyle = ComboBoxStyle.DropDownList;
+            cbProveedores.Location = new Point(125, 18);
+            cbProveedores.Size = new Size(260, 28);
             cbProveedores.Name = "cbProveedores";
-            cbProveedores.Size = new Size(206, 28);
-            cbProveedores.TabIndex = 2;
-            cbProveedores.Text = "Proveedores....";
-            // 
-            // dgvItems
-            // 
-            dgvItems.ColumnHeadersHeight = 29;
-            dgvItems.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1, dataGridViewTextBoxColumn2, dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4 });
-            dgvItems.Dock = DockStyle.Fill;
-            dgvItems.Location = new Point(0, 0);
-            dgvItems.Name = "dgvItems";
-            dgvItems.RowHeadersWidth = 51;
-            dgvItems.Size = new Size(782, 373);
-            dgvItems.TabIndex = 0;
-            // 
-            // dataGridViewTextBoxColumn1
-            // 
-            dataGridViewTextBoxColumn1.HeaderText = "ProductoId";
-            dataGridViewTextBoxColumn1.MinimumWidth = 6;
-            dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-            dataGridViewTextBoxColumn1.Width = 125;
-            // 
-            // dataGridViewTextBoxColumn2
-            // 
-            dataGridViewTextBoxColumn2.HeaderText = "Producto";
-            dataGridViewTextBoxColumn2.MinimumWidth = 6;
-            dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
-            dataGridViewTextBoxColumn2.Width = 125;
-            // 
-            // dataGridViewTextBoxColumn3
-            // 
-            dataGridViewTextBoxColumn3.HeaderText = "Cantidad";
-            dataGridViewTextBoxColumn3.MinimumWidth = 6;
-            dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
-            dataGridViewTextBoxColumn3.Width = 125;
-            // 
-            // dataGridViewTextBoxColumn4
-            // 
-            dataGridViewTextBoxColumn4.HeaderText = "Precio Costo";
-            dataGridViewTextBoxColumn4.MinimumWidth = 6;
-            dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
-            dataGridViewTextBoxColumn4.Width = 125;
-            // 
-            // btnAgregarProducto
-            // 
-            btnAgregarProducto.Location = new Point(188, 26);
-            btnAgregarProducto.Name = "btnAgregarProducto";
-            btnAgregarProducto.Size = new Size(147, 32);
-            btnAgregarProducto.TabIndex = 1;
-            btnAgregarProducto.Text = "Agregar Producto";
+            btnAgregarProducto.Text = "Agregar producto";
+            btnAgregarProducto.Location = new Point(405, 15);
+            btnAgregarProducto.Size = new Size(155, 34);
             btnAgregarProducto.Click += BtnAgregarProducto_Click;
-            // 
-            // btnGuardarPedido
-            // 
-            btnGuardarPedido.Location = new Point(22, 26);
-            btnGuardarPedido.Name = "btnGuardarPedido";
-            btnGuardarPedido.Size = new Size(147, 34);
-            btnGuardarPedido.TabIndex = 3;
-            btnGuardarPedido.Text = "Guardar Pedido";
+
+            btnGuardarPedido.Text = "Guardar pedido";
+            btnGuardarPedido.Size = new Size(155, 36);
             btnGuardarPedido.Click += BtnGuardarPedido_Click;
-            // 
-            // panel1
-            // 
-            panel1.Controls.Add(btnGuardarPedido);
+
+            panel1.Dock = DockStyle.Top;
+            panel1.Height = 68;
+            panel1.BackColor = Color.WhiteSmoke;
+            Label lblProveedor = new Label();
+            lblProveedor.Text = "Proveedor:";
+            lblProveedor.AutoSize = true;
+            lblProveedor.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            lblProveedor.Location = new Point(18, 23);
+            panel1.Controls.Add(lblProveedor);
             panel1.Controls.Add(cbProveedores);
             panel1.Controls.Add(btnAgregarProducto);
-            panel1.Dock = DockStyle.Top;
-            panel1.Location = new Point(0, 0);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(782, 80);
-            panel1.TabIndex = 4;
-            // 
-            // panel2
-            // 
-            panel2.Controls.Add(dgvItems);
+
+            dgvItems.Dock = DockStyle.Fill;
+            dgvItems.Name = "dgvItems";
+            dgvItems.AllowUserToAddRows = false;
+            dgvItems.AllowUserToDeleteRows = false;
+            dgvItems.ReadOnly = true;
+            dgvItems.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvItems.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvItems.BackgroundColor = Color.White;
+            dgvItems.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1, dataGridViewTextBoxColumn2, dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4 });
+            dataGridViewTextBoxColumn1.Name = "ProductoId";
+            dataGridViewTextBoxColumn1.HeaderText = "ID interno";
+            dataGridViewTextBoxColumn1.Visible = false;
+            dataGridViewTextBoxColumn2.Name = "Producto";
+            dataGridViewTextBoxColumn2.HeaderText = "Producto";
+            dataGridViewTextBoxColumn3.Name = "Cantidad";
+            dataGridViewTextBoxColumn3.HeaderText = "Cantidad";
+            dataGridViewTextBoxColumn4.Name = "PrecioCosto";
+            dataGridViewTextBoxColumn4.HeaderText = "Precio de costo";
+
             panel2.Dock = DockStyle.Fill;
-            panel2.Location = new Point(0, 80);
-            panel2.Name = "panel2";
-            panel2.Size = new Size(782, 373);
-            panel2.TabIndex = 5;
-            // 
-            // NuevoPedidoForm
-            // 
-            ClientSize = new Size(782, 453);
+            panel2.Controls.Add(dgvItems);
+
+            Panel panelInferior = new Panel();
+            panelInferior.Dock = DockStyle.Bottom;
+            panelInferior.Height = 62;
+            panelInferior.BackColor = Color.WhiteSmoke;
+            btnGuardarPedido.Location = new Point(Width - 180, 12);
+            btnGuardarPedido.Anchor = AnchorStyles.Right | AnchorStyles.Top;
+            panelInferior.Controls.Add(btnGuardarPedido);
+
+            ClientSize = new Size(782, 500);
             Controls.Add(panel2);
+            Controls.Add(panelInferior);
             Controls.Add(panel1);
+            Controls.Add(panelTitulo);
             FormBorderStyle = FormBorderStyle.None;
+            StartPosition = FormStartPosition.CenterParent;
+            BackColor = Color.White;
             Name = "NuevoPedidoForm";
-            Text = "Nuevo Pedido";
+            Text = "Crear nuevo pedido";
+            MinimumSize = new Size(650, 420);
             ((System.ComponentModel.ISupportInitialize)dgvItems).EndInit();
-            panel1.ResumeLayout(false);
-            panel2.ResumeLayout(false);
-            ResumeLayout(false);
+            ResumeLayout(true);
+        }
+
+        private void PanelTitulo_MouseDown(object sender, MouseEventArgs e)
+        {
+            ReleaseCapture();
+            SendMessage(Handle, 0x112, 0xf012, 0);
         }
 
         private void NuevoPedidoForm_Load(object sender, EventArgs e)
@@ -150,22 +158,11 @@ namespace PacuIbera.UI.Common
             CargarProveedores();
 
             // Aplicar estilos UI
-            EstiloUI.CrearBotonCerrar(this);
             EstiloUI.AplicarEstiloGrid(dgvItems);
             EstiloUI.AplicarEstiloBotonAccion(btnAgregarProducto, EstiloUI.TipoAccion.Positivo);
             EstiloUI.AplicarEstiloBotonAccion(btnGuardarPedido, EstiloUI.TipoAccion.Positivo);
 
-            // Alinear botones inferiores (Guardar) y el Agregar arriba a la derecha del combo
-            try
-            {
-                // posicionar btnAgregarProducto cerca del combo
-                btnAgregarProducto.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-                btnAgregarProducto.Location = new Point(this.ClientSize.Width - btnAgregarProducto.Width - 20, cbProveedores.Bottom + 4);
 
-                // Alinear el boton guardar centrado en el fondo
-                EstiloUI.AlinearBotonesInferiores(this, this.ClientSize.Height - 60, btnGuardarPedido);
-            }
-            catch { }
         }
 
         private void CargarProveedores()
