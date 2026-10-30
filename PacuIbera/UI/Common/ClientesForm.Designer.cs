@@ -100,7 +100,6 @@ namespace PacuIbera.UI.Common
             nuevoCliente.Name = "nuevoCliente";
             nuevoCliente.Size = new Size(350, 533);
             nuevoCliente.TabIndex = 0;
-            nuevoCliente.Paint += nuevoCliente_Paint;
             // 
             // cmbLocalidad
             // 

@@ -36,6 +36,7 @@ namespace PacuIbera.UI.Common
 
         private void InitializeComponent()
         {
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             dgvStock = new DataGridView();
             panelHeader = new Panel();
             lblFiltrar = new Label();
@@ -45,47 +46,61 @@ namespace PacuIbera.UI.Common
             panel1 = new Panel();
             panel2 = new Panel();
             ((System.ComponentModel.ISupportInitialize)dgvStock).BeginInit();
+            panelHeader.SuspendLayout();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
             // dgvStock
             // 
-            dgvStock.ColumnHeadersVisible = true;
-            dgvStock.EnableHeadersVisualStyles = false;
-            dgvStock.ColumnHeadersHeight = 34;
-            dgvStock.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 55, 65);
-            dgvStock.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dgvStock.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             dgvStock.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dgvStock.RowHeadersVisible = false;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = Color.FromArgb(45, 55, 65);
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            dataGridViewCellStyle1.ForeColor = Color.White;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dgvStock.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dgvStock.ColumnHeadersHeight = 34;
             dgvStock.Dock = DockStyle.Fill;
-            dgvStock.Location = new Point(0, 0);
+            dgvStock.EnableHeadersVisualStyles = false;
+            dgvStock.Location = new Point(0, 72);
             dgvStock.Name = "dgvStock";
+            dgvStock.RowHeadersVisible = false;
             dgvStock.RowHeadersWidth = 51;
-            dgvStock.Size = new Size(882, 453);
+            dgvStock.Size = new Size(882, 331);
             dgvStock.TabIndex = 0;
             // 
             // panelHeader
             // 
             panelHeader.BackColor = Color.WhiteSmoke;
+            panelHeader.Controls.Add(lblFiltrar);
+            panelHeader.Controls.Add(txtFiltrar);
             panelHeader.Dock = DockStyle.Top;
             panelHeader.Location = new Point(0, 0);
             panelHeader.Name = "panelHeader";
             panelHeader.Size = new Size(882, 72);
             panelHeader.TabIndex = 4;
             panelHeader.MouseDown += PanelHeader_MouseDown;
+            // 
+            // lblFiltrar
+            // 
             lblFiltrar.AutoSize = true;
+            lblFiltrar.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblFiltrar.Location = new Point(14, 12);
             lblFiltrar.Name = "lblFiltrar";
+            lblFiltrar.Size = new Size(56, 20);
+            lblFiltrar.TabIndex = 0;
             lblFiltrar.Text = "Filtrar:";
-            lblFiltrar.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            // 
+            // txtFiltrar
+            // 
             txtFiltrar.Location = new Point(65, 8);
             txtFiltrar.Name = "txtFiltrar";
-            txtFiltrar.Size = new Size(280, 25);
             txtFiltrar.PlaceholderText = "Buscar por nombre o descripción...";
+            txtFiltrar.Size = new Size(280, 27);
+            txtFiltrar.TabIndex = 1;
             txtFiltrar.TextChanged += TxtFiltrar_TextChanged;
-            panelHeader.Controls.Add(lblFiltrar);
-            panelHeader.Controls.Add(txtFiltrar);
             // 
             // btnConfigurarMinimo
             // 
@@ -118,22 +133,24 @@ namespace PacuIbera.UI.Common
             // panel2
             // 
             panel2.Dock = DockStyle.Fill;
-            panel2.Location = new Point(0, 0);
+            panel2.Location = new Point(0, 72);
             panel2.Name = "panel2";
-            panel2.Size = new Size(882, 453);
+            panel2.Size = new Size(882, 381);
             panel2.TabIndex = 5;
             // 
             // FormDeposito
             // 
             ClientSize = new Size(882, 453);
-            Controls.Add(panel1);
-            Controls.Add(panelHeader);
             Controls.Add(dgvStock);
+            Controls.Add(panel1);
             Controls.Add(panel2);
+            Controls.Add(panelHeader);
             FormBorderStyle = FormBorderStyle.None;
             Name = "FormDeposito";
             Text = "Depósito Central";
             ((System.ComponentModel.ISupportInitialize)dgvStock).EndInit();
+            panelHeader.ResumeLayout(false);
+            panelHeader.PerformLayout();
             panel1.ResumeLayout(false);
             ResumeLayout(false);
         }
