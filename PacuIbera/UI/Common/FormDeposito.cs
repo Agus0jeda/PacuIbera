@@ -192,9 +192,18 @@ namespace PacuIbera.UI.Common
                 // formato condicional
                 foreach (DataGridViewRow row in dgvStock.Rows)
                 {
-                    if (row.Cells["EstadoStock"].Value != null && row.Cells["EstadoStock"].Value.ToString() == "ALERTA")
+                    string estado = row.Cells["EstadoStock"].Value?.ToString();
+
+                    if (estado == "ALERTA")
                     {
-                        row.DefaultCellStyle.BackColor = Color.MistyRose;
+                        // Mismo color utilizado en los demás formularios para destacar estados inactivos/alertas.
+                        row.DefaultCellStyle.BackColor = Color.LightCoral;
+                        row.DefaultCellStyle.ForeColor = Color.White;
+                    }
+                    else
+                    {
+                        row.DefaultCellStyle.BackColor = Color.White;
+                        row.DefaultCellStyle.ForeColor = Color.FromArgb(64, 64, 64);
                     }
                 }
             }
@@ -239,7 +248,7 @@ namespace PacuIbera.UI.Common
                 string nombre = columna.ColumnName.ToLowerInvariant();
                 if (nombre.Contains("nombre") || nombre.Contains("producto") || nombre.Contains("descripcion") || nombre.Contains("descripción"))
                 {
-                    string campo = "[" + columna.ColumnName.Replace("]", "]] ") + "]";
+                    string campo = "[" + columna.ColumnName.Replace("]", "]]") + "]";
                     condiciones.Add("CONVERT(" + campo + ", 'System.String') LIKE '%" + texto + "%'");
                 }
             }
