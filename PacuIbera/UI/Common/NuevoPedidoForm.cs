@@ -58,6 +58,10 @@ namespace PacuIbera.UI.Common
             panelTitulo.BackColor = Color.FromArgb(45, 55, 65);
             panelTitulo.Dock = DockStyle.Top;
             panelTitulo.Height = 42;
+            panelTitulo.Dock = DockStyle.None;
+            panelTitulo.Location = new Point(0, 0);
+            panelTitulo.Size = new Size(782, 42);
+            panelTitulo.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             panelTitulo.MouseDown += PanelTitulo_MouseDown;
             lblTitulo.Text = "CREAR NUEVO PEDIDO";
             lblTitulo.ForeColor = Color.White;
@@ -67,7 +71,7 @@ namespace PacuIbera.UI.Common
             lblTitulo.MouseDown += PanelTitulo_MouseDown;
             btnCerrar.Text = "X";
             btnCerrar.Size = new Size(38, 30);
-            btnCerrar.Location = new Point(Width - 48, 6);
+            btnCerrar.Location = new Point(738, 6);
             btnCerrar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnCerrar.FlatStyle = FlatStyle.Flat;
             btnCerrar.FlatAppearance.BorderSize = 0;
@@ -78,20 +82,22 @@ namespace PacuIbera.UI.Common
             panelTitulo.Controls.Add(btnCerrar);
 
             cbProveedores.DropDownStyle = ComboBoxStyle.DropDownList;
-            cbProveedores.Location = new Point(125, 18);
+            cbProveedores.Location = new Point(105, 21);
             cbProveedores.Size = new Size(260, 28);
             cbProveedores.Name = "cbProveedores";
             btnAgregarProducto.Text = "Agregar producto";
-            btnAgregarProducto.Location = new Point(405, 15);
-            btnAgregarProducto.Size = new Size(155, 34);
+            btnAgregarProducto.Location = new Point(390, 17);
+            btnAgregarProducto.Size = new Size(175, 38);
             btnAgregarProducto.Click += BtnAgregarProducto_Click;
 
             btnGuardarPedido.Text = "Guardar pedido";
             btnGuardarPedido.Size = new Size(155, 36);
             btnGuardarPedido.Click += BtnGuardarPedido_Click;
 
-            panel1.Dock = DockStyle.Top;
-            panel1.Height = 68;
+            panel1.Dock = DockStyle.None;
+            panel1.Location = new Point(0, 42);
+            panel1.Size = new Size(782, 70);
+            panel1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             panel1.BackColor = Color.WhiteSmoke;
             Label lblProveedor = new Label();
             lblProveedor.Text = "Proveedor:";
@@ -121,14 +127,19 @@ namespace PacuIbera.UI.Common
             dataGridViewTextBoxColumn4.Name = "PrecioCosto";
             dataGridViewTextBoxColumn4.HeaderText = "Precio de costo";
 
-            panel2.Dock = DockStyle.Fill;
+            panel2.Dock = DockStyle.None;
+            panel2.Location = new Point(0, 112);
+            panel2.Size = new Size(782, 326);
+            panel2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             panel2.Controls.Add(dgvItems);
 
             Panel panelInferior = new Panel();
-            panelInferior.Dock = DockStyle.Bottom;
-            panelInferior.Height = 62;
+            panelInferior.Dock = DockStyle.None;
+            panelInferior.Location = new Point(0, 438);
+            panelInferior.Size = new Size(782, 62);
+            panelInferior.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             panelInferior.BackColor = Color.WhiteSmoke;
-            btnGuardarPedido.Location = new Point(Width - 180, 12);
+            btnGuardarPedido.Location = new Point(607, 12);
             btnGuardarPedido.Anchor = AnchorStyles.Right | AnchorStyles.Top;
             panelInferior.Controls.Add(btnGuardarPedido);
 
@@ -137,6 +148,7 @@ namespace PacuIbera.UI.Common
             Controls.Add(panelInferior);
             Controls.Add(panel1);
             Controls.Add(panelTitulo);
+            panelTitulo.BringToFront();
             FormBorderStyle = FormBorderStyle.None;
             StartPosition = FormStartPosition.CenterParent;
             BackColor = Color.White;
@@ -161,6 +173,13 @@ namespace PacuIbera.UI.Common
             EstiloUI.AplicarEstiloGrid(dgvItems);
             EstiloUI.AplicarEstiloBotonAccion(btnAgregarProducto, EstiloUI.TipoAccion.Positivo);
             EstiloUI.AplicarEstiloBotonAccion(btnGuardarPedido, EstiloUI.TipoAccion.Positivo);
+            dgvItems.ColumnHeadersVisible = true;
+            dgvItems.EnableHeadersVisualStyles = false;
+            dgvItems.ColumnHeadersHeight = 36;
+            dgvItems.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 55, 65);
+            dgvItems.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            dgvItems.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            dgvItems.RowHeadersVisible = false;
 
 
         }
