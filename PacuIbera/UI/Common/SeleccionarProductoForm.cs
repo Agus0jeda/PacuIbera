@@ -53,6 +53,10 @@ namespace PacuIbera.UI.Common
             panelTitulo.BackColor = Color.FromArgb(45, 55, 65);
             panelTitulo.Dock = DockStyle.Top;
             panelTitulo.Height = 42;
+            panelTitulo.Dock = DockStyle.None;
+            panelTitulo.Location = new Point(0, 0);
+            panelTitulo.Size = new Size(650, 42);
+            panelTitulo.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             panelTitulo.MouseDown += PanelTitulo_MouseDown;
             lblTitulo.Text = "AGREGAR PRODUCTO AL PEDIDO";
             lblTitulo.ForeColor = Color.White;
@@ -62,7 +66,7 @@ namespace PacuIbera.UI.Common
             lblTitulo.MouseDown += PanelTitulo_MouseDown;
             btnCerrar.Text = "X";
             btnCerrar.Size = new Size(38, 30);
-            btnCerrar.Location = new Point(Width - 48, 6);
+            btnCerrar.Location = new Point(606, 6);
             btnCerrar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnCerrar.FlatStyle = FlatStyle.Flat;
             btnCerrar.FlatAppearance.BorderSize = 0;
@@ -72,7 +76,10 @@ namespace PacuIbera.UI.Common
             panelTitulo.Controls.Add(lblTitulo);
             panelTitulo.Controls.Add(btnCerrar);
 
-            dgvProductos.Dock = DockStyle.Fill;
+            dgvProductos.Dock = DockStyle.None;
+            dgvProductos.Location = new Point(0, 42);
+            dgvProductos.Size = new Size(650, 288);
+            dgvProductos.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dgvProductos.Name = "dgvProductos";
             dgvProductos.AllowUserToAddRows = false;
             dgvProductos.ReadOnly = true;
@@ -82,8 +89,10 @@ namespace PacuIbera.UI.Common
             dgvProductos.BackgroundColor = Color.White;
             dgvProductos.RowHeadersVisible = false;
 
-            panel1.Dock = DockStyle.Bottom;
-            panel1.Height = 100;
+            panel1.Dock = DockStyle.None;
+            panel1.Location = new Point(0, 330);
+            panel1.Size = new Size(650, 100);
+            panel1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             panel1.BackColor = Color.WhiteSmoke;
 
             Label lblCantidad = new Label();
@@ -122,6 +131,7 @@ namespace PacuIbera.UI.Common
             Controls.Add(dgvProductos);
             Controls.Add(panel1);
             Controls.Add(panelTitulo);
+            panelTitulo.BringToFront();
             FormBorderStyle = FormBorderStyle.None;
             StartPosition = FormStartPosition.CenterParent;
             BackColor = Color.White;
@@ -157,6 +167,13 @@ namespace PacuIbera.UI.Common
                 if (dgvProductos.Columns.Contains("Categoria"))
                     dgvProductos.Columns["Categoria"].HeaderText = "Categoría";
                 EstiloUI.AplicarEstiloGrid(dgvProductos);
+                dgvProductos.ColumnHeadersVisible = true;
+                dgvProductos.EnableHeadersVisualStyles = false;
+                dgvProductos.ColumnHeadersHeight = 36;
+                dgvProductos.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 55, 65);
+                dgvProductos.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+                dgvProductos.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+                dgvProductos.RowHeadersVisible = false;
             }
             catch (Exception ex)
             {
