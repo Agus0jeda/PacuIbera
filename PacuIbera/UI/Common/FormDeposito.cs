@@ -70,6 +70,7 @@ namespace PacuIbera.UI.Common
             dgvStock.RowHeadersWidth = 51;
             dgvStock.Size = new Size(882, 331);
             dgvStock.TabIndex = 0;
+            dgvStock.CellFormatting += DgvStock_CellFormatting;
             // 
             // panelHeader
             // 
@@ -206,27 +207,35 @@ namespace PacuIbera.UI.Common
                 dgvStock.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
                 ConfigurarNombresColumnas();
 
-                // formato condicional
-                foreach (DataGridViewRow row in dgvStock.Rows)
-                {
-                    string estado = row.Cells["EstadoStock"].Value?.ToString();
 
-                    if (estado == "ALERTA")
-                    {
-                        // Mismo color utilizado en los demás formularios para destacar estados inactivos/alertas.
-                        row.DefaultCellStyle.BackColor = Color.LightCoral;
-                        row.DefaultCellStyle.ForeColor = Color.White;
-                    }
-                    else
-                    {
-                        row.DefaultCellStyle.BackColor = Color.White;
-                        row.DefaultCellStyle.ForeColor = Color.FromArgb(64, 64, 64);
-                    }
-                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error cargando stock: " + ex.Message);
+            }
+        }
+
+        private void DgvStock_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.RowIndex < 0 || !dgvStock.Columns.Contains("EstadoStock"))
+                return;
+
+            string estado = dgvStock.Rows[e.RowIndex]
+                .Cells["EstadoStock"].Value?.ToString();
+
+            if (estado == "ALERTA")
+            {
+                e.CellStyle.BackColor = Color.LightCoral;
+                e.CellStyle.ForeColor = Color.White;
+                e.CellStyle.SelectionBackColor = Color.LightCoral;
+                e.CellStyle.SelectionForeColor = Color.White;
+            }
+            else
+            {
+                e.CellStyle.BackColor = e.RowIndex % 2 == 0
+                    ? Color.White
+                    : Color.FromArgb(245, 245, 245);
+                e.CellStyle.ForeColor = Color.FromArgb(64, 64, 64);
             }
         }
 
