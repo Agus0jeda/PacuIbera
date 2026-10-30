@@ -211,6 +211,7 @@ namespace PacuIbera.UI.Common
                 { "ProductoId", "ID" },
                 { "Id", "ID" },
                 { "Nombre", "Producto" },
+                { "Producto", "Producto" },
                 { "NombreProducto", "Producto" },
                 { "Descripcion", "Descripción" },
                 { "Categoria", "Categoría" },
@@ -236,7 +237,7 @@ namespace PacuIbera.UI.Common
             foreach (DataColumn columna in tablaStock.Columns)
             {
                 string nombre = columna.ColumnName.ToLowerInvariant();
-                if (nombre.Contains("nombre") || nombre.Contains("descripcion") || nombre.Contains("descripción"))
+                if (nombre.Contains("nombre") || nombre.Contains("producto") || nombre.Contains("descripcion") || nombre.Contains("descripción"))
                 {
                     string campo = "[" + columna.ColumnName.Replace("]", "]] ") + "]";
                     condiciones.Add("CONVERT(" + campo + ", 'System.String') LIKE '%" + texto + "%'");
