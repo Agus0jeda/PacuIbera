@@ -22,6 +22,10 @@ namespace PacuIbera.UI.Common
         private Panel panelHeader;
         private Panel panel2;
         private PedidosDatos pedidosDatos = new PedidosDatos();
+        private Label lblFiltrar;
+        private TextBox txtFiltrar;
+        private BindingSource stockBinding = new BindingSource();
+        private DataTable tablaStock;
 
         public FormDeposito()
         {
@@ -34,6 +38,8 @@ namespace PacuIbera.UI.Common
         {
             dgvStock = new DataGridView();
             panelHeader = new Panel();
+            lblFiltrar = new Label();
+            txtFiltrar = new TextBox();
             btnConfigurarMinimo = new Button();
             btnTransferir = new Button();
             panel1 = new Panel();
@@ -44,7 +50,14 @@ namespace PacuIbera.UI.Common
             // 
             // dgvStock
             // 
-            dgvStock.ColumnHeadersHeight = 29;
+            dgvStock.ColumnHeadersVisible = true;
+            dgvStock.EnableHeadersVisualStyles = false;
+            dgvStock.ColumnHeadersHeight = 34;
+            dgvStock.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 55, 65);
+            dgvStock.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            dgvStock.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            dgvStock.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvStock.RowHeadersVisible = false;
             dgvStock.Dock = DockStyle.Fill;
             dgvStock.Location = new Point(0, 0);
             dgvStock.Name = "dgvStock";
@@ -58,9 +71,21 @@ namespace PacuIbera.UI.Common
             panelHeader.Dock = DockStyle.Top;
             panelHeader.Location = new Point(0, 0);
             panelHeader.Name = "panelHeader";
-            panelHeader.Size = new Size(882, 36);
+            panelHeader.Size = new Size(882, 72);
             panelHeader.TabIndex = 4;
             panelHeader.MouseDown += PanelHeader_MouseDown;
+            lblFiltrar.AutoSize = true;
+            lblFiltrar.Location = new Point(14, 12);
+            lblFiltrar.Name = "lblFiltrar";
+            lblFiltrar.Text = "Filtrar:";
+            lblFiltrar.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            txtFiltrar.Location = new Point(65, 8);
+            txtFiltrar.Name = "txtFiltrar";
+            txtFiltrar.Size = new Size(280, 25);
+            txtFiltrar.PlaceholderText = "Buscar por nombre o descripci√≥n...";
+            txtFiltrar.TextChanged += TxtFiltrar_TextChanged;
+            panelHeader.Controls.Add(lblFiltrar);
+            panelHeader.Controls.Add(txtFiltrar);
             // 
             // btnConfigurarMinimo
             // 
@@ -107,7 +132,7 @@ namespace PacuIbera.UI.Common
             Controls.Add(panel2);
             FormBorderStyle = FormBorderStyle.None;
             Name = "FormDeposito";
-            Text = "DepÛsito Central";
+            Text = "Dep√≥sito Central";
             ((System.ComponentModel.ISupportInitialize)dgvStock).EndInit();
             panel1.ResumeLayout(false);
             ResumeLayout(false);
@@ -127,7 +152,7 @@ namespace PacuIbera.UI.Common
 
             // Asignar textos explicitos
             btnTransferir.Text = "Transferir a Local";
-            btnConfigurarMinimo.Text = "Stock MÌnimo";
+            btnConfigurarMinimo.Text = "Stock M√≠nimo";
 
             // Aplicar estilos a botones inferiores
             EstiloUI.AplicarEstiloBotonAccion(btnConfigurarMinimo, EstiloUI.TipoAccion.Editar);
@@ -156,7 +181,13 @@ namespace PacuIbera.UI.Common
             {
                 var datos = new OtrosDatos();
                 var tabla = datos.ObtenerStockDeposito();
-                dgvStock.DataSource = tabla;
+                tablaStock = tabla;
+                stockBinding.DataSource = tablaStock;
+                dgvStock.DataSource = stockBinding;
+                dgvStock.ColumnHeadersVisible = true;
+                dgvStock.EnableHeadersVisualStyles = false;
+                dgvStock.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                ConfigurarNombresColumnas();
 
                 // formato condicional
                 foreach (DataGridViewRow row in dgvStock.Rows)
@@ -173,49 +204,90 @@ namespace PacuIbera.UI.Common
             }
         }
 
+        private void ConfigurarNombresColumnas()
+        {
+            string[,] encabezados =
+            {
+                { "ProductoId", "ID" },
+                { "Id", "ID" },
+                { "Nombre", "Producto" },
+                { "NombreProducto", "Producto" },
+                { "Descripcion", "Descripci√≥n" },
+                { "Categoria", "Categor√≠a" },
+                { "NombreCategoria", "Categor√≠a" },
+                { "StockDeposito", "Stock en dep√≥sito" },
+                { "StockMinimoDeposito", "Stock m√≠nimo" },
+                { "EstadoStock", "Estado" }
+            };
+            for (int i = 0; i < encabezados.GetLength(0); i++)
+            {
+                string nombre = encabezados[i, 0];
+                if (dgvStock.Columns.Contains(nombre))
+                    dgvStock.Columns[nombre].HeaderText = encabezados[i, 1];
+            }
+        }
+
+        private void TxtFiltrar_TextChanged(object sender, EventArgs e)
+        {
+            if (tablaStock == null) return;
+            string texto = txtFiltrar.Text.Trim().Replace("'", "''");
+            if (string.IsNullOrEmpty(texto)) { stockBinding.RemoveFilter(); return; }
+            var condiciones = new System.Collections.Generic.List<string>();
+            foreach (DataColumn columna in tablaStock.Columns)
+            {
+                string nombre = columna.ColumnName.ToLowerInvariant();
+                if (nombre.Contains("nombre") || nombre.Contains("descripcion") || nombre.Contains("descripci√≥n"))
+                {
+                    string campo = "[" + columna.ColumnName.Replace("]", "]] ") + "]";
+                    condiciones.Add("CONVERT(" + campo + ", 'System.String') LIKE '%" + texto + "%'");
+                }
+            }
+            if (condiciones.Count > 0) stockBinding.Filter = string.Join(" OR ", condiciones);
+        }
+
         private void BtnConfigurarMinimo_Click(object sender, EventArgs e)
         {
             try
             {
                 if (dgvStock.CurrentRow == null)
                 {
-                    MessageBox.Show("Seleccione un producto", "AtenciÛn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Seleccione un producto", "Atenci√≥n", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
                 var currentRow = dgvStock.CurrentRow;
                 if (currentRow.Cells[0].Value == null)
                 {
-                    MessageBox.Show("Producto inv·lido seleccionado", "AtenciÛn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Producto inv√°lido seleccionado", "Atenci√≥n", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
                 int productoId = 0;
                 if (!int.TryParse(currentRow.Cells[0].Value.ToString(), out productoId))
                 {
-                    MessageBox.Show("El Id del producto no es v·lido", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("El Id del producto no es v√°lido", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
                 // Pedimos el nuevo valor via InputBox
-                string input = Microsoft.VisualBasic.Interaction.InputBox("Ingrese nuevo Stock MÌnimo:", "Stock MÌnimo", currentRow.Cells["StockMinimoDeposito"].Value?.ToString() ?? "0");
+                string input = Microsoft.VisualBasic.Interaction.InputBox("Ingrese nuevo Stock M√≠nimo:", "Stock M√≠nimo", currentRow.Cells["StockMinimoDeposito"].Value?.ToString() ?? "0");
                 if (string.IsNullOrWhiteSpace(input)) return;
 
                 if (!decimal.TryParse(input, out decimal nuevoMin))
                 {
-                    MessageBox.Show("El valor ingresado no es un n˙mero v·lido", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("El valor ingresado no es un n√∫mero v√°lido", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
                 // Llamamos al SP por medio de OtrosDatos
                 var otros = new OtrosDatos();
                 otros.ActualizarStockMinimoDeposito(productoId, nuevoMin);
-                MessageBox.Show("Stock mÌnimo actualizado", "…xito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Stock m√≠nimo actualizado", "√âxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 CargarStock();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error actualizando stock mÌnimo: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error actualizando stock m√≠nimo: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
