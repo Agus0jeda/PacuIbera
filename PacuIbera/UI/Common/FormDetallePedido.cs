@@ -17,6 +17,7 @@ namespace PacuIbera.UI.Common
         private PedidosDatos pedidosDatos = new PedidosDatos();
         private DataGridView dgvDetalle;
         private Label lblProveedor;
+        private Label lblTitulo;
         private Panel panel1;
         private Panel panelHeader;
         private Panel panel2;
@@ -35,6 +36,7 @@ namespace PacuIbera.UI.Common
             dgvDetalle = new DataGridView();
             panelHeader = new Panel();
             lblProveedor = new Label();
+            lblTitulo = new Label();
             btnConfirmarRecepcion = new Button();
             panel1 = new Panel();
             panel2 = new Panel();
@@ -61,6 +63,14 @@ namespace PacuIbera.UI.Common
             panelHeader.Size = new Size(682, 36);
             panelHeader.TabIndex = 4;
             panelHeader.MouseDown += PanelHeader_MouseDown;
+            lblTitulo.AutoSize = true;
+            lblTitulo.Name = "lblTitulo";
+            lblTitulo.Text = "Detalles del pedido";
+            lblTitulo.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            lblTitulo.ForeColor = System.Drawing.Color.FromArgb(45, 55, 65);
+            lblTitulo.Location = new System.Drawing.Point(10, 8);
+            lblTitulo.MouseDown += PanelHeader_MouseDown;
+            panelHeader.Controls.Add(lblTitulo);
             // 
             // lblProveedor
             // 
@@ -75,7 +85,7 @@ namespace PacuIbera.UI.Common
             btnConfirmarRecepcion.Name = "btnConfirmarRecepcion";
             btnConfirmarRecepcion.Size = new Size(160, 36);
             btnConfirmarRecepcion.TabIndex = 2;
-            btnConfirmarRecepcion.Text = "Confirmar Recepción";
+            btnConfirmarRecepcion.Text = "Confirmar RecepciÃ³n";
             btnConfirmarRecepcion.Click += BtnConfirmarRecepcion_Click;
             // 
             // panel1
@@ -139,7 +149,13 @@ namespace PacuIbera.UI.Common
                 DataTable tabla = pedidosDatos.ObtenerDetallePedido(pedidoId);
                 dgvDetalle.DataSource = tabla;
 
-                // columnas esperadas: DetalleId, Producto, CantidadPedida, CantidadRecibida, Pendiente
+                // Ocultar identificadores internos: se conservan en el DataTable para las operaciones.
+                if (dgvDetalle.Columns.Contains("ProductoId"))
+                    dgvDetalle.Columns["ProductoId"].Visible = false;
+                if (dgvDetalle.Columns.Contains("DetalleId"))
+                    dgvDetalle.Columns["DetalleId"].Visible = false;
+
+                // El usuario ve los datos del producto y las cantidades, no las claves internas.
             }
             catch (Exception ex)
             {
@@ -163,7 +179,7 @@ namespace PacuIbera.UI.Common
                     try
                     {
                         pedidosDatos.RecepcionarItem(detalleId, cantidadIngresada, fechaVto);
-                        MessageBox.Show("Recepción registrada correctamente");
+                        MessageBox.Show("RecepciÃ³n registrada correctamente");
                         CargarDetalle();
                     }
                     catch (Exception ex)
