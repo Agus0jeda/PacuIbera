@@ -19,6 +19,7 @@ namespace PacuIbera.UI.Common
         private DataGridView dgvPedidos;
         private Button btnNuevoPedido;
         private Panel panelHeader;
+        private Label lblTitulo;
         private PedidosDatos pedidosDatos = new PedidosDatos();
 
         public FormPedidos()
@@ -33,6 +34,7 @@ namespace PacuIbera.UI.Common
             dgvPedidos = new DataGridView();
             btnNuevoPedido = new Button();
             panelHeader = new Panel();
+            lblTitulo = new Label();
             ((System.ComponentModel.ISupportInitialize)dgvPedidos).BeginInit();
             SuspendLayout();
             // 
@@ -42,6 +44,13 @@ namespace PacuIbera.UI.Common
             panelHeader.Height = 36;
             panelHeader.BackColor = Color.WhiteSmoke;
             panelHeader.MouseDown += PanelHeader_MouseDown;
+            lblTitulo.AutoSize = true;
+            lblTitulo.Text = "Pedidos a proveedores";
+            lblTitulo.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblTitulo.ForeColor = Color.FromArgb(45, 55, 65);
+            lblTitulo.Location = new Point(165, 10);
+            lblTitulo.MouseDown += PanelHeader_MouseDown;
+            panelHeader.Controls.Add(lblTitulo);
             // 
             // dgvPedidos
             // 
@@ -92,6 +101,10 @@ namespace PacuIbera.UI.Common
 
             // Estilizar botón Nuevo
             EstiloUI.AplicarEstiloBotonAccion(btnNuevoPedido, EstiloUI.TipoAccion.Positivo);
+
+            bool esAdministrador = SesionActiva.Rol == "Administrador" ||
+                                   SesionActiva.Rol == "SuperAdministrador";
+            btnNuevoPedido.Visible = esAdministrador;
 
             CargarPedidos();
 
@@ -213,6 +226,14 @@ namespace PacuIbera.UI.Common
 
         private void BtnNuevoPedido_Click(object sender, EventArgs e)
         {
+            if (SesionActiva.Rol != "Administrador" &&
+                SesionActiva.Rol != "SuperAdministrador")
+            {
+                MessageBox.Show("Solo los administradores pueden solicitar pedidos.",
+                    "Acceso restringido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             using (NuevoPedidoForm nuevo = new NuevoPedidoForm())
             {
                 if (nuevo.ShowDialog() == DialogResult.OK)
