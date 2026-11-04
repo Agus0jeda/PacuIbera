@@ -140,7 +140,10 @@ namespace PacuIbera.UI.Common
 
         private void DgvClientes_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (dgvClientes.Columns[e.ColumnIndex].Name == "TotalGastado" && e.Value != DBNull.Value)
+            if (e.RowIndex < 0)
+                return;
+
+            if (dgvClientes.Columns[e.ColumnIndex].Name == "TotalGastado" && e.Value != null && e.Value != DBNull.Value)
             {
                 e.Value = string.Format("${0:N2}", e.Value);
                 e.FormattingApplied = true;
@@ -186,11 +189,14 @@ namespace PacuIbera.UI.Common
             {
                 DataGridViewRow fila = dgvClientes.Rows[e.RowIndex];
 
-                idClienteSeleccionado = Convert.ToInt32(fila.Cells["Id"].Value);
-                txtNombreCliente.Text = fila.Cells["Nombre"].Value.ToString();
-                txtApellidoCliente.Text = fila.Cells["Apellido"].Value.ToString();
-                txtTelefonoCliente.Text = fila.Cells["Telefono"].Value.ToString();
-                txtDireccionCliente.Text = fila.Cells["Direccion"].Value.ToString();
+                if (!int.TryParse(fila.Cells["Id"].Value?.ToString(), out int idSeleccionado))
+                    return;
+
+                idClienteSeleccionado = idSeleccionado;
+                txtNombreCliente.Text = fila.Cells["Nombre"].Value?.ToString() ?? string.Empty;
+                txtApellidoCliente.Text = fila.Cells["Apellido"].Value?.ToString() ?? string.Empty;
+                txtTelefonoCliente.Text = fila.Cells["Telefono"].Value?.ToString() ?? string.Empty;
+                txtDireccionCliente.Text = fila.Cells["Direccion"].Value?.ToString() ?? string.Empty;
                 if (dgvClientes.Columns.Contains("Provincia") && fila.Cells["Provincia"].Value != null)
                     cmbProvincia.Text = fila.Cells["Provincia"].Value.ToString();
 
