@@ -2,13 +2,23 @@ using PacuIbera.Datos;
 using PacuIbera.Dominio;
 using System;
 using System.Data;
+using System.Globalization;
 using System.Linq;
+using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace PacuIbera.UI.Common
 {
     public class NuevoPedidoForm : Form
     {
+        [DllImport("user32.DLL", EntryPoint = "ReleaseCapture")]
+        private static extern void ReleaseCapture();
+        [DllImport("user32.DLL", EntryPoint = "SendMessage")]
+        private static extern void SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
+        private Panel panelTitulo;
+        private Label lblTitulo;
+        private Button btnCerrar;
         private ComboBox cbProveedores;
         private DataGridView dgvItems;
         private Button btnAgregarProducto;
@@ -18,9 +28,15 @@ namespace PacuIbera.UI.Common
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
+        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn5;
+        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
         private Panel panel1;
         private Panel panel2;
+        private Label lblTotalEstimado;
         private PedidosDatos pedidosDatos = new PedidosDatos();
+        private bool cargandoProveedores;
+        private object proveedorSeleccionadoAnterior;
+        private static readonly NumberFormatInfo FormatoMonedaArgentina = CultureInfo.GetCultureInfo("es-AR").NumberFormat;
 
         public NuevoPedidoForm()
         {
@@ -30,119 +46,148 @@ namespace PacuIbera.UI.Common
 
         private void InitializeComponent()
         {
+            panelTitulo = new Panel();
+            lblTitulo = new Label();
+            btnCerrar = new Button();
             cbProveedores = new ComboBox();
             dgvItems = new DataGridView();
             dataGridViewTextBoxColumn1 = new DataGridViewTextBoxColumn();
             dataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
             dataGridViewTextBoxColumn3 = new DataGridViewTextBoxColumn();
             dataGridViewTextBoxColumn4 = new DataGridViewTextBoxColumn();
+            dataGridViewTextBoxColumn5 = new DataGridViewTextBoxColumn();
+            dataGridViewTextBoxColumn6 = new DataGridViewTextBoxColumn();
             btnAgregarProducto = new Button();
             btnGuardarPedido = new Button();
             panel1 = new Panel();
             panel2 = new Panel();
+            lblTotalEstimado = new Label();
             ((System.ComponentModel.ISupportInitialize)dgvItems).BeginInit();
-            panel1.SuspendLayout();
-            panel2.SuspendLayout();
             SuspendLayout();
-            // 
-            // cbProveedores
-            // 
-            cbProveedores.ForeColor = SystemColors.WindowFrame;
-            cbProveedores.Location = new Point(403, 26);
+
+            panelTitulo.BackColor = Color.FromArgb(45, 55, 65);
+            panelTitulo.Dock = DockStyle.Top;
+            panelTitulo.Height = 42;
+            panelTitulo.Dock = DockStyle.None;
+            panelTitulo.Location = new Point(0, 0);
+            panelTitulo.Size = new Size(782, 42);
+            panelTitulo.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            panelTitulo.MouseDown += PanelTitulo_MouseDown;
+            lblTitulo.Text = "CREAR NUEVO PEDIDO";
+            lblTitulo.ForeColor = Color.White;
+            lblTitulo.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            lblTitulo.AutoSize = true;
+            lblTitulo.Location = new Point(14, 11);
+            lblTitulo.MouseDown += PanelTitulo_MouseDown;
+            btnCerrar.Text = "X";
+            btnCerrar.Size = new Size(38, 30);
+            btnCerrar.Location = new Point(738, 6);
+            btnCerrar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnCerrar.FlatStyle = FlatStyle.Flat;
+            btnCerrar.FlatAppearance.BorderSize = 0;
+            btnCerrar.BackColor = Color.FromArgb(45, 55, 65);
+            btnCerrar.ForeColor = Color.White;
+            btnCerrar.Click += (s, e) => Close();
+            panelTitulo.Controls.Add(lblTitulo);
+            panelTitulo.Controls.Add(btnCerrar);
+
+            cbProveedores.DropDownStyle = ComboBoxStyle.DropDownList;
+            cbProveedores.Location = new Point(105, 21);
+            cbProveedores.Size = new Size(260, 28);
             cbProveedores.Name = "cbProveedores";
-            cbProveedores.Size = new Size(206, 28);
-            cbProveedores.TabIndex = 2;
-            cbProveedores.Text = "Proveedores....";
-            // 
-            // dgvItems
-            // 
-            dgvItems.ColumnHeadersHeight = 29;
-            dgvItems.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1, dataGridViewTextBoxColumn2, dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4 });
-            dgvItems.Dock = DockStyle.Fill;
-            dgvItems.Location = new Point(0, 0);
-            dgvItems.Name = "dgvItems";
-            dgvItems.RowHeadersWidth = 51;
-            dgvItems.Size = new Size(782, 373);
-            dgvItems.TabIndex = 0;
-            // 
-            // dataGridViewTextBoxColumn1
-            // 
-            dataGridViewTextBoxColumn1.HeaderText = "ProductoId";
-            dataGridViewTextBoxColumn1.MinimumWidth = 6;
-            dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-            dataGridViewTextBoxColumn1.Width = 125;
-            // 
-            // dataGridViewTextBoxColumn2
-            // 
-            dataGridViewTextBoxColumn2.HeaderText = "Producto";
-            dataGridViewTextBoxColumn2.MinimumWidth = 6;
-            dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
-            dataGridViewTextBoxColumn2.Width = 125;
-            // 
-            // dataGridViewTextBoxColumn3
-            // 
-            dataGridViewTextBoxColumn3.HeaderText = "Cantidad";
-            dataGridViewTextBoxColumn3.MinimumWidth = 6;
-            dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
-            dataGridViewTextBoxColumn3.Width = 125;
-            // 
-            // dataGridViewTextBoxColumn4
-            // 
-            dataGridViewTextBoxColumn4.HeaderText = "Precio Costo";
-            dataGridViewTextBoxColumn4.MinimumWidth = 6;
-            dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
-            dataGridViewTextBoxColumn4.Width = 125;
-            // 
-            // btnAgregarProducto
-            // 
-            btnAgregarProducto.Location = new Point(188, 26);
-            btnAgregarProducto.Name = "btnAgregarProducto";
-            btnAgregarProducto.Size = new Size(147, 32);
-            btnAgregarProducto.TabIndex = 1;
-            btnAgregarProducto.Text = "Agregar Producto";
+            cbProveedores.SelectedIndexChanged += CbProveedores_SelectedIndexChanged;
+            btnAgregarProducto.Text = "Agregar producto";
+            btnAgregarProducto.Location = new Point(390, 17);
+            btnAgregarProducto.Size = new Size(175, 38);
             btnAgregarProducto.Click += BtnAgregarProducto_Click;
-            // 
-            // btnGuardarPedido
-            // 
-            btnGuardarPedido.Location = new Point(22, 26);
-            btnGuardarPedido.Name = "btnGuardarPedido";
-            btnGuardarPedido.Size = new Size(147, 34);
-            btnGuardarPedido.TabIndex = 3;
-            btnGuardarPedido.Text = "Guardar Pedido";
+
+            btnGuardarPedido.Text = "Guardar pedido";
+            btnGuardarPedido.Size = new Size(155, 36);
             btnGuardarPedido.Click += BtnGuardarPedido_Click;
-            // 
-            // panel1
-            // 
-            panel1.Controls.Add(btnGuardarPedido);
+
+            panel1.Dock = DockStyle.None;
+            panel1.Location = new Point(0, 42);
+            panel1.Size = new Size(782, 70);
+            panel1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            panel1.BackColor = Color.WhiteSmoke;
+            Label lblProveedor = new Label();
+            lblProveedor.Text = "Proveedor:";
+            lblProveedor.AutoSize = true;
+            lblProveedor.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            lblProveedor.Location = new Point(18, 23);
+            panel1.Controls.Add(lblProveedor);
             panel1.Controls.Add(cbProveedores);
             panel1.Controls.Add(btnAgregarProducto);
-            panel1.Dock = DockStyle.Top;
-            panel1.Location = new Point(0, 0);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(782, 80);
-            panel1.TabIndex = 4;
-            // 
-            // panel2
-            // 
+
+            dgvItems.Dock = DockStyle.Fill;
+            dgvItems.Name = "dgvItems";
+            dgvItems.AllowUserToAddRows = false;
+            dgvItems.AllowUserToDeleteRows = false;
+            dgvItems.ReadOnly = true;
+            dgvItems.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvItems.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvItems.BackgroundColor = Color.White;
+            dgvItems.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1, dataGridViewTextBoxColumn2, dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4, dataGridViewTextBoxColumn5, dataGridViewTextBoxColumn6 });
+            dataGridViewTextBoxColumn1.Name = "ProductoId";
+            dataGridViewTextBoxColumn1.HeaderText = "ID interno";
+            dataGridViewTextBoxColumn1.Visible = false;
+            dataGridViewTextBoxColumn2.Name = "Producto";
+            dataGridViewTextBoxColumn2.HeaderText = "Producto";
+            dataGridViewTextBoxColumn3.Name = "Cantidad";
+            dataGridViewTextBoxColumn3.HeaderText = "Cantidad";
+            dataGridViewTextBoxColumn4.Name = "PrecioCosto";
+            dataGridViewTextBoxColumn4.HeaderText = "Precio de costo";
+            dataGridViewTextBoxColumn4.DefaultCellStyle.Format = "C2";
+            dataGridViewTextBoxColumn4.DefaultCellStyle.FormatProvider = FormatoMonedaArgentina;
+            dataGridViewTextBoxColumn5.Name = "Subtotal";
+            dataGridViewTextBoxColumn5.HeaderText = "Subtotal";
+            dataGridViewTextBoxColumn5.DefaultCellStyle.Format = "C2";
+            dataGridViewTextBoxColumn5.DefaultCellStyle.FormatProvider = FormatoMonedaArgentina;
+            dataGridViewTextBoxColumn6.Name = "SeVendePorPeso";
+            dataGridViewTextBoxColumn6.HeaderText = "Se vende por peso";
+            dataGridViewTextBoxColumn6.Visible = false;
+
+            panel2.Dock = DockStyle.None;
+            panel2.Location = new Point(0, 112);
+            panel2.Size = new Size(782, 326);
+            panel2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             panel2.Controls.Add(dgvItems);
-            panel2.Dock = DockStyle.Fill;
-            panel2.Location = new Point(0, 80);
-            panel2.Name = "panel2";
-            panel2.Size = new Size(782, 373);
-            panel2.TabIndex = 5;
-            // 
-            // NuevoPedidoForm
-            // 
-            ClientSize = new Size(782, 453);
+
+            Panel panelInferior = new Panel();
+            panelInferior.Dock = DockStyle.None;
+            panelInferior.Location = new Point(0, 438);
+            panelInferior.Size = new Size(782, 62);
+            panelInferior.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panelInferior.BackColor = Color.WhiteSmoke;
+            btnGuardarPedido.Location = new Point(607, 12);
+            btnGuardarPedido.Anchor = AnchorStyles.Right | AnchorStyles.Top;
+            panelInferior.Controls.Add(btnGuardarPedido);
+            lblTotalEstimado.Text = "Total estimado: $0,00 (informativo)";
+            lblTotalEstimado.AutoSize = true;
+            lblTotalEstimado.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblTotalEstimado.Location = new Point(18, 19);
+            panelInferior.Controls.Add(lblTotalEstimado);
+
+            ClientSize = new Size(782, 500);
             Controls.Add(panel2);
+            Controls.Add(panelInferior);
             Controls.Add(panel1);
+            Controls.Add(panelTitulo);
+            panelTitulo.BringToFront();
             FormBorderStyle = FormBorderStyle.None;
+            StartPosition = FormStartPosition.CenterParent;
+            BackColor = Color.White;
             Name = "NuevoPedidoForm";
-            Text = "Nuevo Pedido";
+            Text = "Crear nuevo pedido";
+            MinimumSize = new Size(650, 420);
             ((System.ComponentModel.ISupportInitialize)dgvItems).EndInit();
-            panel1.ResumeLayout(false);
-            panel2.ResumeLayout(false);
-            ResumeLayout(false);
+            ResumeLayout(true);
+        }
+
+        private void PanelTitulo_MouseDown(object sender, MouseEventArgs e)
+        {
+            ReleaseCapture();
+            SendMessage(Handle, 0x112, 0xf012, 0);
         }
 
         private void NuevoPedidoForm_Load(object sender, EventArgs e)
@@ -150,22 +195,18 @@ namespace PacuIbera.UI.Common
             CargarProveedores();
 
             // Aplicar estilos UI
-            EstiloUI.CrearBotonCerrar(this);
             EstiloUI.AplicarEstiloGrid(dgvItems);
             EstiloUI.AplicarEstiloBotonAccion(btnAgregarProducto, EstiloUI.TipoAccion.Positivo);
             EstiloUI.AplicarEstiloBotonAccion(btnGuardarPedido, EstiloUI.TipoAccion.Positivo);
+            dgvItems.ColumnHeadersVisible = true;
+            dgvItems.EnableHeadersVisualStyles = false;
+            dgvItems.ColumnHeadersHeight = 36;
+            dgvItems.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 55, 65);
+            dgvItems.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            dgvItems.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            dgvItems.RowHeadersVisible = false;
 
-            // Alinear botones inferiores (Guardar) y el Agregar arriba a la derecha del combo
-            try
-            {
-                // posicionar btnAgregarProducto cerca del combo
-                btnAgregarProducto.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-                btnAgregarProducto.Location = new Point(this.ClientSize.Width - btnAgregarProducto.Width - 20, cbProveedores.Bottom + 4);
 
-                // Alinear el boton guardar centrado en el fondo
-                EstiloUI.AlinearBotonesInferiores(this, this.ClientSize.Height - 60, btnGuardarPedido);
-            }
-            catch { }
         }
 
         private void CargarProveedores()
@@ -173,9 +214,12 @@ namespace PacuIbera.UI.Common
             try
             {
                 var tabla = proveedorDatos.ObtenerTodos();
+                cargandoProveedores = true;
                 cbProveedores.DataSource = tabla;
                 cbProveedores.DisplayMember = "RazonSocial";
                 cbProveedores.ValueMember = "Id";
+                cargandoProveedores = false;
+                proveedorSeleccionadoAnterior = cbProveedores.SelectedValue;
             }
             catch (Exception ex)
             {
@@ -185,14 +229,74 @@ namespace PacuIbera.UI.Common
 
         private void BtnAgregarProducto_Click(object sender, EventArgs e)
         {
-            using (var prodForm = new SeleccionarProductoForm())
+            if (!TryObtenerProveedorId(out int proveedorId))
+            {
+                MessageBox.Show("Seleccione un proveedor antes de agregar productos.", "Proveedor requerido", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (var prodForm = new SeleccionarProductoForm(proveedorId))
             {
                 if (prodForm.ShowDialog() == DialogResult.OK)
                 {
-                    // agrega una fila
-                    dgvItems.Rows.Add(prodForm.ProductoId, prodForm.ProductoNombre, prodForm.Cantidad, prodForm.PrecioCosto);
+                    if (dgvItems.Rows.Cast<DataGridViewRow>().Any(row => Convert.ToInt32(row.Cells["ProductoId"].Value) == prodForm.ProductoId))
+                    {
+                        MessageBox.Show("El producto ya fue agregado a esta orden.", "Producto duplicado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return;
+                    }
+
+                    bool perteneceAlProveedor = proveedorDatos.ObtenerProductosOfrecidosActivos(proveedorId)
+                        .AsEnumerable().Any(row => row.Field<int>("Id") == prodForm.ProductoId);
+                    if (!perteneceAlProveedor)
+                    {
+                        MessageBox.Show("El producto seleccionado ya no pertenece al proveedor actual.", "Producto no válido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    decimal subtotal = prodForm.Cantidad * prodForm.PrecioCosto;
+                    dgvItems.Rows.Add(prodForm.ProductoId, prodForm.ProductoNombre, prodForm.Cantidad, prodForm.PrecioCosto, subtotal, prodForm.SeVendePorPeso);
+                    ActualizarTotalEstimado();
                 }
             }
+        }
+
+        private void CbProveedores_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cargandoProveedores || dgvItems.Rows.Count == 0)
+                return;
+
+            DialogResult respuesta = MessageBox.Show(
+                "Cambiar de proveedor quitará los productos agregados a la orden. ¿Desea continuar?",
+                "Cambiar proveedor",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (respuesta == DialogResult.Yes)
+            {
+                dgvItems.Rows.Clear();
+                ActualizarTotalEstimado();
+                proveedorSeleccionadoAnterior = cbProveedores.SelectedValue;
+            }
+            else
+            {
+                cbProveedores.SelectedIndexChanged -= CbProveedores_SelectedIndexChanged;
+                cbProveedores.SelectedValue = proveedorSeleccionadoAnterior;
+                cbProveedores.SelectedIndexChanged += CbProveedores_SelectedIndexChanged;
+            }
+        }
+
+        private bool TryObtenerProveedorId(out int proveedorId)
+        {
+            proveedorId = 0;
+            return cbProveedores.SelectedValue != null && int.TryParse(cbProveedores.SelectedValue.ToString(), out proveedorId) && proveedorId > 0;
+        }
+
+        private void ActualizarTotalEstimado()
+        {
+            decimal total = dgvItems.Rows.Cast<DataGridViewRow>()
+                .Where(row => !row.IsNewRow)
+                .Sum(row => Convert.ToDecimal(row.Cells["Subtotal"].Value));
+            lblTotalEstimado.Text = $"Total estimado: {total.ToString("C2", FormatoMonedaArgentina)} (informativo)";
         }
 
         private void BtnGuardarPedido_Click(object sender, EventArgs e)
@@ -204,14 +308,18 @@ namespace PacuIbera.UI.Common
             int usuarioId = SesionActiva.IdUsuario;
             try
             {
-                int nuevoPedidoId = pedidosDatos.CrearPedido(proveedorId, usuarioId, DateTime.Now);
-                foreach (DataGridViewRow row in dgvItems.Rows)
-                {
-                    int productoId = Convert.ToInt32(row.Cells["ProductoId"].Value);
-                    int cantidad = Convert.ToInt32(row.Cells["Cantidad"].Value);
-                    decimal precio = Convert.ToDecimal(row.Cells["PrecioCosto"].Value);
-                    pedidosDatos.AgregarItemPedido(nuevoPedidoId, productoId, cantidad, precio);
-                }
+                var items = dgvItems.Rows.Cast<DataGridViewRow>()
+                    .Where(row => !row.IsNewRow)
+                    .Select(row => new PedidosDatos.ItemPedido
+                    {
+                        ProductoId = Convert.ToInt32(row.Cells["ProductoId"].Value),
+                        Cantidad = Convert.ToDecimal(row.Cells["Cantidad"].Value),
+                        SeVendePorPeso = Convert.ToBoolean(row.Cells["SeVendePorPeso"].Value),
+                        PrecioCosto = Convert.ToDecimal(row.Cells["PrecioCosto"].Value)
+                    })
+                    .ToList();
+
+                pedidosDatos.GuardarPedidoAtomico(proveedorId, usuarioId, DateTime.Now, items);
                 MessageBox.Show("Pedido creado correctamente");
                 this.DialogResult = DialogResult.OK;
                 this.Close();

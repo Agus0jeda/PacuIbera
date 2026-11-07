@@ -146,7 +146,7 @@ namespace PacuIbera.Datos
         {
             using (SqlConnection con = ObtenerConexion())
             {
-                using (SqlCommand cmd = new SqlCommand("UPDATE Cliente SET Activo = 0 WHERE Id = @Id", con))
+                using (SqlCommand cmd = new SqlCommand("UPDATE Cliente SET Estado = 'Inactivo' WHERE Id = @Id", con))
                 {
                     cmd.Parameters.AddWithValue("@Id", id);
                     con.Open();

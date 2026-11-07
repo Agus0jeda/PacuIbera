@@ -106,6 +106,46 @@ namespace Datos
             return tabla;
         }
 
+        // Consulta exclusiva para la administración: incluye productos activos e inactivos.
+        // ObtenerProductos() se mantiene sin cambios para conservar los selectores operativos.
+        public DataTable ObtenerProductosAdministracion()
+        {
+            DataTable tabla = new DataTable();
+
+            using (SqlConnection conexion = ObtenerConexion())
+            {
+                string query = @"SELECT
+                            p.Id,
+                            p.Nombre,
+                            c.Nombre AS Categoria,
+                            p.PrecioVenta,
+                            ISNULL(SUM(l.StockActual), 0) AS StockActual,
+                            p.StockMinimo,
+                            p.SeVendePorPeso,
+                            p.Descripcion,
+                            p.Activo AS Activo,
+                            (SELECT COUNT(*) FROM Lote lo
+                                WHERE lo.ProductoId = p.Id AND lo.Activo = 1
+                                AND lo.FechaVencimiento <= DATEADD(day, 15, GETDATE())) AS LotesPorVencer,
+                            (SELECT MIN(FechaVencimiento) FROM Lote lo
+                                WHERE lo.ProductoId = p.Id AND lo.Activo = 1 AND lo.StockActual > 0) AS ProximoVencimiento
+                        FROM Producto p
+                        LEFT JOIN Categoria c ON p.CategoriaId = c.Id
+                        LEFT JOIN Lote l ON p.Id = l.ProductoId AND l.Activo = 1
+                        GROUP BY p.Id, p.Nombre, c.Nombre, p.PrecioVenta, p.StockMinimo,
+                                 p.SeVendePorPeso, p.Descripcion, p.Activo";
+
+                SqlCommand cmd = new SqlCommand(query, conexion);
+                conexion.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    tabla.Load(reader);
+                }
+            }
+
+            return tabla;
+        }
+
         // Método para ver los Lotes de un producto específico
         public DataTable ObtenerLotesPorProducto(int productoId)
         {

@@ -12,14 +12,18 @@ namespace Datos
         {
 
             // Detecta automáticamente en qué computadora está corriendo el proyecto
+            string baseDeDatos = Environment.GetEnvironmentVariable("PACUIBERA_DB_PRUEBAS") == "1"
+                ? "PacuIberaDB_Pruebas"
+                : "PacuIberaDB";
+
             if (Environment.MachineName == "AGUS") 
             {
-                CadenaGlobal = "Server=AGUS\\SQLEXPRESS; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
+                CadenaGlobal = $"Server=AGUS\\SQLEXPRESS; DataBase={baseDeDatos}; Integrated Security=True; TrustServerCertificate=True;";
             }
             else
             {
                 // Si la PC no se llama AGUS, asume automáticamente que es la máquina de tu compañero
-                CadenaGlobal = "Server=(localdb)\\MSSQLLocalDB; DataBase=PacuIberaDB; Integrated Security=True; TrustServerCertificate=True;";
+                CadenaGlobal = $"Server=(localdb)\\MSSQLLocalDB; DataBase={baseDeDatos}; Integrated Security=True; TrustServerCertificate=True;";
             }
 
             
