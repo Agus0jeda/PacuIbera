@@ -3,6 +3,7 @@ using PacuIbera.Dominio;
 using System;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -21,6 +22,11 @@ namespace PacuIbera.UI.Common
         private Panel panelHeader;
         private Label lblTitulo;
         private PedidosDatos pedidosDatos = new PedidosDatos();
+        private TextBox txtBuscar;
+        private ComboBox cbEstado;
+        private Panel panelFiltros;
+        private DataTable pedidosTabla;
+        private readonly NumberFormatInfo formatoMonedaArgentina = CultureInfo.GetCultureInfo("es-AR").NumberFormat;
 
         public FormPedidos()
         {
@@ -35,50 +41,66 @@ namespace PacuIbera.UI.Common
             btnNuevoPedido = new Button();
             panelHeader = new Panel();
             lblTitulo = new Label();
+            panelFiltros = new Panel();
+            txtBuscar = new TextBox();
+            cbEstado = new ComboBox();
             ((System.ComponentModel.ISupportInitialize)dgvPedidos).BeginInit();
             SuspendLayout();
-            // 
-            // panelHeader
-            // 
+
             panelHeader.Dock = DockStyle.Top;
-            panelHeader.Height = 36;
-            panelHeader.BackColor = Color.WhiteSmoke;
+            panelHeader.Height = 48;
+            panelHeader.BackColor = Color.FromArgb(45, 55, 65);
             panelHeader.MouseDown += PanelHeader_MouseDown;
             lblTitulo.AutoSize = true;
-            lblTitulo.Text = "Pedidos a proveedores";
-            lblTitulo.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            lblTitulo.ForeColor = Color.FromArgb(45, 55, 65);
-            lblTitulo.Location = new Point(165, 10);
+            lblTitulo.Text = "PEDIDOS A PROVEEDORES";
+            lblTitulo.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            lblTitulo.ForeColor = Color.White;
+            lblTitulo.Location = new Point(165, 14);
             lblTitulo.MouseDown += PanelHeader_MouseDown;
             panelHeader.Controls.Add(lblTitulo);
-            // 
-            // dgvPedidos
-            // 
-            dgvPedidos.ColumnHeadersHeight = 29;
-            dgvPedidos.Dock = DockStyle.Fill;
-            dgvPedidos.Location = new Point(0, panelHeader.Height);
-            dgvPedidos.Name = "dgvPedidos";
-            dgvPedidos.RowHeadersWidth = 51;
-            dgvPedidos.Size = new Size(782, 453 - panelHeader.Height);
-            dgvPedidos.TabIndex = 0;
-            dgvPedidos.CellFormatting += DgvPedidos_CellFormatting;
-            // 
-            // btnNuevoPedido
-            // 
-            btnNuevoPedido.Location = new Point(10, 6);
+
+            btnNuevoPedido.Location = new Point(12, 8);
             btnNuevoPedido.Name = "btnNuevoPedido";
             btnNuevoPedido.Text = "Nuevo pedido";
-            btnNuevoPedido.Size = new Size(140, 30);
-            btnNuevoPedido.TabIndex = 1;
+            btnNuevoPedido.Size = new Size(140, 32);
             btnNuevoPedido.Click += BtnNuevoPedido_Click;
-            
             panelHeader.Controls.Add(btnNuevoPedido);
-            btnNuevoPedido.BringToFront();
-            // 
-            // FormPedidos
-            // 
-            ClientSize = new Size(782, 453);
+
+            panelFiltros.Dock = DockStyle.Top;
+            panelFiltros.Height = 58;
+            panelFiltros.BackColor = Color.FromArgb(250, 248, 243);
+            panelFiltros.Padding = new Padding(14, 12, 14, 10);
+            Label lblBuscar = new Label { Text = "Buscar:", AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Location = new Point(14, 19) };
+            txtBuscar.PlaceholderText = "Proveedor o N.º de pedido";
+            txtBuscar.Location = new Point(68, 14);
+            txtBuscar.Size = new Size(280, 27);
+            txtBuscar.TextChanged += Filtros_TextChanged;
+            Label lblEstado = new Label { Text = "Estado:", AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Location = new Point(380, 19) };
+            cbEstado.DropDownStyle = ComboBoxStyle.DropDownList;
+            cbEstado.Items.AddRange(new object[] { "Todos", "Pendientes", "Finalizados" });
+            cbEstado.SelectedIndex = 0;
+            cbEstado.Location = new Point(435, 14);
+            cbEstado.Size = new Size(150, 27);
+            cbEstado.SelectedIndexChanged += Filtros_TextChanged;
+            panelFiltros.Controls.AddRange(new Control[] { lblBuscar, txtBuscar, lblEstado, cbEstado });
+
+            dgvPedidos.Dock = DockStyle.Fill;
+            dgvPedidos.Name = "dgvPedidos";
+            dgvPedidos.ReadOnly = true;
+            dgvPedidos.AllowUserToAddRows = false;
+            dgvPedidos.AllowUserToDeleteRows = false;
+            dgvPedidos.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvPedidos.MultiSelect = false;
+            dgvPedidos.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvPedidos.BackgroundColor = Color.FromArgb(233, 237, 241);
+            dgvPedidos.DefaultCellStyle.BackColor = Color.FromArgb(233, 237, 241);
+            dgvPedidos.RowHeadersVisible = false;
+            dgvPedidos.CellFormatting += DgvPedidos_CellFormatting;
+
+            ClientSize = new Size(850, 520);
+            MinimumSize = new Size(700, 420);
             Controls.Add(dgvPedidos);
+            Controls.Add(panelFiltros);
             Controls.Add(panelHeader);
             FormBorderStyle = FormBorderStyle.None;
             Name = "FormPedidos";
@@ -107,8 +129,6 @@ namespace PacuIbera.UI.Common
             btnNuevoPedido.Visible = esAdministrador;
 
             CargarPedidos();
-
-            // El botón pertenece al encabezado; no moverlo al pie de la grilla.
         }
 
         private void DgvPedidos_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -146,35 +166,10 @@ namespace PacuIbera.UI.Common
         {
             try
             {
-                DataTable tabla = pedidosDatos.ObtenerPedidos();
-                dgvPedidos.DataSource = tabla;
-
-                // Ocultar columnas identificadoras si existen para evitar mostrarlas
-                try
-                {
-                    if (dgvPedidos.Columns.Contains("Id")) dgvPedidos.Columns["Id"].Visible = false;
-                    if (dgvPedidos.Columns.Contains("ProductoId")) dgvPedidos.Columns["ProductoId"].Visible = false;
-                }
-                catch { /* no bloquear la carga por visibilidad */ }
-
-                // Asegurarse de nombres que devuelve el SP
-
-                // Agregar columna ver si no existe
-                if (!dgvPedidos.Columns.Contains("Ver"))
-                {
-                    DataGridViewButtonColumn btnVer = new DataGridViewButtonColumn();
-                    btnVer.Name = "Ver";
-                    btnVer.Text = "Ver";
-                    btnVer.UseColumnTextForButtonValue = true;
-                    btnVer.Width = 80;
-                    dgvPedidos.Columns.Add(btnVer);
-
-                    // Aplicar estilo a la columna de botones
-                    btnVer.DefaultCellStyle.BackColor = ColorTranslator.FromHtml("#64748B");
-                    btnVer.DefaultCellStyle.ForeColor = Color.White;
-                    btnVer.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                }
-
+                pedidosTabla = pedidosDatos.ObtenerPedidos();
+                dgvPedidos.DataSource = pedidosTabla;
+                ConfigurarColumnas();
+                AplicarFiltros();
                 dgvPedidos.CellClick -= DgvPedidos_CellClick;
                 dgvPedidos.CellClick += DgvPedidos_CellClick;
             }
@@ -184,6 +179,66 @@ namespace PacuIbera.UI.Common
             }
         }
 
+        private void ConfigurarColumnas()
+        {
+            foreach (DataGridViewColumn columna in dgvPedidos.Columns)
+                columna.Visible = false;
+
+            ConfigurarColumna("Id", "N.º pedido", true);
+            ConfigurarColumna("Proveedor", "Proveedor", true);
+            ConfigurarColumna("FechaPedido", "Fecha y hora", true);
+            ConfigurarColumna("Estado", "Estado", true);
+            ConfigurarColumna("TotalEstimado", "Total estimado", true);
+
+            if (!dgvPedidos.Columns.Contains("Ver"))
+            {
+                DataGridViewButtonColumn boton = new DataGridViewButtonColumn { Name = "Ver", HeaderText = "Ver detalle", Text = "Ver", UseColumnTextForButtonValue = true, Width = 100 };
+                boton.DefaultCellStyle.BackColor = Color.FromArgb(100, 116, 139);
+                boton.DefaultCellStyle.ForeColor = Color.White;
+                boton.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                dgvPedidos.Columns.Add(boton);
+            }
+
+            ConfigurarColumna("Ver", "Ver detalle", true);
+            dgvPedidos.Columns["FechaPedido"].DefaultCellStyle.Format = "dd/MM/yyyy HH:mm";
+            dgvPedidos.Columns["TotalEstimado"].DefaultCellStyle.Format = "C2";
+            dgvPedidos.Columns["TotalEstimado"].DefaultCellStyle.FormatProvider = formatoMonedaArgentina;
+            dgvPedidos.Columns["Id"].FillWeight = 90;
+            dgvPedidos.Columns["Id"].MinimumWidth = 90;
+            dgvPedidos.Columns["Proveedor"].FillWeight = 150;
+            dgvPedidos.Columns["FechaPedido"].FillWeight = 115;
+            dgvPedidos.Columns["Estado"].FillWeight = 100;
+            dgvPedidos.Columns["TotalEstimado"].FillWeight = 110;
+            dgvPedidos.Columns["Ver"].FillWeight = 75;
+        }
+
+        private void ConfigurarColumna(string nombre, string encabezado, bool visible)
+        {
+            if (!dgvPedidos.Columns.Contains(nombre)) return;
+            dgvPedidos.Columns[nombre].Visible = visible;
+            dgvPedidos.Columns[nombre].HeaderText = encabezado;
+        }
+
+        private void Filtros_TextChanged(object sender, EventArgs e)
+        {
+            AplicarFiltros();
+        }
+
+        private void AplicarFiltros()
+        {
+            if (pedidosTabla == null) return;
+            string texto = txtBuscar.Text.Trim().Replace("'", "''");
+            string filtroBusqueda = string.IsNullOrWhiteSpace(texto)
+                ? string.Empty
+                : $"(CONVERT(Id, 'System.String') LIKE '%{texto}%' OR Proveedor LIKE '%{texto}%')";
+            string filtroEstado = cbEstado.SelectedItem?.ToString() switch
+            {
+                "Pendientes" => "Estado = 'Pendiente'",
+                "Finalizados" => "Estado <> 'Pendiente'",
+                _ => string.Empty
+            };
+            pedidosTabla.DefaultView.RowFilter = string.Join(" AND ", new[] { filtroBusqueda, filtroEstado }.Where(filtro => !string.IsNullOrEmpty(filtro)));
+        }
 
         private void DgvPedidos_CellClick(object sender, DataGridViewCellEventArgs e)
         {

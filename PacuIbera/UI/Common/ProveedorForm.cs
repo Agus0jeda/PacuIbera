@@ -296,6 +296,20 @@ namespace PacuIbera.UI.Common
             LimpiarCampos();
         }
 
+        private void btnProductosOfrecidos_Click(object sender, EventArgs e)
+        {
+            if (idProveedorSeleccionado <= 0)
+            {
+                MessageBox.Show("Seleccione un proveedor para administrar sus productos.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using (var formulario = new ProductosProveedorForm(idProveedorSeleccionado, txtRazonSocial.Text.Trim()))
+            {
+                formulario.ShowDialog(this);
+            }
+        }
+
         private void btnEliminar_Click(object sender, EventArgs e)
         {
             if (idProveedorSeleccionado > 0)

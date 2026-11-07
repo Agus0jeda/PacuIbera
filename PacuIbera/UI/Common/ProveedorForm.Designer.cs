@@ -39,6 +39,7 @@
             btnLimpiar = new Button();
             btnEliminar = new Button();
             btnGuardar = new Button();
+            btnProductosOfrecidos = new Button();
             gbEstados = new GroupBox();
             rbInactivo = new RadioButton();
             rbActivo = new RadioButton();
@@ -81,6 +82,7 @@
             pnlDatosProv.Controls.Add(btnLimpiar);
             pnlDatosProv.Controls.Add(btnEliminar);
             pnlDatosProv.Controls.Add(btnGuardar);
+            pnlDatosProv.Controls.Add(btnProductosOfrecidos);
             pnlDatosProv.Controls.Add(gbEstados);
             pnlDatosProv.Controls.Add(cmbLocalidad);
             pnlDatosProv.Controls.Add(cmbProvincia);
@@ -205,6 +207,21 @@
             btnGuardar.Text = "GUARDAR";
             btnGuardar.UseVisualStyleBackColor = false;
             btnGuardar.Click += btnGuardar_Click;
+            // 
+            // btnProductosOfrecidos
+            // 
+            btnProductosOfrecidos.BackColor = Color.SteelBlue;
+            btnProductosOfrecidos.FlatAppearance.BorderSize = 0;
+            btnProductosOfrecidos.FlatStyle = FlatStyle.Flat;
+            btnProductosOfrecidos.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold);
+            btnProductosOfrecidos.ForeColor = Color.WhiteSmoke;
+            btnProductosOfrecidos.Location = new Point(29, 275);
+            btnProductosOfrecidos.Name = "btnProductosOfrecidos";
+            btnProductosOfrecidos.Size = new Size(434, 36);
+            btnProductosOfrecidos.TabIndex = 20;
+            btnProductosOfrecidos.Text = "PRODUCTOS QUE OFRECE";
+            btnProductosOfrecidos.UseVisualStyleBackColor = false;
+            btnProductosOfrecidos.Click += btnProductosOfrecidos_Click;
             // 
             // gbEstados
             // 
@@ -461,6 +478,7 @@
         private Button btnLimpiar;
         private Button btnEliminar;
         private Button btnGuardar;
+        private Button btnProductosOfrecidos;
         private DataGridView dgvProveedores;
         private Label lblProvincia;
         private Label lblGestionProveedor;

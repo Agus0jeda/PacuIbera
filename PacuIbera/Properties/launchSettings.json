@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "PacuIbera - Pruebas": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "PACUIBERA_DB_PRUEBAS": "1"
+      }
+    }
+  }
+}
