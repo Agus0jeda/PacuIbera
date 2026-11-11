@@ -143,7 +143,7 @@ namespace PacuIbera.UI.Common
             UseWaitCursor = true;
             try
             {
-                await datos.ValidarDestinoEmisionPruebasAsync();
+                await datos.ValidarDestinoEmisionAsync();
                 comprobado = await datos.ConciliarEmisionPendienteAsync();
                 if (comprobado != null) return;
                 bool pendiente = File.Exists(RemitosDatos.ArchivoEmisionPendiente);
@@ -171,7 +171,7 @@ namespace PacuIbera.UI.Common
                 if (!IsDisposed)
                 {
                     mensaje.Text = "No se pudo comprobar el destino, el stock o la emisión anterior. Actualice antes de continuar.";
-                    MessageBox.Show(this, "No se pudo cargar la información. Compruebe la conexión, su usuario y el perfil PacuIbera - Pruebas. Si existe un intento pendiente, conserve su registro.", "Emitir remito", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(this, "No se pudo cargar la información. Compruebe la conexión configurada y sus permisos. Si existe un intento pendiente, conserve su registro.", "Emitir remito", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             finally
@@ -221,7 +221,7 @@ namespace PacuIbera.UI.Common
             bool valido = false;
             try { using var entrada = RemitosDatos.ConstruirProductosEntrada(borrador); valido = true; }
             catch (InvalidOperationException) { }
-            revisar.Enabled = editarBorrador && RemitosDatos.PerfilEmisionPruebas && valido && !editando.HasValue;
+            revisar.Enabled = editarBorrador && RemitosDatos.DestinoEmisionPermitido && valido && !editando.HasValue;
             actualizar.Enabled = !ocupado && autorizado;
             UseWaitCursor = ocupado;
         }

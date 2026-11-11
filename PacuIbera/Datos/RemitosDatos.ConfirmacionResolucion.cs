@@ -14,9 +14,7 @@ public sealed partial class RemitosDatos
     public sealed record IntentoResolucion(Guid ClaveOperacion, int RemitoId, int UsuarioResponsableId,
         string Tipo, string Motivo, string Servidor, string Base, ResolucionRemitoBorrador[] Lotes);
 
-    public static bool PerfilResolucionPruebas =>
-        Environment.GetEnvironmentVariable("PACUIBERA_DB_PRUEBAS") == "1"
-        && new SqlConnectionStringBuilder(CadenaGlobal).InitialCatalog == "PacuIberaDB_Pruebas";
+    public static bool DestinoResolucionPermitido => DestinoAplicacionPermitido;
 
     public static string ArchivoResolucionPendiente(int remitoId)
     {
@@ -37,29 +35,30 @@ public sealed partial class RemitosDatos
             .Where(id => id > 0).ToArray();
     }
 
-    private async Task<SqlConnection> AbrirPruebasResolucionAsync()
+    private async Task<SqlConnection> AbrirResolucionAsync()
     {
-        if (!PuedePrepararResolucion || !PerfilResolucionPruebas)
-            throw new InvalidOperationException("Esta operación requiere un Administrador y el perfil PacuIbera - Pruebas.");
+        if (!PuedePrepararResolucion || !DestinoResolucionPermitido)
+            throw new InvalidOperationException("Esta operación requiere un Administrador y una configuración PacuIbera permitida.");
         var conexion = ObtenerConexion();
         try
         {
             await conexion.OpenAsync();
             using var validar = new SqlCommand(@"
-                SELECT DB_NAME() WHERE EXISTS
+                SELECT DB_NAME() WHERE DB_NAME()=@BaseConfigurada AND EXISTS
                 (SELECT 1 FROM dbo.Usuario u JOIN dbo.Rol r ON r.Id=u.RolId
                  WHERE u.Id=@Usuario AND u.Activo=1 AND r.Nombre=N'Administrador');", conexion);
             validar.Parameters.Add("@Usuario", SqlDbType.Int).Value = SesionActiva.IdUsuario;
-            if (!string.Equals(await validar.ExecuteScalarAsync() as string, "PacuIberaDB_Pruebas", StringComparison.Ordinal))
-                throw new InvalidOperationException("No se verificó la base de pruebas o el permiso de Administrador activo.");
+            validar.Parameters.Add("@BaseConfigurada", SqlDbType.NVarChar, 128).Value = BaseConfigurada;
+            if (!string.Equals(await validar.ExecuteScalarAsync() as string, BaseConfigurada, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("No se verificó la base configurada o el permiso de Administrador activo.");
             return conexion;
         }
         catch { conexion.Dispose(); throw; }
     }
 
-    public async Task ValidarDestinoResolucionPruebasAsync()
+    public async Task ValidarDestinoResolucionAsync()
     {
-        using var conexion = await AbrirPruebasResolucionAsync();
+        using var conexion = await AbrirResolucionAsync();
     }
 
     private static ResultadoResolucion LeerResultadoResolucion(SqlDataReader lector) => new(
@@ -85,7 +84,7 @@ public sealed partial class RemitosDatos
         if (intento.RemitoId != remitoId || intento.ClaveOperacion == Guid.Empty || intento.Lotes == null
             || intento.Lotes.Length == 0 || intento.Lotes.Select(l => l.RecepcionRemitoLoteId).Distinct().Count() != intento.Lotes.Length)
             throw new InvalidOperationException("El registro del intento anterior requiere revisión. No lo borre.");
-        using var conexion = await AbrirPruebasResolucionAsync();
+        using var conexion = await AbrirResolucionAsync();
         if (!string.Equals(intento.Servidor, conexion.DataSource, StringComparison.OrdinalIgnoreCase)
             || intento.Base != conexion.Database)
             throw new InvalidOperationException("El destino del intento anterior no coincide. Se mantiene bloqueado.");
@@ -122,14 +121,14 @@ public sealed partial class RemitosDatos
     public async Task<ResultadoResolucion> ConfirmarResolucionRemitoAsync(int remitoId,
         IReadOnlyList<ResolucionRemitoBorrador> cantidades, string tipo, string motivo)
     {
-        if (!PuedePrepararResolucion || !PerfilResolucionPruebas)
-            throw new InvalidOperationException("Seleccione el perfil de pruebas e ingrese como Administrador.");
+        if (!PuedePrepararResolucion || !DestinoResolucionPermitido)
+            throw new InvalidOperationException("Configure una base PacuIbera permitida e ingrese como Administrador.");
         string archivo = ArchivoResolucionPendiente(remitoId);
         if (File.Exists(archivo)) throw new InvalidOperationException("Hay un intento anterior pendiente de comprobar. No se volverá a enviar.");
         int usuario = SesionActiva.IdUsuario;
         var filas = cantidades.ToArray();
         var actual = await ObtenerRemitoParaResolucionAsync(remitoId);
-        using var conexion = await AbrirPruebasResolucionAsync();
+        using var conexion = await AbrirResolucionAsync();
         if (usuario != SesionActiva.IdUsuario) throw new UnauthorizedAccessException("Cambió el usuario conectado. Abra nuevamente la pantalla.");
         Guid clave = Guid.NewGuid();
         using var comando = PrepararComandoResolucion(conexion, clave, actual.Remito, filas, tipo, motivo, actual.FechaServidor);

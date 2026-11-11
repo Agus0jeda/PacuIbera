@@ -4,7 +4,7 @@ using PacuIbera.Dominio;
 
 namespace PacuIbera.UI.Common
 {
-    // Recepcion exclusiva del Vendedor sobre PacuIberaDB_Pruebas.
+    // Recepción de remitos exclusiva del Vendedor autenticado.
     public sealed class FormRecepcionRemito : Form
     {
         private static readonly CultureInfo Argentina = CultureInfo.GetCultureInfo("es-AR");
@@ -148,7 +148,7 @@ namespace PacuIbera.UI.Common
             ActualizarAcciones();
             try
             {
-                await datos.ValidarDestinoRecepcionPruebasAsync();
+                await datos.ValidarDestinoRecepcionAsync();
                 var lista = await datos.ListarPendientesRecepcionAsync();
                 if (IsDisposed) return;
                 autorizado = true;
@@ -302,7 +302,7 @@ namespace PacuIbera.UI.Common
             bool anterior = cargado != null && File.Exists(RemitosDatos.ArchivoIntentoRecepcion(cargado.Cabecera.Id));
             bool valido = editores.Count > 0 && editores.All(e => e.Cantidad.IntentarLeer(out decimal valor)
                 && (!(e.Origen.Vencimiento?.Date < fechaServidor) || valor == 0));
-            confirmar.Enabled = !ocupado && permitido && RemitosDatos.PerfilRecepcionPruebas
+            confirmar.Enabled = !ocupado && permitido && RemitosDatos.DestinoRecepcionPermitido
                 && cargado != null && Seleccionado()?.Id == cargado.Cabecera.Id && valido && !anterior;
             foreach (var e in editores)
             {
@@ -354,7 +354,7 @@ namespace PacuIbera.UI.Common
                 bool registrado = File.Exists(RemitosDatos.ArchivoIntentoRecepcion(remitoId));
                 string mensaje = registrado
                     ? "No se pudo asegurar el resultado de la recepción. No vuelva a enviarla ni borre el registro del intento. Las cantidades y la clave se conservaron."
-                    : "No se envió la recepción. Revise la conexión, el perfil de pruebas y las cantidades. " + ex.Message;
+                    : "No se envió la recepción. Revise la conexión configurada, los permisos y las cantidades. " + ex.Message;
                 if (registrado)
                 {
                     if (ex is Microsoft.Data.SqlClient.SqlException sql && sql.Number >= 50000)

@@ -26,6 +26,8 @@ namespace PacuIbera.UI.Common
             InitializeComponent();
             CrearBotonCerrarTurno();
             CrearEntradaConsultaRemitos();
+            CrearEntradaMovimientosCaja();
+            CrearEntradaHistorialMovimientosCaja();
             ConfigurarIndicadorMenu();
 
             this.Load += PrincipalForm_Load;
@@ -71,6 +73,9 @@ namespace PacuIbera.UI.Common
             btnReportes.Visible = false;
             btnPagos.Visible = false;
             if (btnAnalisis != null) btnAnalisis.Visible = false;
+            if (btnMovimientosCaja != null) btnMovimientosCaja.Visible = false;
+            if (btnHistorialMovimientosCaja != null) btnHistorialMovimientosCaja.Visible = false;
+            MenuVertical.AutoScroll = false;
 
             // Evaluamos el rol para encender lo que corresponda
             switch (SesionActiva.Rol)
@@ -90,6 +95,9 @@ namespace PacuIbera.UI.Common
                     btnProveedores.Visible = false;
                     btnCompras.Visible = false;
                     btnDeposito.Visible = false;
+                    if (btnHistorialMovimientosCaja != null)
+                        btnHistorialMovimientosCaja.Visible = SesionActiva.Rol == "Gerente";
+                    if (SesionActiva.Rol == "Gerente") MenuVertical.AutoScroll = true;
 
                     btnCerrarTurno.Text = "CERRAR SESIÓN";
                     btnCerrarTurno.BackColor = Color.DimGray;
@@ -100,6 +108,9 @@ namespace PacuIbera.UI.Common
                     btnProveedores.Visible = true;
                     btnCompras.Visible = true;// por ahora (Pedidos)
                     btnDeposito.Visible = true;
+                    if (btnMovimientosCaja != null) btnMovimientosCaja.Visible = true;
+                    if (btnHistorialMovimientosCaja != null) btnHistorialMovimientosCaja.Visible = true;
+                    MenuVertical.AutoScroll = true;
                     btnVentas.Visible = false;
                     if (btnAnalisis != null) btnAnalisis.Visible = false;
                     btnCerrarTurno.Text = "CERRAR SESIÓN";
@@ -111,6 +122,8 @@ namespace PacuIbera.UI.Common
                     break;
             }
             ConfigurarAccesoConsultaRemitos();
+            ConfigurarAccesoMovimientosCaja();
+            ConfigurarAccesoHistorialMovimientosCaja();
         }
 
         private void AjustarMenu()
@@ -130,7 +143,7 @@ namespace PacuIbera.UI.Common
 
             // Agrupamos todos los botones del menú en un array ordenados de arriba hacia abajo
             // Ahora incluimos btnDeposito entre Proveedores y Empleados
-            Button[] botonesMenu = { btnProducto, btnVentas, btnClientes, btnCompras, btnProveedores, btnDeposito, btnEmpleados, btnPagos, btnReportes, btnAnalisis, btnHistorial };
+            Button[] botonesMenu = { btnProducto, btnVentas, btnClientes, btnCompras, btnProveedores, btnDeposito, btnMovimientosCaja, btnHistorialMovimientosCaja, btnEmpleados, btnPagos, btnReportes, btnAnalisis, btnHistorial };
 
             foreach (var btn in botonesMenu)
             {
@@ -331,7 +344,7 @@ namespace PacuIbera.UI.Common
         private void ConfigurarIndicadorMenu()
         {
             Button[] modulos = { btnProducto, btnVentas, btnClientes, btnCompras, btnProveedores,
-                btnDeposito, btnEmpleados, btnPagos, btnReportes, btnAnalisis, btnHistorial, btnConsultaRemitos };
+                btnDeposito, btnMovimientosCaja, btnHistorialMovimientosCaja, btnEmpleados, btnPagos, btnReportes, btnAnalisis, btnHistorial, btnConsultaRemitos };
             foreach (Button boton in modulos)
             {
                 estilosMenu.Add(boton, (boton.BackColor, boton.ForeColor,

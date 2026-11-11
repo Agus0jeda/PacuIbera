@@ -151,7 +151,7 @@ namespace PacuIbera.UI.Common
             ocupado = true; autorizado = false; ActualizarAcciones();
             try
             {
-                await datos.ValidarDestinoResolucionPruebasAsync();
+                await datos.ValidarDestinoResolucionAsync();
                 var comprobaciones = new List<string>();
                 foreach (int id in RemitosDatos.RemitosConResolucionPendiente())
                 {
@@ -183,7 +183,7 @@ namespace PacuIbera.UI.Common
                 if (!IsDisposed)
                 {
                     Limpiar(); remitos.DataSource = null;
-                    mensaje.Text = "No se pudieron cargar los faltantes. Compruebe la conexión y el perfil de pruebas.";
+                    mensaje.Text = "No se pudieron cargar los faltantes. Compruebe la conexión configurada y los permisos.";
                 }
             }
             finally { ocupado = false; if (!IsDisposed) ActualizarAcciones(); }
@@ -342,7 +342,7 @@ namespace PacuIbera.UI.Common
                 }
                 catch (InvalidOperationException ex) { mensaje.Text = ex.Message; }
             }
-            confirmar.Enabled = editar && valido && RemitosDatos.PerfilResolucionPruebas;
+            confirmar.Enabled = editar && valido && RemitosDatos.DestinoResolucionPermitido;
             UseWaitCursor = ocupado;
         }
 

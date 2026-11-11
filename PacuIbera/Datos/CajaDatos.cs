@@ -3,12 +3,24 @@ using PacuIbera.Dominio;
 using PacuIbera.UI.Common;
 using System;
 using System.Data;
+using System.Globalization;
 
 namespace Datos 
 {
     public class CajaDatos : ConexionBD
     {
         public sealed record CajaAbiertaInfo(int Id, DateTime FechaHoraApertura, string NombreVendedor);
+        public sealed record ResumenCierreCaja(
+            int CajaId,
+            decimal FondoInicial,
+            decimal CobrosEfectivo,
+            decimal Ingresos,
+            decimal Retiros,
+            decimal? EfectivoEsperado,
+            decimal? EfectivoContado,
+            decimal? Diferencia,
+            bool Bloqueada,
+            string Observacion);
 
         // 1. Verificar si hay caja abierta al loguearse
         public int VerificarCajaAbierta(int usuarioId)
@@ -58,17 +70,71 @@ namespace Datos
         }
 
         // 3. Registrar el cierre de caja
-        public void CerrarCaja(int cajaId, decimal saldoFinal)
+        public ResumenCierreCaja? ObtenerResumenCierreCaja(int cajaId, int usuarioId)
         {
+            if (cajaId <= 0 || usuarioId <= 0)
+                throw new ArgumentException("No se pudo identificar la caja y el Vendedor activo.");
+
             using (SqlConnection conexion = ObtenerConexion())
             {
-                SqlCommand cmd = new SqlCommand("sp_CerrarCaja", conexion);
+                SqlCommand cmd = new SqlCommand("dbo.sp_ResumenCajas", conexion);
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@CajaId", cajaId);
-                cmd.Parameters.AddWithValue("@SaldoFinal", saldoFinal);
+                cmd.Parameters.Add("@Fecha", SqlDbType.Date).Value = DateTime.Today;
+                cmd.Parameters.Add("@CajaId", SqlDbType.Int).Value = cajaId;
+                cmd.Parameters.Add("@UsuarioId", SqlDbType.Int).Value = usuarioId;
 
                 conexion.Open();
-                cmd.ExecuteNonQuery(); // No devuelve datos, solo actualiza la tabla
+                using SqlDataReader reader = cmd.ExecuteReader();
+                if (!reader.Read()) return null;
+
+                return new ResumenCierreCaja(
+                    cajaId,
+                    Convert.ToDecimal(reader["FondoCaja"], CultureInfo.InvariantCulture),
+                    Convert.ToDecimal(reader["CobrosEfectivo"], CultureInfo.InvariantCulture),
+                    Convert.ToDecimal(reader["IngresosCaja"], CultureInfo.InvariantCulture),
+                    Convert.ToDecimal(reader["RetirosCaja"], CultureInfo.InvariantCulture),
+                    reader["MontoEsperado"] == DBNull.Value ? null : Convert.ToDecimal(reader["MontoEsperado"], CultureInfo.InvariantCulture),
+                    reader["EfectivoDeclarado"] == DBNull.Value ? null : Convert.ToDecimal(reader["EfectivoDeclarado"], CultureInfo.InvariantCulture),
+                    reader["Diferencia"] == DBNull.Value ? null : Convert.ToDecimal(reader["Diferencia"], CultureInfo.InvariantCulture),
+                    Convert.ToBoolean(reader["CajaBloqueadaCierre"], CultureInfo.InvariantCulture),
+                    reader["ObservacionEfectivo"]?.ToString() ?? string.Empty);
+            }
+        }
+
+        public ResumenCierreCaja CerrarCaja(int cajaId, decimal saldoFinal, int usuarioId)
+        {
+            if (cajaId <= 0 || usuarioId <= 0)
+                throw new ArgumentException("No se pudo identificar la caja y el Vendedor activo.");
+            if (saldoFinal < 0)
+                throw new ArgumentOutOfRangeException(nameof(saldoFinal), "El efectivo contado no puede ser negativo.");
+
+            using (SqlConnection conexion = ObtenerConexion())
+            {
+                using SqlCommand cmd = new SqlCommand("dbo.sp_CerrarCaja", conexion);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add("@CajaId", SqlDbType.Int).Value = cajaId;
+                cmd.Parameters.Add("@UsuarioId", SqlDbType.Int).Value = usuarioId;
+                SqlParameter saldo = cmd.Parameters.Add("@SaldoFinal", SqlDbType.Decimal);
+                saldo.Precision = 18;
+                saldo.Scale = 2;
+                saldo.Value = saldoFinal;
+
+                conexion.Open();
+                using SqlDataReader reader = cmd.ExecuteReader();
+                if (!reader.Read())
+                    throw new InvalidOperationException("El cierre no devolvió su resumen de confirmación.");
+
+                return new ResumenCierreCaja(
+                    Convert.ToInt32(reader["CajaId"], CultureInfo.InvariantCulture),
+                    Convert.ToDecimal(reader["FondoInicial"], CultureInfo.InvariantCulture),
+                    Convert.ToDecimal(reader["CobrosEfectivoConservados"], CultureInfo.InvariantCulture),
+                    Convert.ToDecimal(reader["Ingresos"], CultureInfo.InvariantCulture),
+                    Convert.ToDecimal(reader["Retiros"], CultureInfo.InvariantCulture),
+                    Convert.ToDecimal(reader["EfectivoEsperado"], CultureInfo.InvariantCulture),
+                    Convert.ToDecimal(reader["EfectivoContado"], CultureInfo.InvariantCulture),
+                    Convert.ToDecimal(reader["Diferencia"], CultureInfo.InvariantCulture),
+                    false,
+                    string.Empty);
             }
         }
 

@@ -18,14 +18,12 @@ public sealed partial class RemitosDatos
         JsonSerializer.Deserialize<IntentoRecepcion>(File.ReadAllBytes(ArchivoIntentoRecepcion(remitoId)))
         ?? throw new InvalidOperationException("No se pudo leer el registro del intento anterior.");
 
-    public async Task ValidarDestinoRecepcionPruebasAsync()
+    public async Task ValidarDestinoRecepcionAsync()
     {
-        using var conexion = await AbrirPruebasRecepcionAsync();
+        using var conexion = await AbrirRecepcionAsync();
     }
 
-    public static bool PerfilRecepcionPruebas =>
-        Environment.GetEnvironmentVariable("PACUIBERA_DB_PRUEBAS") == "1"
-        && new SqlConnectionStringBuilder(CadenaGlobal).InitialCatalog == "PacuIberaDB_Pruebas";
+    public static bool DestinoRecepcionPermitido => DestinoAplicacionPermitido;
 
     // Registro persistente por destino y remito, compartido por las ventanas de este usuario
     // de Windows. CreateNew impide dos envios locales. SQL garantiza la exclusividad global.
@@ -38,17 +36,17 @@ public sealed partial class RemitosDatos
             "PacuIbera", "RecepcionesRemitos", destino, $"remito-{remitoId}.json");
     }
 
-    private async Task<SqlConnection> AbrirPruebasRecepcionAsync()
+    private async Task<SqlConnection> AbrirRecepcionAsync()
     {
-        if (!PuedePrepararRecepcion || !PerfilRecepcionPruebas)
-            throw new InvalidOperationException("La recepción requiere un Vendedor y el perfil PacuIbera - Pruebas.");
+        if (!PuedePrepararRecepcion || !DestinoRecepcionPermitido)
+            throw new InvalidOperationException("La recepción requiere un Vendedor y una configuración PacuIbera permitida.");
         var conexion = ObtenerConexion();
         try
         {
             await conexion.OpenAsync();
             using var comprobar = new SqlCommand("SELECT DB_NAME();", conexion);
-            if (!string.Equals(await comprobar.ExecuteScalarAsync() as string, "PacuIberaDB_Pruebas", StringComparison.Ordinal))
-                throw new InvalidOperationException("La base conectada no es PacuIberaDB_Pruebas. No se enviará la recepción.");
+            if (!string.Equals(await comprobar.ExecuteScalarAsync() as string, BaseConfigurada, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("La base conectada no coincide con la configuración. No se enviará la recepción.");
             return conexion;
         }
         catch { conexion.Dispose(); throw; }
@@ -56,7 +54,7 @@ public sealed partial class RemitosDatos
 
     public async Task<string> ConsultarEstadoConfirmacionAsync(int remitoId)
     {
-        using var conexion = await AbrirPruebasRecepcionAsync();
+        using var conexion = await AbrirRecepcionAsync();
         using var cmd = new SqlCommand(@"
             SELECT ri.Estado, rr.Id, rr.ClaveOperacion, rr.UsuarioReceptorId
             FROM dbo.RemitoInterno ri LEFT JOIN dbo.RecepcionRemito rr ON rr.RemitoId=ri.Id
@@ -82,10 +80,10 @@ public sealed partial class RemitosDatos
             throw new InvalidOperationException("Ya existe un intento registrado. Consulte el estado; no se generará otra clave ni se reenviará la recepción.");
         // Relectura: usuario activo, remito En tránsito, todos los lotes y fecha del servidor.
         // La validacion final bajo bloqueo pertenece al SP, no a esta lectura previa.
-        if (!PerfilRecepcionPruebas) throw new InvalidOperationException("Seleccione el perfil PacuIbera - Pruebas.");
+        if (!DestinoRecepcionPermitido) throw new InvalidOperationException("La configuración no permite recibir en esta base.");
         var actual = await ObtenerRemitoParaRecepcionAsync(origen.Cabecera.Id);
         using var entrada = ConstruirLotesRecepcionEntrada(actual.Remito, filas, actual.FechaServidor);
-        using var conexion = await AbrirPruebasRecepcionAsync();
+        using var conexion = await AbrirRecepcionAsync();
         if (usuario != SesionActiva.IdUsuario) throw new UnauthorizedAccessException("El usuario conectado cambió. Vuelva a abrir la recepción.");
         Guid clave = Guid.NewGuid();
         using var comando = PrepararComandoRecepcionRemito(conexion, clave, actual.Remito, filas, actual.FechaServidor);

@@ -10,23 +10,23 @@ namespace PacuIbera.Datos
 
         private async Task<SqlConnection> AbrirRecepcionProtegidaAsync()
         {
-            if (Environment.GetEnvironmentVariable("PACUIBERA_DB_PRUEBAS") != "1"
-                || new SqlConnectionStringBuilder(CadenaGlobal).InitialCatalog != "PacuIberaDB_Pruebas")
-                throw new InvalidOperationException("La recepción requiere el perfil PacuIbera - Pruebas.");
+            if (!DestinoAplicacionPermitido)
+                throw new InvalidOperationException("La configuración no habilita recepciones para este destino.");
             var conexion = ObtenerConexion();
             try
             {
                 await conexion.OpenAsync();
                 using var cmd = new SqlCommand(@"
-                    SELECT CASE WHEN DB_NAME()=N'PacuIberaDB_Pruebas' AND EXISTS
+                    SELECT CASE WHEN DB_NAME()=@BaseConfigurada AND EXISTS
                     (SELECT 1 FROM sys.extended_properties e
                      WHERE e.class=1 AND e.major_id=OBJECT_ID(N'dbo.sp_ConfirmarRecepcionPedido') AND e.minor_id=0
                        AND e.name=N'PacuIbera.RecepcionPedido.ControlVencimiento'
                        AND CONVERT(nvarchar(64),e.value)=CONVERT(nvarchar(64),HASHBYTES('SHA2_256',
                            OBJECT_DEFINITION(OBJECT_ID(N'dbo.sp_ConfirmarRecepcionPedido'))),2))
                     THEN 1 ELSE 0 END;", conexion);
+                cmd.Parameters.Add("@BaseConfigurada", SqlDbType.NVarChar, 128).Value = BaseConfigurada;
                 if (Convert.ToInt32(await cmd.ExecuteScalarAsync()) != 1)
-                    throw new InvalidOperationException("Antes de confirmar, debe instalarse en Pruebas el script Actualizar_sp_ConfirmarRecepcionPedido_ControlVencimiento_PacuIberaDB_Pruebas.sql. No se envió la confirmación.");
+                    throw new InvalidOperationException("No se encontró la versión compatible del procedimiento de recepción en la base configurada. No se envió la confirmación.");
                 return conexion;
             }
             catch { conexion.Dispose(); throw; }

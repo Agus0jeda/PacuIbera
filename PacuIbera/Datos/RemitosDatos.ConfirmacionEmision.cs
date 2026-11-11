@@ -13,9 +13,7 @@ public sealed partial class RemitosDatos
     public sealed record IntentoEmision(Guid ClaveOperacion, int UsuarioEmisorId, string Servidor,
         string Base, ProductoEmisionRemito[] Productos);
 
-    public static bool PerfilEmisionPruebas =>
-        Environment.GetEnvironmentVariable("PACUIBERA_DB_PRUEBAS") == "1"
-        && new SqlConnectionStringBuilder(CadenaGlobal).InitialCatalog == "PacuIberaDB_Pruebas";
+    public static bool DestinoEmisionPermitido => DestinoAplicacionPermitido;
 
     // Un pendiente por destino y usuario de Windows bloquea nuevas emisiones locales.
     // La unicidad global y la seleccion/descuento de lotes pertenecen al procedimiento SQL.
@@ -35,34 +33,35 @@ public sealed partial class RemitosDatos
         JsonSerializer.Deserialize<IntentoEmision>(File.ReadAllBytes(ArchivoEmisionPendiente))
         ?? throw new InvalidOperationException("No se pudo leer el intento anterior. Se mantiene bloqueado.");
 
-    private async Task<SqlConnection> AbrirPruebasEmisionAsync()
+    private async Task<SqlConnection> AbrirEmisionAsync()
     {
-        if (!PuedePrepararEmision || !PerfilEmisionPruebas)
-            throw new InvalidOperationException("Ingrese como Administrador con el perfil PacuIbera - Pruebas.");
+        if (!PuedePrepararEmision || !DestinoEmisionPermitido)
+            throw new InvalidOperationException("Ingrese como Administrador y configure un destino PacuIbera permitido.");
         var conexion = ObtenerConexion();
         try
         {
             await conexion.OpenAsync();
             using var validar = new SqlCommand(@"
-                SELECT DB_NAME() WHERE EXISTS
+                SELECT DB_NAME() WHERE DB_NAME()=@BaseConfigurada AND EXISTS
                 (SELECT 1 FROM dbo.Usuario u JOIN dbo.Rol r ON r.Id=u.RolId
                  WHERE u.Id=@Usuario AND u.Activo=1 AND r.Nombre=N'Administrador');", conexion);
             validar.Parameters.Add("@Usuario", SqlDbType.Int).Value = SesionActiva.IdUsuario;
-            if (!string.Equals(await validar.ExecuteScalarAsync() as string, "PacuIberaDB_Pruebas", StringComparison.Ordinal))
-                throw new InvalidOperationException("No se verificó la base de pruebas o el Administrador activo. No se emitirá el remito.");
+            validar.Parameters.Add("@BaseConfigurada", SqlDbType.NVarChar, 128).Value = BaseConfigurada;
+            if (!string.Equals(await validar.ExecuteScalarAsync() as string, BaseConfigurada, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("No se verificó la base configurada o el Administrador activo. No se emitirá el remito.");
             return conexion;
         }
         catch { conexion.Dispose(); throw; }
     }
 
-    public async Task ValidarDestinoEmisionPruebasAsync()
+    public async Task ValidarDestinoEmisionAsync()
     {
-        using var conexion = await AbrirPruebasEmisionAsync();
+        using var conexion = await AbrirEmisionAsync();
     }
 
     public async Task<ProductoEmisionRemito[]> ValidarProductosEmisionActualAsync(IEnumerable<ProductoEmisionRemito> productos)
     {
-        using var conexion = await AbrirPruebasEmisionAsync();
+        using var conexion = await AbrirEmisionAsync();
         var filas = productos.ToArray();
         var disponibles = await ObtenerProductosEmisionAsync();
         var actualizadas = filas.Select(p =>
@@ -94,7 +93,7 @@ public sealed partial class RemitosDatos
         if (intento.ClaveOperacion == Guid.Empty || intento.Productos == null || intento.Productos.Length == 0
             || intento.Productos.Select(p => p.ProductoId).Distinct().Count() != intento.Productos.Length)
             throw new InvalidOperationException("El intento anterior requiere revisión. No borre su registro.");
-        using var conexion = await AbrirPruebasEmisionAsync();
+        using var conexion = await AbrirEmisionAsync();
         if (!string.Equals(intento.Servidor, conexion.DataSource, StringComparison.OrdinalIgnoreCase)
             || intento.Base != conexion.Database)
             throw new InvalidOperationException("El destino del intento anterior no coincide. No se emitirá otro remito.");
@@ -131,7 +130,7 @@ public sealed partial class RemitosDatos
             throw new InvalidOperationException("Hay una emisión anterior sin comprobar. No se generará otra clave.");
         int usuario = SesionActiva.IdUsuario;
         var filas = await ValidarProductosEmisionActualAsync(productos);
-        using var conexion = await AbrirPruebasEmisionAsync();
+        using var conexion = await AbrirEmisionAsync();
         if (usuario != SesionActiva.IdUsuario) throw new UnauthorizedAccessException("El usuario conectado cambió. Abra nuevamente la pantalla.");
         using var comando = PrepararComandoEmision(conexion, clave, filas);
         using var tabla = (DataTable)comando.Parameters["@Productos"].Value;

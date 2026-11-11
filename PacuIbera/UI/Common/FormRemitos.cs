@@ -201,7 +201,7 @@ namespace PacuIbera.UI.Common
             ActualizarAcciones();
             try
             {
-                await datos.ValidarDestinoEmisionPruebasAsync();
+                await datos.ValidarDestinoEmisionAsync();
                 if (IsDisposed) return;
                 using var ventana = new FormEmitirRemito();
                 ventana.ShowDialog(this);
@@ -210,7 +210,7 @@ namespace PacuIbera.UI.Common
             catch (Exception)
             {
                 if (!IsDisposed) MessageBox.Show(this,
-                    "No se pudo abrir la emisión. Compruebe la conexión, que su usuario Administrador esté activo y el perfil PacuIbera - Pruebas.",
+                    "No se pudo abrir la emisión. Compruebe la conexión configurada y que su usuario Administrador esté activo.",
                     "Emitir remito", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             finally

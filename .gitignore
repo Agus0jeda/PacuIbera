@@ -6,6 +6,9 @@
 # dotenv files
 .env
 
+# Local-only demo credentials; share separately and never commit.
+/scripts/instalacion/CredencialesDemo.local.txt
+
 # User-specific files
 *.rsuser
 *.suo

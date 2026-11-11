@@ -14,14 +14,12 @@ public partial class ProductoDatos
     public static bool PuedeEditarFichas => SesionActiva.IdUsuario > 0
         && SesionActiva.Rol is "Administrador" or "SuperAdministrador";
 
-    private async Task<SqlConnection> AbrirFichasPruebasAsync(bool escritura = false)
+    private async Task<SqlConnection> AbrirFichasSegurasAsync(bool escritura = false)
     {
-        var configuracion = new SqlConnectionStringBuilder(CadenaGlobal);
         if (!PuedeConsultarFichas || (escritura && !PuedeEditarFichas))
             throw new UnauthorizedAccessException("Su usuario no tiene permiso para esta operación.");
-        if (Environment.GetEnvironmentVariable("PACUIBERA_DB_PRUEBAS") != "1"
-            || configuracion.InitialCatalog != "PacuIberaDB_Pruebas")
-            throw new InvalidOperationException("Abra Productos con el perfil PacuIbera - Pruebas.");
+        if (!DestinoAplicacionPermitido)
+            throw new InvalidOperationException("La configuración no habilita operaciones de Productos para este destino.");
         var conexion = ObtenerConexion();
         try
         {
@@ -32,8 +30,8 @@ public partial class ProductoDatos
                  WHERE u.Id=@Usuario AND u.Activo=1 AND r.Nombre=@Rol);", conexion);
             comprobar.Parameters.Add("@Usuario", SqlDbType.Int).Value = SesionActiva.IdUsuario;
             comprobar.Parameters.Add("@Rol", SqlDbType.NVarChar, 30).Value = SesionActiva.Rol;
-            if (!string.Equals(await comprobar.ExecuteScalarAsync() as string, "PacuIberaDB_Pruebas", StringComparison.Ordinal))
-                throw new UnauthorizedAccessException("No se verificó la base de pruebas o el usuario activo.");
+            if (!string.Equals(await comprobar.ExecuteScalarAsync() as string, BaseConfigurada, StringComparison.OrdinalIgnoreCase))
+                throw new UnauthorizedAccessException("No se verificó la base configurada o el usuario activo.");
             return conexion;
         }
         catch { conexion.Dispose(); throw; }
@@ -41,7 +39,7 @@ public partial class ProductoDatos
 
     public async Task<List<CategoriaProducto>> ConsultarCategoriasFichaAsync()
     {
-        using var conexion = await AbrirFichasPruebasAsync();
+        using var conexion = await AbrirFichasSegurasAsync();
         using var cmd = new SqlCommand("SELECT Id,Nombre FROM dbo.Categoria ORDER BY Nombre;", conexion);
         using var lector = await cmd.ExecuteReaderAsync();
         var categorias = new List<CategoriaProducto>();
@@ -51,7 +49,7 @@ public partial class ProductoDatos
 
     public async Task<List<ProductoFicha>> ConsultarFichasAsync()
     {
-        using var conexion = await AbrirFichasPruebasAsync();
+        using var conexion = await AbrirFichasSegurasAsync();
         // SELECT: separar el saldo registrado del stock utilizable por lotes; nunca corregirlos.
         using var cmd = new SqlCommand(@"
             SELECT p.Id,p.Nombre,p.CategoriaId,ISNULL(c.Nombre,'Sin categoría'),p.PrecioVenta,
@@ -95,7 +93,7 @@ public partial class ProductoDatos
     {
         nombre=nombre.Trim();
         if(nombre.Length==0 || nombre.Length>100) throw new InvalidOperationException("Indique una categoría de hasta 100 caracteres.");
-        using var conexion=await AbrirFichasPruebasAsync(escritura:true);
+        using var conexion=await AbrirFichasSegurasAsync(escritura:true);
         using var cmd=new SqlCommand(@"IF EXISTS(SELECT 1 FROM dbo.Categoria WHERE Nombre=@Nombre)
                 SELECT Id FROM dbo.Categoria WHERE Nombre=@Nombre;
             ELSE INSERT INTO dbo.Categoria(Nombre) OUTPUT INSERTED.Id VALUES(@Nombre);",conexion);
@@ -107,7 +105,7 @@ public partial class ProductoDatos
     {
         // Mantener la restriccion previa del Vendedor a la consulta de lotes desde Productos.
         if(SesionActiva.Rol=="Vendedor") throw new UnauthorizedAccessException("Su rol no permite consultar lotes desde Productos.");
-        using var conexion=await AbrirFichasPruebasAsync();
+        using var conexion=await AbrirFichasSegurasAsync();
         using var cmd=new SqlCommand(@"SELECT Id,FechaIngreso,FechaVencimiento,StockInicial,StockActual,Activo,
             CASE WHEN Activo=0 THEN CASE WHEN FechaVencimiento<CONVERT(date,GETDATE()) THEN N'Inactivo (vencido)' ELSE N'Inactivo' END
                  WHEN StockActual<=0 THEN N'Agotado'
@@ -132,7 +130,7 @@ public partial class ProductoDatos
 
     public async Task<List<LoteVencidoProducto>> ConsultarHistorialVencidosAsync()
     {
-        using var conexion=await AbrirFichasPruebasAsync();
+        using var conexion=await AbrirFichasSegurasAsync();
         using var cmd=new SqlCommand(@"SELECT p.Nombre,l.Id,l.FechaVencimiento,l.StockActual,
                 CASE WHEN l.Activo=0 THEN N'Vencido · Inactivo' ELSE N'Vencido' END,p.SeVendePorPeso
             FROM dbo.Lote l JOIN dbo.Producto p ON p.Id=l.ProductoId
@@ -201,7 +199,7 @@ public partial class ProductoDatos
         ValidarFicha(ficha);
         if (original != null && (!original.Activo || original.SeVendePorPeso != ficha.SeVendePorPeso))
             throw new InvalidOperationException("No se puede editar un producto inactivo ni cambiar su tipo de venta histórico.");
-        using var conexion=await AbrirFichasPruebasAsync(escritura:true);
+        using var conexion=await AbrirFichasSegurasAsync(escritura:true);
         using var transaccion=conexion.BeginTransaction();
         using var cmd=new SqlCommand("",conexion,transaccion);
         ParametrosFicha(cmd,ficha);
@@ -247,7 +245,7 @@ public partial class ProductoDatos
 
     public async Task DarBajaFichaAsync(int id)
     {
-        using var conexion=await AbrirFichasPruebasAsync(escritura:true);
+        using var conexion=await AbrirFichasSegurasAsync(escritura:true);
         // Baja logica, conservando todo el historial. No dejar mercaderia pendiente sin producto activo.
         using var cmd=new SqlCommand(@"UPDATE p SET Activo=0 FROM dbo.Producto p
             WHERE p.Id=@Id AND p.Activo=1 AND p.StockActual=0
