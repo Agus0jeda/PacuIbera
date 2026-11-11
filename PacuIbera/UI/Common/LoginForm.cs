@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using Datos;
 using PacuIbera.Dominio;
 using Negocio;
 
@@ -35,18 +36,32 @@ namespace PacuIbera.UI.Common
                     if (user.Rol == "Vendedor")
                     {
                         this.Hide();
-
-                        AperturaCajaForm formCaja = new AperturaCajaForm(user.Id);
-                        formCaja.ShowDialog();
-
-                        if (!formCaja.AperturaExitosa)
+                        CajaDatos cajaDatos = new CajaDatos();
+                        CajaDatos.CajaAbiertaInfo? cajaAbierta = cajaDatos.ObtenerCajaAbierta(user.Id);
+                        if (cajaAbierta != null)
                         {
-                            MessageBox.Show("Es obligatorio realizar la apertura de caja para comenzar el turno.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            this.Show();
-                            return;
+                            SesionActiva.IdCaja = cajaAbierta.Id;
+                            MessageBox.Show(
+                                $"Continuamos con la caja abierta N.º {cajaAbierta.Id}.\n"
+                                + $"Apertura: {cajaAbierta.FechaHoraApertura:dd/MM/yyyy HH:mm:ss}\n"
+                                + $"Vendedor: {cajaAbierta.NombreVendedor}\n\n"
+                                + "Podés continuar vendiendo normalmente.",
+                                "Caja abierta", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
+                        else
+                        {
+                            AperturaCajaForm formCaja = new AperturaCajaForm(user.Id);
+                            formCaja.ShowDialog();
 
-                        SesionActiva.IdCaja = formCaja.CajaIdApertura;
+                            if (!formCaja.AperturaExitosa)
+                            {
+                                MessageBox.Show("Es obligatorio realizar la apertura de caja para comenzar el turno.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                this.Show();
+                                return;
+                            }
+
+                            SesionActiva.IdCaja = formCaja.CajaIdApertura;
+                        }
                     }
                     else
                     {

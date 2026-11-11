@@ -75,6 +75,16 @@ namespace PacuIbera.Datos
                     {
                         tabla.Load(reader);
                     }
+                    // Atributo de presentacion: conservar la consulta y sus cantidades decimales.
+                    using (var unidades = new SqlCommand("SELECT Id, SeVendePorPeso FROM dbo.Producto;", conexion))
+                    using (var reader = unidades.ExecuteReader())
+                    {
+                        var porPeso = new Dictionary<int, bool>();
+                        while (reader.Read()) porPeso.Add(reader.GetInt32(0), reader.GetBoolean(1));
+                        tabla.Columns.Add("SeVendePorPeso", typeof(bool));
+                        foreach (DataRow fila in tabla.Rows)
+                            fila["SeVendePorPeso"] = porPeso[Convert.ToInt32(fila["ProductoId"])];
+                    }
                 }
             }
             catch (Exception ex)
@@ -86,6 +96,9 @@ namespace PacuIbera.Datos
 
         public void ActualizarStockMinimoDeposito(int productoId, decimal nuevoStockMinimo)
         {
+            if (nuevoStockMinimo < 0 || nuevoStockMinimo > 9999999.999M
+                || decimal.Round(nuevoStockMinimo, 3) != nuevoStockMinimo)
+                throw new ArgumentException("El mínimo debe estar entre 0 y 9999999,999 y tener hasta tres decimales.");
             try
             {
                 using (SqlConnection conexion = ObtenerConexion())
@@ -94,17 +107,27 @@ namespace PacuIbera.Datos
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@ProductoId", productoId);
                     var p = new SqlParameter("@StockMinimo", System.Data.SqlDbType.Decimal);
-                    p.Precision = 18;
-                    p.Scale = 2;
+                    p.Precision = 10;
+                    p.Scale = 3;
                     p.Value = nuevoStockMinimo;
                     cmd.Parameters.Add(p);
                     conexion.Open();
+                    // Evitar que el procedimiento anterior redondee el minimo a dos decimales.
+                    using (var verificar = new SqlCommand(@"
+                        SELECT COUNT(*) FROM sys.parameters
+                        WHERE object_id = OBJECT_ID(N'dbo.sp_ActualizarStockMinimoDeposito')
+                          AND name = N'@StockMinimo' AND TYPE_NAME(user_type_id) = N'decimal'
+                          AND precision = 10 AND scale = 3;", conexion))
+                    {
+                        if (Convert.ToInt32(verificar.ExecuteScalar()) != 1)
+                            throw new InvalidOperationException("Debe aplicar el script de Stock mínimo decimal(10,3) en la base seleccionada antes de guardar.");
+                    }
                     cmd.ExecuteNonQuery();
                 }
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("Error al actualizar stock mínimo del depósito", ex);
+                throw new ApplicationException("No se pudo guardar el mínimo: " + ex.Message, ex);
             }
         }
 

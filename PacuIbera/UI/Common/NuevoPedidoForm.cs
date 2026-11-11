@@ -146,6 +146,22 @@ namespace PacuIbera.UI.Common
             dataGridViewTextBoxColumn6.Name = "SeVendePorPeso";
             dataGridViewTextBoxColumn6.HeaderText = "Se vende por peso";
             dataGridViewTextBoxColumn6.Visible = false;
+            dataGridViewTextBoxColumn3.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgvItems.CellFormatting += (_, e) =>
+            {
+                if (e.RowIndex < 0 || e.ColumnIndex < 0
+                    || dgvItems.Columns[e.ColumnIndex].Name != "Cantidad")
+                    return;
+
+                var fila = dgvItems.Rows[e.RowIndex];
+                if (fila.Cells["Cantidad"].Value == null || fila.Cells["SeVendePorPeso"].Value == null)
+                    return;
+
+                bool porPeso = Convert.ToBoolean(fila.Cells["SeVendePorPeso"].Value);
+                e.Value = Convert.ToDecimal(fila.Cells["Cantidad"].Value)
+                    .ToString(porPeso ? "0.### 'kg'" : "0 'un.'", CultureInfo.GetCultureInfo("es-AR"));
+                e.FormattingApplied = true;
+            };
 
             panel2.Dock = DockStyle.None;
             panel2.Location = new Point(0, 112);

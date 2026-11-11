@@ -239,6 +239,11 @@ namespace PacuIbera.UI.Common
                     MessageBox.Show("Ingrese un peso numérico válido.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
+                if (decimal.Round(cantidadAIngresar, 3) != cantidadAIngresar)
+                {
+                    MessageBox.Show("El peso admite hasta tres decimales.", "Peso inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
             }
 
             bool yaExiste = false;
@@ -274,7 +279,7 @@ namespace PacuIbera.UI.Common
             else
             {
                 // Respetamos el orden de las columnas: IdProducto, Nombre, Precio, Cantidad, Subtotal, StockActual (oculto)
-                dtCarrito.Rows.Add(id, nombre, descripcion, precio, cantidadAIngresar, precio * cantidadAIngresar, stockTotal);
+                dtCarrito.Rows.Add(id, nombre, descripcion, precio, cantidadAIngresar, Math.Round(precio * cantidadAIngresar, 2, MidpointRounding.AwayFromZero), stockTotal, porPeso);
             }
 
             ActualizarTotal();
@@ -483,12 +488,14 @@ namespace PacuIbera.UI.Common
             dtCarrito.Columns.Add("Cantidad", typeof(decimal));
             dtCarrito.Columns.Add("Subtotal", typeof(decimal));
             dtCarrito.Columns.Add("StockActual", typeof(decimal));
+            dtCarrito.Columns.Add("SeVendePorPeso", typeof(bool));
 
             dgvCarrito.DataSource = dtCarrito;
 
             // 2. Ocultar columnas internas y ajustar tamaños
             dgvCarrito.Columns["IdProducto"].Visible = false;
             dgvCarrito.Columns["StockActual"].Visible = false;
+            dgvCarrito.Columns["SeVendePorPeso"].Visible = false;
 
             dgvCarrito.Columns["Nombre"].Width = 200; // Le damos ancho fijo al nombre
             dgvCarrito.Columns["Descripcion"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
@@ -520,6 +527,8 @@ namespace PacuIbera.UI.Common
             dgvCarrito.Columns["Precio"].DefaultCellStyle = estiloCentro;
             dgvCarrito.Columns["Subtotal"].DefaultCellStyle = estiloCentro;
             dgvCarrito.Columns["Cantidad"].DefaultCellStyle = estiloFondoAmarilloCentro;
+            dgvCarrito.CellFormatting += DgvCarrito_CantidadFormatting;
+            dgvCarrito.EditingControlShowing += DgvCarrito_EditingControlShowing;
 
             // 5. Bloquear columnas para no editar precios por accidente
             dgvCarrito.ReadOnly = false;
@@ -538,11 +547,21 @@ namespace PacuIbera.UI.Common
             // Solo auditamos si están tocando la cantidad
             if (dgvCarrito.Columns[e.ColumnIndex].Name == "Cantidad")
             {
-                string input = e.FormattedValue.ToString().Replace(".", ",").Trim();
-
-                if (!decimal.TryParse(input, out decimal nuevaCantidad) || nuevaCantidad <= 0)
+                string input = e.FormattedValue?.ToString()?.Trim() ?? "";
+                bool porPeso = Convert.ToBoolean(dgvCarrito.Rows[e.RowIndex].Cells["SeVendePorPeso"].Value);
+                var esAr = System.Globalization.CultureInfo.GetCultureInfo("es-AR");
+                if (!decimal.TryParse(input, System.Globalization.NumberStyles.AllowLeadingSign
+                        | System.Globalization.NumberStyles.AllowDecimalPoint, esAr, out decimal nuevaCantidad)
+                    || nuevaCantidad <= 0)
                 {
                     MessageBox.Show("Ingrese una cantidad numérica válida mayor a cero.", "Dato Inválido", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    e.Cancel = true;
+                    return;
+                }
+                if ((!porPeso && decimal.Truncate(nuevaCantidad) != nuevaCantidad)
+                    || (porPeso && decimal.Round(nuevaCantidad, 3) != nuevaCantidad))
+                {
+                    MessageBox.Show(porPeso ? "El peso admite hasta tres decimales." : "La cantidad por unidad debe ser entera.", "Cantidad inválida", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     e.Cancel = true;
                     return;
                 }
@@ -554,6 +573,30 @@ namespace PacuIbera.UI.Common
                     e.Cancel = true;
                 }
             }
+        }
+
+        private void DgvCarrito_CantidadFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0
+                || dgvCarrito.Columns[e.ColumnIndex].Name != "Cantidad"
+                || e.Value is not decimal valor
+                || dgvCarrito.Rows[e.RowIndex].DataBoundItem is not DataRowView fila)
+                return;
+
+            bool porPeso = fila.Row.Field<bool>("SeVendePorPeso");
+            e.Value = valor.ToString(porPeso ? "0.### 'kg'" : "0 'un.'",
+                System.Globalization.CultureInfo.GetCultureInfo("es-AR"));
+            e.FormattingApplied = true;
+        }
+
+        private void DgvCarrito_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
+        {
+            if (dgvCarrito.CurrentCell?.OwningColumn.Name != "Cantidad" || e.Control is not TextBox editor)
+                return;
+
+            decimal valor = Convert.ToDecimal(dgvCarrito.CurrentCell.Value);
+            editor.Text = valor.ToString("0.###", System.Globalization.CultureInfo.GetCultureInfo("es-AR"));
+            editor.SelectAll();
         }
 
         private void DgvCarrito_CellValueChanged(object sender, DataGridViewCellEventArgs e)
@@ -590,7 +633,7 @@ namespace PacuIbera.UI.Common
                 }
 
                 // 3. Recalculamos el subtotal del producto y el total gigante
-                row.Cells["Subtotal"].Value = precio * cantidadIngresada;
+                row.Cells["Subtotal"].Value = Math.Round(precio * cantidadIngresada, 2, MidpointRounding.AwayFromZero);
                 ActualizarTotal();
             }
         }

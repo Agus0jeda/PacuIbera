@@ -45,7 +45,10 @@ namespace PacuIbera.Datos
                             cmdDetalle.CommandType = CommandType.StoredProcedure;
                             cmdDetalle.Parameters.AddWithValue("@VentaId", ventaId);
                             cmdDetalle.Parameters.AddWithValue("@ProductoId", Convert.ToInt32(fila["IdProducto"]));
-                            cmdDetalle.Parameters.AddWithValue("@CantidadRequerida", Convert.ToDecimal(fila["Cantidad"]));
+                            var cantidad = cmdDetalle.Parameters.Add("@CantidadRequerida", SqlDbType.Decimal);
+                            cantidad.Precision = 18;
+                            cantidad.Scale = 3;
+                            cantidad.Value = Convert.ToDecimal(fila["Cantidad"]);
                             cmdDetalle.Parameters.AddWithValue("@PrecioUnitario", Convert.ToDecimal(fila["Precio"]));
 
                             cmdDetalle.ExecuteNonQuery();

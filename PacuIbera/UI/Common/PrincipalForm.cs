@@ -16,12 +16,17 @@ namespace PacuIbera.UI.Common
     public partial class PrincipalForm : Form
     {
         private Button btnCerrarTurno;
+        private Button? botonModuloActivo;
+        private Form? vistaActiva;
+        private readonly Dictionary<Button, (Color Fondo, Color Texto, Color Hover, Color Pulsado, bool Visual)> estilosMenu = new();
 
 
         public PrincipalForm()
         {
             InitializeComponent();
             CrearBotonCerrarTurno();
+            CrearEntradaConsultaRemitos();
+            ConfigurarIndicadorMenu();
 
             this.Load += PrincipalForm_Load;
         }
@@ -78,7 +83,7 @@ namespace PacuIbera.UI.Common
 
                     // Ocultamos explícitamente la parte operativa y clientes/proveedores
                     btnVentas.Visible = false;
-                    btnProducto.Visible = false;
+                    btnProducto.Visible = SesionActiva.Rol == "Gerente";
                     btnPagos.Visible = false;
                     btnHistorial.Visible = false;
                     btnClientes.Visible = false;
@@ -105,6 +110,7 @@ namespace PacuIbera.UI.Common
                     // El vendedor solo verá Productos, Clientes, Ventas, Historial y Pagos
                     break;
             }
+            ConfigurarAccesoConsultaRemitos();
         }
 
         private void AjustarMenu()
@@ -322,44 +328,104 @@ namespace PacuIbera.UI.Common
             SendMessage(this.Handle, 0x112, 0xf012, 0);
         }
 
-        private void AbrirFormularioPanel(object Formhijo)
+        private void ConfigurarIndicadorMenu()
         {
+            Button[] modulos = { btnProducto, btnVentas, btnClientes, btnCompras, btnProveedores,
+                btnDeposito, btnEmpleados, btnPagos, btnReportes, btnAnalisis, btnHistorial, btnConsultaRemitos };
+            foreach (Button boton in modulos)
+            {
+                estilosMenu.Add(boton, (boton.BackColor, boton.ForeColor,
+                    boton.FlatAppearance.MouseOverBackColor, boton.FlatAppearance.MouseDownBackColor,
+                    boton.UseVisualStyleBackColor));
+                boton.Paint += PintarIndicadorModulo;
+            }
+        }
+
+        private void PintarIndicadorModulo(object? sender, PaintEventArgs e)
+        {
+            if (sender is Button boton && boton == botonModuloActivo)
+            {
+                using var pincel = new SolidBrush(Color.FromArgb(24, 100, 56));
+                e.Graphics.FillRectangle(pincel, 0, 0, 4, boton.ClientSize.Height);
+            }
+        }
+
+        private void ActivarModulo(Button? boton)
+        {
+            botonModuloActivo = boton;
+            foreach (var entrada in estilosMenu)
+            {
+                Button actual = entrada.Key;
+                var original = entrada.Value;
+                bool activo = actual == boton;
+                actual.BackColor = activo ? Color.FromArgb(190, 230, 190) : original.Fondo;
+                actual.ForeColor = activo ? Color.FromArgb(18, 72, 38) : original.Texto;
+                actual.FlatAppearance.MouseOverBackColor = activo ? Color.FromArgb(175, 220, 175) : original.Hover;
+                actual.FlatAppearance.MouseDownBackColor = activo ? Color.FromArgb(160, 210, 160) : original.Pulsado;
+                actual.UseVisualStyleBackColor = activo ? false : original.Visual;
+                actual.Invalidate();
+            }
+        }
+
+        private void VistaActivaCerrada(object? sender, FormClosedEventArgs e)
+        {
+            if (sender != vistaActiva) return;
+            vistaActiva.FormClosed -= VistaActivaCerrada;
+            vistaActiva = null;
+            PanelContenedor.Tag = null;
+            ActivarModulo(null);
+        }
+
+        private void AbrirFormularioPanel(Form fh, Button? modulo = null)
+        {
+            if (vistaActiva != null)
+                vistaActiva.FormClosed -= VistaActivaCerrada;
             if (this.PanelContenedor.Controls.Count > 0)
                 this.PanelContenedor.Controls.RemoveAt(0);
-            Form fh = Formhijo as Form;
             fh.TopLevel = false;
             fh.Dock = DockStyle.Fill;
             PanelContenedor.Controls.Clear();
             this.PanelContenedor.Controls.Add(fh);
             this.PanelContenedor.Tag = fh;
-            fh.Show();
+            vistaActiva = fh;
+            fh.FormClosed += VistaActivaCerrada;
+            ActivarModulo(modulo);
+            try
+            {
+                fh.Show();
+            }
+            catch
+            {
+                fh.FormClosed -= VistaActivaCerrada;
+                vistaActiva = null;
+                ActivarModulo(null);
+                throw;
+            }
         }
 
         // EVENTOS DE LOS BOTONES
-        private void btnProducto_Click(object sender, EventArgs e) { AbrirFormularioPanel(new ProductoForm()); }
-        private void btnClientes_Click(object sender, EventArgs e) { AbrirFormularioPanel(new ClientesForm()); }
-        private void btnReportes_Click(object sender, EventArgs e) { AbrirFormularioPanel(new ReportesForm()); }
-        private void btnVentas_Click(object sender, EventArgs e) { AbrirFormularioPanel(new VentasForm()); }
-        private void btnEmpleados_Click(object sender, EventArgs e) { AbrirFormularioPanel(new EmpleadosForm()); }
-        private void btnPagos_Click(object sender, EventArgs e) { AbrirFormularioPanel(new EnConstruccionForm("Pagos")); }
-        private void btnCompras_Click(object sender, EventArgs e) { AbrirFormularioPanel(new FormPedidos()); }
-        private void btnDeposito_Click(object sender, EventArgs e) { AbrirFormularioPanel(new FormDeposito()); }
+        private void btnProducto_Click(object sender, EventArgs e)
+        {
+            if (!global::Datos.ProductoDatos.PuedeConsultarFichas) return;
+            AbrirFormularioPanel(new ProductoForm(), btnProducto);
+        }
+        private void btnClientes_Click(object sender, EventArgs e) { AbrirFormularioPanel(new ClientesForm(), btnClientes); }
+        private void btnReportes_Click(object sender, EventArgs e) { AbrirFormularioPanel(new ReportesForm(), btnReportes); }
+        private void btnVentas_Click(object sender, EventArgs e) { AbrirFormularioPanel(new VentasForm(), btnVentas); }
+        private void btnEmpleados_Click(object sender, EventArgs e) { AbrirFormularioPanel(new EmpleadosForm(), btnEmpleados); }
+        private void btnPagos_Click(object sender, EventArgs e) { AbrirFormularioPanel(new EnConstruccionForm("Pagos"), btnPagos); }
+        private void btnCompras_Click(object sender, EventArgs e) { AbrirFormularioPanel(new FormPedidos(), btnCompras); }
+        private void btnDeposito_Click(object sender, EventArgs e) { AbrirFormularioPanel(new FormDeposito(), btnDeposito); }
 
         // Función del nuevo botón Análisis
         private void btnAnalisis_Click(object sender, EventArgs e)
         {
-            AbrirFormularioPanel(new AnalisisForm());
+            AbrirFormularioPanel(new AnalisisForm(), btnAnalisis);
         }
 
         private void btnHistorial_Click(object sender, EventArgs e)
         {
-            HistorialVentasForm historial = new HistorialVentasForm();
-            historial.TopLevel = false;
-            historial.Dock = DockStyle.Fill;
-
-            PanelContenedor.Controls.Clear();
-            PanelContenedor.Controls.Add(historial);
-            historial.Show();
+            AbrirFormularioPanel(new HistorialVentasForm(), btnHistorial);
         }
 
         private void BtnCerrarTurno_Click(object sender, EventArgs e)
@@ -384,12 +450,12 @@ namespace PacuIbera.UI.Common
 
         private void btnProveedores_Click(object sender, EventArgs e)
         {
-            AbrirFormularioPanel(new ProveedorForm());
+            AbrirFormularioPanel(new ProveedorForm(), btnProveedores);
         }
 
         private void btnAnalisis_Click_1(object sender, EventArgs e)
         {
-            AbrirFormularioPanel(new AnalisisForm());
+            AbrirFormularioPanel(new AnalisisForm(), btnAnalisis);
         }
     }
 }

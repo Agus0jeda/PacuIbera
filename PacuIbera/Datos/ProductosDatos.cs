@@ -4,7 +4,7 @@ using Microsoft.Data.SqlClient;
 
 namespace Datos
 {
-    public class ProductoDatos : ConexionBD
+    public partial class ProductoDatos : ConexionBD
     {
         // Método para llenar el ComboBox
         public DataTable ObtenerCategorias()

@@ -42,6 +42,50 @@ namespace PacuIbera.Datos
             return tabla;
         }
 
+        // Lectura exclusiva de Deposito; conserva la consulta usada por Compras.
+        public DataTable ObtenerPedidosPorRecibir()
+        {
+            DataTable pedidos = ObtenerPedidos();
+            var elegibles = new HashSet<int>();
+            using (SqlConnection conexion = ObtenerConexion())
+            using (SqlCommand cmd = new SqlCommand(@"
+                SELECT pp.Id FROM dbo.PedidoProveedor pp
+                WHERE pp.Estado = N'Pendiente'
+                  AND NOT EXISTS (SELECT 1 FROM dbo.RecepcionPedido r WHERE r.PedidoId = pp.Id)
+                  AND EXISTS (SELECT 1 FROM dbo.DetallePedidoProveedor d WHERE d.PedidoId = pp.Id)
+                  AND NOT EXISTS (SELECT 1 FROM dbo.DetallePedidoProveedor d
+                                  WHERE d.PedidoId = pp.Id AND d.CantidadRecibida <> 0);", conexion))
+            {
+                conexion.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                    while (reader.Read()) elegibles.Add(reader.GetInt32(0));
+            }
+            DataTable resultado = pedidos.Clone();
+            foreach (DataRow fila in pedidos.Rows)
+                if (fila.Field<string>("Estado") == "Pendiente" && elegibles.Contains(fila.Field<int>("Id")))
+                    resultado.ImportRow(fila);
+            return resultado;
+        }
+
+        // Solo lectura: incluye la unidad de venta sin cambiar la consulta de detalle existente.
+        public DataTable ObtenerDetalleParaRecepcion(int pedidoId)
+        {
+            var tabla = new DataTable();
+            using (SqlConnection conexion = ObtenerConexion())
+            using (SqlCommand cmd = new SqlCommand(@"
+                SELECT d.Id AS DetallePedidoProveedorId, p.Nombre AS Producto,
+                       d.Cantidad, p.SeVendePorPeso, p.ControlaVencimiento
+                FROM dbo.DetallePedidoProveedor d
+                INNER JOIN dbo.Producto p ON p.Id = d.ProductoId
+                WHERE d.PedidoId = @PedidoId ORDER BY d.Id;", conexion))
+            {
+                cmd.Parameters.Add("@PedidoId", SqlDbType.Int).Value = pedidoId;
+                conexion.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader()) tabla.Load(reader);
+            }
+            return tabla;
+        }
+
         public DataTable ObtenerCabeceraPedido(int pedidoId)
         {
             DataTable tabla = new DataTable();

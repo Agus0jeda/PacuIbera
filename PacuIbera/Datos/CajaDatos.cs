@@ -8,26 +8,35 @@ namespace Datos
 {
     public class CajaDatos : ConexionBD
     {
+        public sealed record CajaAbiertaInfo(int Id, DateTime FechaHoraApertura, string NombreVendedor);
+
         // 1. Verificar si hay caja abierta al loguearse
         public int VerificarCajaAbierta(int usuarioId)
+            => ObtenerCajaAbierta(usuarioId)?.Id ?? 0;
+
+        public CajaAbiertaInfo? ObtenerCajaAbierta(int usuarioId)
         {
-            int cajaId = 0; // Si devuelve 0, no hay caja abierta
             using (SqlConnection conexion = ObtenerConexion())
             {
-                SqlCommand cmd = new SqlCommand("sp_VerificarCajaAbierta", conexion);
-                cmd.CommandType = CommandType.StoredProcedure;
+                SqlCommand cmd = new SqlCommand(@"
+                    SELECT TOP (1) c.Id,c.FechaHoraApertura,
+                           LTRIM(RTRIM(u.Nombre + ' ' + u.Apellido)) AS NombreVendedor
+                    FROM dbo.Caja c
+                    INNER JOIN dbo.Usuario u ON u.Id=c.UsuarioId
+                    WHERE c.UsuarioId = @UsuarioId AND c.Estado = 'Abierta'
+                    ORDER BY
+                        CASE WHEN EXISTS (SELECT 1 FROM dbo.Venta v WHERE v.CajaId = c.Id) THEN 0 ELSE 1 END,
+                        CASE WHEN EXISTS (SELECT 1 FROM dbo.Venta v WHERE v.CajaId = c.Id) THEN c.FechaHoraApertura END DESC,
+                        c.FechaHoraApertura DESC,
+                        c.Id DESC;", conexion);
                 cmd.Parameters.AddWithValue("@UsuarioId", usuarioId);
 
                 conexion.Open();
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        cajaId = Convert.ToInt32(reader["Id"]);
-                    }
-                }
+                using SqlDataReader reader = cmd.ExecuteReader();
+                if (reader.Read())
+                    return new CajaAbiertaInfo(reader.GetInt32(0), reader.GetDateTime(1), reader.GetString(2));
             }
-            return cajaId;
+            return null;
         }
 
         // 2. Registrar la apertura de una nueva caja

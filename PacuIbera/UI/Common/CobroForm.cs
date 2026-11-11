@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Drawing;
+using System.Globalization;
 using System.Windows.Forms;
 
 namespace PacuIbera.UI.Common
 {
     public partial class CobroForm : Form
     {
+        private static readonly CultureInfo Argentina = CultureInfo.GetCultureInfo("es-AR");
         private decimal totalAPagar;
 
         // Propiedades públicas para que VentasForm sepa exactamente cuánto entró de cada cosa
@@ -18,6 +20,7 @@ namespace PacuIbera.UI.Common
         private TextBox txtTarjeta;
         private Label lblVueltoMonto;
         private Label lblFaltaMonto;
+        private Button btnConfirmar;
 
         public CobroForm(decimal total)
         {
@@ -54,9 +57,6 @@ namespace PacuIbera.UI.Common
             txtEfectivo.TextChanged += Recalcular;
             txtTransferencia.TextChanged += Recalcular;
             txtTarjeta.TextChanged += Recalcular;
-            txtEfectivo.KeyPress += SoloNumeros;
-            txtTransferencia.KeyPress += SoloNumeros;
-            txtTarjeta.KeyPress += SoloNumeros;
             txtEfectivo.Click += SeleccionarTodo;
             txtTransferencia.Click += SeleccionarTodo;
             txtTarjeta.Click += SeleccionarTodo;
@@ -66,7 +66,7 @@ namespace PacuIbera.UI.Common
             Label lblVuelto = new Label { Text = "Vuelto:", Font = new Font("Segoe UI", 12), ForeColor = Color.Gray, Location = new Point(30, 285), AutoSize = true };
             lblVueltoMonto = new Label { Text = "$ 0.00", Font = new Font("Segoe UI", 18, FontStyle.Bold), ForeColor = Color.DarkRed, Location = new Point(25, 305), AutoSize = true };
 
-            Button btnConfirmar = new Button { Text = "CONFIRMAR PAGO (Enter)", Font = new Font("Segoe UI", 12, FontStyle.Bold), BackColor = Color.LightGreen, FlatStyle = FlatStyle.Flat, Location = new Point(30, 360), Size = new Size(320, 45), Cursor = Cursors.Hand };
+            btnConfirmar = new Button { Text = "CONFIRMAR PAGO (Enter)", Font = new Font("Segoe UI", 12, FontStyle.Bold), BackColor = Color.LightGreen, FlatStyle = FlatStyle.Flat, Location = new Point(30, 360), Size = new Size(320, 45), Cursor = Cursors.Hand };
             btnConfirmar.FlatAppearance.BorderSize = 0;
             btnConfirmar.Click += BtnConfirmar_Click;
 
@@ -83,10 +83,35 @@ namespace PacuIbera.UI.Common
             this.Shown += (s, e) => txtEfectivo.Focus();
         }
 
-        private void SoloNumeros(object sender, KeyPressEventArgs e)
+        internal static bool IntentarLeerImporte(string texto, out decimal valor)
         {
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != ',') e.Handled = true;
-            if (e.KeyChar == ',' && (sender as TextBox).Text.IndexOf(',') > -1) e.Handled = true;
+            valor = 0;
+            texto = texto.Trim();
+            if (texto.Length == 0 || texto.StartsWith('-') || texto.StartsWith('+')) return false;
+
+            int coma = texto.IndexOf(',');
+            if (coma >= 0 && (texto.LastIndexOf(',') != coma || texto.Length - coma - 1 is < 1 or > 2))
+                return false;
+
+            string entero = coma >= 0 ? texto[..coma] : texto;
+            string fraccion = coma >= 0 ? texto[(coma + 1)..] : "";
+            bool agrupado = entero.Contains('.');
+            if (agrupado)
+            {
+                string[] grupos = entero.Split('.');
+                if (grupos.Length < 2 || grupos[0].Length is < 1 or > 3
+                    || grupos.Skip(1).Any(g => g.Length != 3)
+                    || grupos.Any(g => g.Any(c => !char.IsAsciiDigit(c))))
+                    return false;
+            }
+            else if (entero.Length == 0 || entero.Any(c => !char.IsAsciiDigit(c)))
+                return false;
+            if (fraccion.Any(c => !char.IsAsciiDigit(c))) return false;
+
+            return decimal.TryParse(texto,
+                NumberStyles.AllowDecimalPoint | (agrupado ? NumberStyles.AllowThousands : NumberStyles.None),
+                Argentina, out valor) && valor >= 0
+                   && decimal.Round(valor, 2, MidpointRounding.AwayFromZero) == valor;
         }
 
         private void SeleccionarTodo(object sender, EventArgs e)
@@ -96,36 +121,64 @@ namespace PacuIbera.UI.Common
 
         private void Recalcular(object sender, EventArgs e)
         {
-            decimal.TryParse(txtEfectivo.Text, out decimal ef);
-            decimal.TryParse(txtTransferencia.Text, out decimal tr);
-            decimal.TryParse(txtTarjeta.Text, out decimal ta);
+            decimal ef = 0, tr = 0, ta = 0;
+            bool efValido = IntentarLeerImporte(txtEfectivo.Text, out ef);
+            bool trValido = IntentarLeerImporte(txtTransferencia.Text, out tr);
+            bool taValido = IntentarLeerImporte(txtTarjeta.Text, out ta);
+            bool valido = efValido && trValido && taValido;
+            if (!valido)
+            {
+                lblFaltaMonto.Text = "Revise los importes. Use, por ejemplo, 15450,50 o 15.450,50.";
+                lblFaltaMonto.Visible = true;
+                lblVueltoMonto.Text = "$ 0,00";
+                lblVueltoMonto.ForeColor = Color.DarkRed;
+                btnConfirmar.Enabled = false;
+                return;
+            }
+
+            decimal otrosMedios = tr + ta;
+            if (otrosMedios > totalAPagar)
+            {
+                lblFaltaMonto.Text = "Transferencia y tarjeta no pueden superar el total de la venta.";
+                lblFaltaMonto.Visible = true;
+                lblVueltoMonto.Text = "$ 0,00";
+                lblVueltoMonto.ForeColor = Color.DarkRed;
+                btnConfirmar.Enabled = false;
+                return;
+            }
 
             decimal ingresado = ef + tr + ta;
             decimal diferencia = ingresado - totalAPagar;
+            btnConfirmar.Enabled = ingresado >= totalAPagar;
 
             if (diferencia < 0)
             {
-                lblFaltaMonto.Text = $"Falta: $ {Math.Abs(diferencia):N2}";
+                lblFaltaMonto.Text = $"Falta: $ {Math.Abs(diferencia).ToString("N2", Argentina)}";
                 lblFaltaMonto.Visible = true;
-                lblVueltoMonto.Text = "$ 0.00";
+                lblVueltoMonto.Text = "$ 0,00";
                 lblVueltoMonto.ForeColor = Color.DarkRed;
             }
             else
             {
                 lblFaltaMonto.Visible = false;
-                // El vuelto siempre se da en efectivo, por lógica de caja
-                lblVueltoMonto.Text = $"$ {diferencia:N2}";
+                // Solo el efectivo puede generar vuelto; los demás medios ya están limitados al total.
+                lblVueltoMonto.Text = $"$ {Math.Max(0, diferencia).ToString("N2", Argentina)}";
                 lblVueltoMonto.ForeColor = Color.DarkGreen;
             }
         }
 
         private void BtnConfirmar_Click(object sender, EventArgs e)
         {
-            decimal.TryParse(txtEfectivo.Text, out decimal ef);
-            decimal.TryParse(txtTransferencia.Text, out decimal tr);
-            decimal.TryParse(txtTarjeta.Text, out decimal ta);
+            if (!IntentarLeerImporte(txtEfectivo.Text, out decimal ef)
+                || !IntentarLeerImporte(txtTransferencia.Text, out decimal tr)
+                || !IntentarLeerImporte(txtTarjeta.Text, out decimal ta))
+            {
+                MessageBox.Show(this, "Revise los importes. Se admiten hasta dos decimales y formato argentino.", "Importe inválido",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-            if ((ef + tr + ta) >= totalAPagar)
+            if (tr + ta <= totalAPagar && ef + tr + ta >= totalAPagar)
             {
                 // Guardamos los montos limpios en las propiedades públicas
                 PagoEfectivo = ef;
