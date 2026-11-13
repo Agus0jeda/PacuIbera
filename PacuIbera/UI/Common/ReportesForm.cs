@@ -3,6 +3,7 @@ using System;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Printing;
+using System.Globalization;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using PacuIbera.Datos;
@@ -19,6 +20,11 @@ namespace PacuIbera.UI.Common
         private Chart chartTopProductos;
         private DataGridView grillaStock;
         private DataGridView dgvResumenCajas;
+        private DataGridView dgvDetalleCierre;
+        private Label lblIdentificacionCaja;
+        private Label lblDatosCierre;
+        private DataTable? datosResumenCajas;
+        private static readonly CultureInfo CulturaArgentina = CultureInfo.GetCultureInfo("es-AR");
 
         // Filtros de fecha
         private DateTimePicker dtpDesde;
@@ -71,8 +77,8 @@ namespace PacuIbera.UI.Common
             TableLayoutPanel tlpMain = new TableLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(10), ColumnCount = 2, RowCount = 2 };
             tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45F));
             tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 55F));
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 60F));
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 40F));
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 45F));
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 55F));
 
             TableLayoutPanel tlpIzquierda = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, Margin = new Padding(0) };
             tlpIzquierda.RowStyles.Add(new RowStyle(SizeType.Absolute, 120F));
@@ -158,10 +164,83 @@ namespace PacuIbera.UI.Common
 
             // --- TARJETA 5: CAJAS ---
             Panel pnlCajas = CrearTarjetaFill();
-            Label lblTitCajas = new Label { Text = "Auditoría de Cajas (Turnos cerrados)", Font = new Font("Segoe UI", 12, FontStyle.Bold), ForeColor = Color.DimGray, Dock = DockStyle.Top, Padding = new Padding(10, 10, 0, 10), AutoSize = true };
-            dgvResumenCajas = FormatearGrilla(new DataGridView { Dock = DockStyle.Fill });
+            Label lblTitCajas = new Label { Text = "Auditoría de Cajas (Turnos cerrados)", Font = new Font("Segoe UI", 12, FontStyle.Bold), ForeColor = Color.DimGray, Dock = DockStyle.Top, Height = 34, Padding = new Padding(10, 8, 0, 0) };
+            var seccionesCajas = new SplitContainer
+            {
+                Dock = DockStyle.Fill,
+                Size = new Size(900, 320),
+                Orientation = Orientation.Horizontal,
+                SplitterDistance = 130,
+                Panel1MinSize = 100,
+                Panel2MinSize = 150,
+                FixedPanel = FixedPanel.Panel1,
+                BorderStyle = BorderStyle.None,
+                BackColor = Color.White
+            };
+            var panelListadoCajas = new Panel { Dock = DockStyle.Fill, BackColor = Color.White };
+            var lblListadoCajas = new Label { Text = "LISTADO RESUMIDO · Seleccioná un cierre para ver el detalle", Dock = DockStyle.Top, Height = 25, Padding = new Padding(10, 5, 0, 0), Font = new Font("Segoe UI", 9, FontStyle.Bold), ForeColor = ColorTranslator.FromHtml("#34495E") };
+            dgvResumenCajas = FormatearGrilla(new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                AutoGenerateColumns = true,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None,
+                AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells,
+                ScrollBars = ScrollBars.Both,
+                ColumnHeadersHeight = 38,
+                ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing
+            });
+            dgvResumenCajas.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+            dgvResumenCajas.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dgvResumenCajas.DefaultCellStyle.SelectionBackColor = ColorTranslator.FromHtml("#D5EBDD");
+            dgvResumenCajas.DefaultCellStyle.SelectionForeColor = Color.FromArgb(35, 65, 48);
             dgvResumenCajas.CellFormatting += DgvResumenCajas_CellFormatting;
-            pnlCajas.Controls.Add(dgvResumenCajas);
+            dgvResumenCajas.SelectionChanged += DgvResumenCajas_SelectionChanged;
+            panelListadoCajas.Controls.Add(dgvResumenCajas);
+            panelListadoCajas.Controls.Add(lblListadoCajas);
+            seccionesCajas.Panel1.Controls.Add(panelListadoCajas);
+
+            var panelDetalleCierre = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(0, 0, 0, 2) };
+            lblIdentificacionCaja = new Label
+            {
+                Text = "Detalle del cierre seleccionado",
+                Dock = DockStyle.Top,
+                Height = 25,
+                Padding = new Padding(10, 4, 0, 0),
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = ColorTranslator.FromHtml("#34495E")
+            };
+            lblDatosCierre = new Label
+            {
+                Text = "Seleccioná un cierre del listado superior.",
+                Dock = DockStyle.Top,
+                Height = 25,
+                Padding = new Padding(10, 3, 0, 0),
+                Font = new Font("Segoe UI", 9, FontStyle.Regular),
+                ForeColor = Color.FromArgb(80, 80, 80),
+                AutoEllipsis = true
+            };
+            dgvDetalleCierre = FormatearGrilla(new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                AutoGenerateColumns = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None,
+                AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells,
+                ScrollBars = ScrollBars.Vertical,
+                ColumnHeadersHeight = 32
+            });
+            dgvDetalleCierre.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+            dgvDetalleCierre.Columns.Add(new DataGridViewTextBoxColumn { Name = "Concepto", HeaderText = "Concepto", Width = 245, MinimumWidth = 180, ReadOnly = true, SortMode = DataGridViewColumnSortMode.NotSortable });
+            dgvDetalleCierre.Columns.Add(new DataGridViewTextBoxColumn { Name = "Valor", HeaderText = "Importe / observación", MinimumWidth = 220, ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, SortMode = DataGridViewColumnSortMode.NotSortable });
+            dgvDetalleCierre.Columns["Valor"].DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dgvDetalleCierre.RowTemplate.Height = 26;
+            dgvDetalleCierre.DefaultCellStyle.SelectionBackColor = ColorTranslator.FromHtml("#EAEDED");
+            dgvDetalleCierre.DefaultCellStyle.SelectionForeColor = Color.FromArgb(40, 50, 45);
+            panelDetalleCierre.Controls.Add(dgvDetalleCierre);
+            panelDetalleCierre.Controls.Add(lblDatosCierre);
+            panelDetalleCierre.Controls.Add(lblIdentificacionCaja);
+            seccionesCajas.Panel2.Controls.Add(panelDetalleCierre);
+
+            pnlCajas.Controls.Add(seccionesCajas);
             pnlCajas.Controls.Add(lblTitCajas);
 
             tlpMain.Controls.Add(pnlCajas, 0, 1);
@@ -215,7 +294,8 @@ namespace PacuIbera.UI.Common
                 else { chartTopProductos.Series[0].Points.Clear(); }
 
                 CargarGrillaAlertas(tabActiva);
-                dgvResumenCajas.DataSource = cajaDatos.ObtenerResumenCajas(hasta);
+                datosResumenCajas = cajaDatos.ObtenerHistorialCierres(desde, hasta);
+                ConfigurarListadoCajas(datosResumenCajas);
             }
             catch (Exception ex)
             {
@@ -395,16 +475,140 @@ namespace PacuIbera.UI.Common
 
         private void DgvResumenCajas_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (dgvResumenCajas.Columns[e.ColumnIndex].Name == "Diferencia" && e.Value != DBNull.Value)
+            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+            string columna = dgvResumenCajas.Columns[e.ColumnIndex].Name;
+            if (e.Value == null || e.Value == DBNull.Value)
             {
-                decimal dif = Convert.ToDecimal(e.Value);
-                if (dif < 0)
+                if (columna == "MontoEsperado") e.Value = "No calculable";
+                else if (columna == "EfectivoDeclarado") e.Value = "Sin cierre";
+                else if (columna == "Diferencia") e.Value = "No disponible";
+                else return;
+                e.FormattingApplied = true;
+                return;
+            }
+            if (columna is "MontoEsperado" or "EfectivoDeclarado" or "Diferencia")
+            {
+                decimal importe = Convert.ToDecimal(e.Value, CultureInfo.InvariantCulture);
+                e.Value = importe.ToString("C2", CulturaArgentina);
+                e.FormattingApplied = true;
+                if (columna == "Diferencia")
                 {
-                    dgvResumenCajas.Rows[e.RowIndex].DefaultCellStyle.BackColor = ColorTranslator.FromHtml("#FADBD8");
-                    dgvResumenCajas.Rows[e.RowIndex].DefaultCellStyle.ForeColor = Color.DarkRed;
+                    var celda = dgvResumenCajas.Rows[e.RowIndex].Cells[e.ColumnIndex];
+                    celda.Style.BackColor = importe < 0 ? ColorTranslator.FromHtml("#FCE8E6")
+                        : importe > 0 ? ColorTranslator.FromHtml("#E8F5E9") : ColorTranslator.FromHtml("#F1F8E9");
+                    celda.Style.ForeColor = importe < 0 ? Color.DarkRed
+                        : importe > 0 ? Color.DarkGreen : Color.DarkSlateGray;
                 }
             }
+            else if (columna is "Apertura" or "Cierre" && e.Value is DateTime fecha)
+            {
+                e.Value = fecha.ToString("dd/MM/yyyy HH:mm", CulturaArgentina);
+                e.FormattingApplied = true;
+            }
         }
+
+        private void ConfigurarListadoCajas(DataTable datos)
+        {
+            if (!datos.Columns.Contains("Cajero") || !datos.Columns.Contains("Apertura"))
+            {
+                dgvResumenCajas.DataSource = datos;
+                lblIdentificacionCaja.Text = "El resultado SQL no incluye los datos necesarios para identificar el cierre.";
+                dgvDetalleCierre.Rows.Clear();
+                return;
+            }
+
+            bool tieneNumeroCaja = datos.Columns.Contains("CajaId");
+            string columnaIdentificacion = tieneNumeroCaja ? "CajaId" : "IdentificacionCaja";
+            if (!tieneNumeroCaja && !datos.Columns.Contains("IdentificacionCaja"))
+                datos.Columns.Add("IdentificacionCaja", typeof(string));
+            foreach (DataRow fila in datos.Rows)
+            {
+                if (!tieneNumeroCaja)
+                {
+                    string cajero = fila["Cajero"] == DBNull.Value ? "Cajero sin dato" : Convert.ToString(fila["Cajero"]) ?? "Cajero sin dato";
+                    string apertura = fila["Apertura"] == DBNull.Value ? "Apertura sin dato" : Convert.ToDateTime(fila["Apertura"]).ToString("dd/MM/yyyy HH:mm", CulturaArgentina);
+                    fila["IdentificacionCaja"] = $"{cajero} · {apertura}";
+                }
+            }
+
+            dgvResumenCajas.DataSource = datos;
+            foreach (DataGridViewColumn columna in dgvResumenCajas.Columns) columna.Visible = false;
+            MostrarColumnaResumen(datos, columnaIdentificacion, tieneNumeroCaja ? "N.º de caja" : "Identificación", tieneNumeroCaja ? 95 : 220);
+            MostrarColumnaResumen(datos, "Cajero", "Cajero", 135);
+            MostrarColumnaResumen(datos, "Apertura", "Apertura", 140);
+            MostrarColumnaResumen(datos, "Cierre", "Cierre", 140);
+            MostrarColumnaResumen(datos, "MontoEsperado", "Esperado", 110);
+            MostrarColumnaResumen(datos, "EfectivoDeclarado", "Contado", 110);
+            MostrarColumnaResumen(datos, "Diferencia", "Diferencia", 110);
+            MostrarColumnaResumen(datos, "Estado", "Estado", 100);
+            dgvResumenCajas.ClearSelection();
+            dgvDetalleCierre.Rows.Clear();
+            lblIdentificacionCaja.Text = tieneNumeroCaja
+                ? "Detalle del cierre seleccionado"
+                : "Detalle del cierre seleccionado · identificación por cajero y apertura";
+            lblDatosCierre.Text = dgvResumenCajas.Rows.Count == 0
+                ? "No hay cierres para el período seleccionado."
+                : "Seleccioná un cierre del listado superior.";
+            if (dgvResumenCajas.Rows.Count > 0) dgvResumenCajas.Rows[0].Selected = true;
+        }
+
+        private void MostrarColumnaResumen(DataTable datos, string nombre, string titulo, int ancho)
+        {
+            if (!datos.Columns.Contains(nombre) || !dgvResumenCajas.Columns.Contains(nombre)) return;
+            var columna = dgvResumenCajas.Columns[nombre];
+            columna.Visible = true;
+            columna.HeaderText = titulo;
+            columna.Width = ancho;
+            columna.MinimumWidth = Math.Min(ancho, 75);
+            columna.SortMode = DataGridViewColumnSortMode.Automatic;
+        }
+
+        private void DgvResumenCajas_SelectionChanged(object? sender, EventArgs e)
+        {
+            if (dgvResumenCajas.CurrentRow?.DataBoundItem is not DataRowView fila) return;
+            MostrarDetalleCierre(fila.Row);
+        }
+
+        private void MostrarDetalleCierre(DataRow fila)
+        {
+            dgvDetalleCierre.Rows.Clear();
+            if (datosResumenCajas == null) return;
+            string cajero = ValorTexto(fila, "Cajero", "Sin dato");
+            string apertura = ValorFecha(fila, "Apertura");
+            string numeroCaja = fila.Table.Columns.Contains("CajaId") ? $"Caja {ValorTexto(fila, "CajaId", "Sin dato")} - " : string.Empty;
+            lblDatosCierre.Text = $"{numeroCaja}{cajero} - Apertura {apertura}";
+
+            AgregarDetalle("Fondo inicial", ValorDinero(fila, "FondoCaja"));
+            AgregarDetalle("Ventas del sistema", ValorDinero(fila, "VentasSistema"));
+            AgregarDetalle("Cobros en efectivo retenidos", ValorDinero(fila, "CobrosEfectivo"));
+            AgregarDetalle("Cobros por tarjeta", ValorDinero(fila, "CobrosTarjeta"));
+            AgregarDetalle("Cobros por transferencia", ValorDinero(fila, "CobrosTransferencia"));
+            AgregarDetalle("Ingresos adicionales", ValorDinero(fila, "IngresosCaja"));
+            AgregarDetalle("Retiros", ValorDinero(fila, "RetirosCaja"));
+            AgregarDetalle("Efectivo esperado", ValorDinero(fila, "MontoEsperado"));
+            AgregarDetalle("Efectivo contado", ValorDinero(fila, "EfectivoDeclarado"));
+            AgregarDetalle("Diferencia", ValorDinero(fila, "Diferencia"));
+            AgregarDetalle("Estado", ValorTexto(fila, "Estado", "Sin dato"));
+            AgregarDetalle("Observaciones / bloqueo", ValorTexto(fila, "ObservacionEfectivo", "Sin observaciones"));
+            dgvDetalleCierre.ClearSelection();
+        }
+
+        private string ValorTexto(DataRow fila, string columna, string siFalta) =>
+            fila.Table.Columns.Contains(columna) && fila[columna] != DBNull.Value
+                ? Convert.ToString(fila[columna]) ?? siFalta : siFalta;
+
+        private string ValorFecha(DataRow fila, string columna) =>
+            fila.Table.Columns.Contains(columna) && fila[columna] != DBNull.Value
+                ? Convert.ToDateTime(fila[columna]).ToString("dd/MM/yyyy HH:mm", CulturaArgentina) : "Sin dato";
+
+        private string ValorDinero(DataRow fila, string columna)
+        {
+            if (!fila.Table.Columns.Contains(columna) || fila[columna] == DBNull.Value)
+                return columna == "MontoEsperado" ? "No calculable" : columna == "EfectivoDeclarado" ? "Sin cierre" : "No disponible";
+            return Convert.ToDecimal(fila[columna], CultureInfo.InvariantCulture).ToString("C2", CulturaArgentina);
+        }
+
+        private void AgregarDetalle(string concepto, string valor) => dgvDetalleCierre.Rows.Add(concepto, valor);
 
         private Panel CrearTarjetaFill()
         {

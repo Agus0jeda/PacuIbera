@@ -4,16 +4,19 @@
 
 El exportado original `PacuIbera_Estructura_Completa.sql` se conserva sin cambios. Se preparó una copia de instalación configurable con sus objetos, sin crear una base aquí y sin ejecutar SQL. **La instalación limpia todavía no está probada.**
 
-La copia conserva las 31 tablas, 50 procedimientos, 5 tipos tabulares, claves, restricciones, índices y la propiedad extendida exportada. Se quitaron las instrucciones de creación de la base fuente con rutas físicas, el bloque de opciones `ALTER DATABASE` ligado a la base exportada y los `USE master` de cierre. El DDL de los objetos se mantiene como fuente exportada. La base destino conserva sus opciones predeterminadas del servidor; si la entrega exige replicar también las opciones de base, deben revisarse y adaptarse por separado.
+El esquema configurable conserva las 31 tablas, 50 procedimientos exportados, 5 tipos tabulares, claves, restricciones, índices y la propiedad extendida. `05_InstalarHistorialCierres_Configurable.sql` agrega el historial de cierres. `06_InstalarAnulacionVentaSegura_Configurable.sql` agrega la auditoría por detalle/lote y actualiza `sp_AnularVentaConMotivo`; la instalación queda con 32 tablas, 51 procedimientos y 6 tipos tabulares. Se quitaron las instrucciones de creación de la base fuente con rutas físicas, el bloque de opciones `ALTER DATABASE` ligado a la base exportada y los `USE master` de cierre. El DDL del exportado se conserva. La base destino mantiene sus opciones predeterminadas del servidor.
 
 ## Archivos y orden previsto
 
 1. En SSMS activar **SQLCMD Mode**. `:on error exit` detiene la secuencia ante una falla. `00_CrearBase_Configurable.sql`: configurar `DatabaseName` y crear una base nueva. Rechaza nombres protegidos y bases ya existentes; no las sobrescribe.
 2. Conectarse a la base creada. Ejecutar `01_InstalarEsquemaCompleto_Configurable.sql` en SQLCMD Mode con el mismo `DatabaseName`. Solo acepta una base vacía; contiene guardas de destino y requiere SQL Server 2019 o posterior por `OPTIMIZE_FOR_SEQUENTIAL_KEY`.
 3. Ejecutar `02_InsertarRolesConfirmados.sql`. Inserta idempotentemente los IDs requeridos por el origen: 0 Administrador, 1 Vendedor y 2 Gerente. El segundo registro Gerente (Id 3) del reporte no se importa. Si el destino ya tiene nombres/IDs en conflicto, el script se detiene sin corregirlos automáticamente.
-4. `PacuIbera_Proveedores.rpt` completa los CUIT y las asociaciones proveedor-producto. `03_ConsultarCatalogosSemilla_PacuIberaDB_Pruebas.sql` queda como consulta de solo lectura para contrastar esos datos si hace falta.
+4. Los CUIT y las asociaciones proveedor-producto del reporte ya están integrados en el seed; el archivo fuente `.rpt` no forma parte de la instalación. `03_ConsultarCatalogosSemilla_PacuIberaDB_Pruebas.sql` es una consulta de solo lectura y no es requisito para instalar.
 5. `04_InsertarDatosIniciales_Configurable.sql` contiene las cuentas demo y sus hashes SHA-256 compatibles con `Seguridad.GenerarHashSHA256`. Las credenciales demo actuales son: Administrador, DNI `11111111`, clave `1234`; Gerente, DNI `33333333`, clave `1234`; Vendedor, DNI `22222222`, clave `1234`. Son credenciales ficticias para demostración; no reutilizarlas en cuentas reales. `CredencialesDemo.local.txt` está excluido de Git y no debe publicarse. El seed usa `DatabaseName`, conserva los IDs, incorpora proveedores y sus tres relaciones reales, incluye los 16 IDs de métodos de pago que los procedimientos exportados de Caja validan (C# usa 1–4 para pagos nuevos), carga los 8 productos activos con `StockActual=0`, y no crea lotes ni movimientos históricos. `@AutorizarSeed` permanece en 0; cambiarlo solo durante la instalación aprobada.
-6. Después de completar y revisar el seed, ejecutar `99_VerificarInstalacion.sql` sobre la base destino con el mismo `DatabaseName`.
+6. En SQLCMD Mode, ejecutar `05_InstalarHistorialCierres_Configurable.sql` conectado a la base destino y con el mismo `DatabaseName`. Instala la consulta histórica de cierres para Administrador y Gerente activos; no reemplaza `sp_ResumenCajas` ni `sp_CerrarCaja`.
+7. Revisar las auditorías repetidas que informa `06_InstalarAnulacionVentaSegura_Configurable.sql`. La instalación exige revisar el archivo y cambiar manualmente `@AutorizarInstalacion` de 0 a 1. Conectarse a la base destino y ejecutarlo en SQLCMD Mode. No modifica pagos ni caja.
+8. Revisar y autorizar `07_ActualizarAnalisisVencimientos_Configurable.sql` (su autorización inicia en 0); ejecutarlo conectado a la base destino y en SQLCMD Mode. Alinea las columnas del reporte con `AnalisisForm` y excluye lotes inactivos.
+9. Ejecutar `99_VerificarInstalacion.sql` sobre la base destino con el mismo `DatabaseName`; verifica también la tabla y los tipos tabulares de auditoría de anulaciones.
 
 `01_RecuperarEsquemaYProcedimientos_Faltantes.sql` queda como auditoría de solo lectura adicional sobre la base de pruebas, no como etapa del instalador. Si una instalación se interrumpe tras crear algunos objetos, no la reejecutes sobre esa base parcial: el guardado la rechazará; debe revisarse y descartarse manualmente la base de entrega vacía/temporal antes de comenzar de nuevo.
 
@@ -38,6 +41,10 @@ El código solo acepta dos combinaciones: `Pruebas` + `PacuIberaDB_Pruebas`, o `
 ### Procedimientos heredados
 
 Se preservaron las 50 definiciones del exportado tal como estaban. Entre ellas están procedimientos heredados que requieren revisión antes de habilitar su uso en la entrega, como `sp_TransferirDepositoALocal`, `sp_RecepcionarItemPedido` y `sp_ModificarProducto`, que podrían realizar movimientos fuera del flujo nuevo. El instalador no corrige ni omite objetos porque la tarea pidió conservar el exportado.
+
+### Anulación segura de ventas
+
+La aplicación transmite una decisión por cada detalle/lote original. SQL repone stock solo si el Administrador confirma devolución física y aptitud, y el lote sigue activo y vigente. Un lote inactivo, incluido uno agotado por FIFO, queda auditado sin reincorporarse en esta etapa. `sp_AnularVenta` no se deshabilita hasta revisar sus dependencias externas.
 
 ## Bloqueos restantes para la entrega
 

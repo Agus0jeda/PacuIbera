@@ -154,5 +154,27 @@ namespace Datos
             }
             return dt;
         }
+
+        // Historial de solo lectura: usa el intervalo de cierre y no las reglas
+        // operativas de caja abierta que protege sp_ResumenCajas para el cierre.
+        public DataTable ObtenerHistorialCierres(DateTime desde, DateTime hasta)
+        {
+            if (SesionActiva.Rol is not ("Administrador" or "Gerente") || SesionActiva.IdUsuario <= 0)
+                throw new UnauthorizedAccessException("Solo un Administrador o Gerente activo puede consultar el historial de cierres.");
+            if (desde.Date > hasta.Date)
+                throw new ArgumentException("La fecha inicial no puede ser posterior a la fecha final.");
+
+            DataTable dt = new DataTable();
+            using (SqlConnection conexion = ObtenerConexion())
+            using (SqlCommand cmd = new SqlCommand("dbo.sp_ConsultarHistorialCierresCaja", conexion))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add("@FechaDesde", SqlDbType.Date).Value = desde.Date;
+                cmd.Parameters.Add("@FechaHasta", SqlDbType.Date).Value = hasta.Date;
+                cmd.Parameters.Add("@UsuarioId", SqlDbType.Int).Value = SesionActiva.IdUsuario;
+                using (SqlDataAdapter da = new SqlDataAdapter(cmd)) da.Fill(dt);
+            }
+            return dt;
+        }
     }
 }

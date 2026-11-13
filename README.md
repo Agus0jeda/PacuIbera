@@ -53,7 +53,10 @@ Los scripts están en `scripts/instalacion/`. En SSMS activar **SQLCMD Mode** y 
 2. Conectarse a la base nueva y ejecutar `01_InstalarEsquemaCompleto_Configurable.sql`.
 3. Ejecutar `02_InsertarRolesConfirmados.sql`.
 4. Revisar `04_InsertarDatosIniciales_Configurable.sql`. Su variable `@AutorizarSeed` está en `0`, por lo que el seed se detiene hasta que una persona responsable revise y autorice explícitamente la carga.
-5. Ejecutar `99_VerificarInstalacion.sql` sobre la base destino.
+5. Ejecutar `05_InstalarHistorialCierres_Configurable.sql` en SQLCMD Mode, conectado a la base destino y usando el mismo `DatabaseName`. Agrega la consulta histórica de cierres para Administrador y Gerente activos.
+6. Revisar las auditorías duplicadas y ejecutar `06_InstalarAnulacionVentaSegura_Configurable.sql` conectado a la base destino en SQLCMD Mode. Mantiene `@AutorizarInstalacion=0`; solo cambiarlo a `1` después de revisar el destino y el preflight.
+7. Revisar y ejecutar `07_ActualizarAnalisisVencimientos_Configurable.sql` conectado a la base destino en SQLCMD Mode. Mantiene la autorizacion desactivada hasta su revision.
+8. Ejecutar `99_VerificarInstalacion.sql` sobre la base destino.
 
 `01_RecuperarEsquemaYProcedimientos_Faltantes.sql` y `03_ConsultarCatalogosSemilla_PacuIberaDB_Pruebas.sql` son herramientas de revisión, no pasos de instalación. No ejecutar scripts de prueba o regularización como parte de una instalación limpia.
 

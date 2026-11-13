@@ -171,7 +171,7 @@ public partial class ProductoForm : Form
         }
         UseWaitCursor=ocupado;
     }
-    private async Task CargarAsync(int? seleccionar=null)
+    private async Task CargarAsync(int? seleccionar=null, bool conservarSeleccionActual=true)
     {
         if(ocupado)return;ocupado=true;ActualizarAcciones();
         try
@@ -187,7 +187,7 @@ public partial class ProductoForm : Form
             categoria.SelectedValue=categorias.Any(c=>c.Id==idCategoria)?idCategoria:0;
             productos=resultado;
             historialVencidos=vencidos;
-            cargandoFiltros=false;Filtrar(seleccionar);
+            cargandoFiltros=false;Filtrar(seleccionar,conservarSeleccionActual);
         }
         catch(Exception ex)
         {
@@ -196,7 +196,7 @@ public partial class ProductoForm : Form
         }
         finally{cargandoFiltros=false;ocupado=false;if(!IsDisposed)ActualizarAcciones();}
     }
-    private void Filtrar(int? seleccion=null)
+    private void Filtrar(int? seleccion=null, bool conservarSeleccionActual=true)
     {
         if(cargandoFiltros)return;
         tabla.Visible=!VistaVencidos;
@@ -213,7 +213,7 @@ public partial class ProductoForm : Form
             ActualizarAcciones();
             return;
         }
-        seleccion??=Seleccionado()?.Id;
+        if(conservarSeleccionActual)seleccion??=Seleccionado()?.Id;
         int idCategoria=(categoria.SelectedItem as CategoriaProducto)?.Id??0;
         var visibles=productos.Where(p=>p.Nombre.Contains(buscar.Text.Trim(),StringComparison.CurrentCultureIgnoreCase)
             &&(idCategoria==0||p.CategoriaId==idCategoria)
@@ -262,12 +262,16 @@ public partial class ProductoForm : Form
         try
         {
             if(MessageBox.Show(this,$"¿Dar de baja {producto.Nombre}?\nSe conservará su historial. No se permite si tiene mercadería, pedidos o remitos pendientes.",
-                "Dar de baja",MessageBoxButtons.YesNo,MessageBoxIcon.Question,MessageBoxDefaultButton.Button2)!=DialogResult.Yes)return;
+                "Dar de baja",MessageBoxButtons.YesNo,MessageBoxIcon.Question,MessageBoxDefaultButton.Button2)!=DialogResult.Yes)
+            {
+                mensaje.Text=$"Baja cancelada. {producto.Nombre} permanece sin cambios.";
+                return;
+            }
             await datos.DarBajaFichaAsync(producto.Id);guardado=true;
         }
         catch(Exception ex){if(!IsDisposed)MessageBox.Show(this,"No se pudo confirmar la baja. "+ex.Message,"Producto",MessageBoxButtons.OK,MessageBoxIcon.Warning);}
         finally{ocupado=false;if(!IsDisposed)ActualizarAcciones();}
-        if(guardado&&!IsDisposed)await CargarAsync();
+        if(guardado&&!IsDisposed)await CargarAsync(conservarSeleccionActual:false);
     }
     private async Task VerLotesAsync()
     {

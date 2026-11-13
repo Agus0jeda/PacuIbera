@@ -57,7 +57,7 @@ namespace PacuIbera.UI.Common
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38));
             layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 76));
             layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 58));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 0));
             layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 58));
 
             var header = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2 };
@@ -206,8 +206,7 @@ namespace PacuIbera.UI.Common
                     return;
                 }
 
-                lblEstado.Text = "El resumen se actualiza desde SQL. El cierre volverá a calcularlo antes de guardar.";
-                lblEstado.ForeColor = Color.FromArgb(80, 80, 80);
+                lblEstado.Text = string.Empty;
                 btnCerrar.Enabled = true;
                 ActualizarDiferencia();
             }
@@ -219,6 +218,8 @@ namespace PacuIbera.UI.Common
 
         private void MostrarBloqueo(string mensaje)
         {
+            if (lblEstado.Parent is TableLayoutPanel layout && layout.RowStyles.Count > 2)
+                layout.RowStyles[2].Height = 58;
             lblEstado.Text = mensaje;
             lblEstado.ForeColor = Color.FromArgb(170, 45, 45);
             btnCerrar.Enabled = false;

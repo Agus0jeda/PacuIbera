@@ -238,19 +238,31 @@ namespace PacuIbera.UI.Common
         {
             var p = DisponibleSeleccionado();
             if (ocupado || !agregar.Enabled || !RemitosDatos.PuedePrepararEmision || !catalogoValido || p == null) return;
-            if (!IntentarLeerCantidad(p, cantidad.Text, out decimal valor))
+            if (!IntentarLeerCantidad(p.SeVendePorPeso, cantidad.Text, out decimal valor, out string errorCantidad))
             {
                 cantidad.BackColor = Color.MistyRose;
                 cantidad.Focus();
-                MessageBox.Show(this, p.SeVendePorPeso
-                    ? "Ingrese una cantidad mayor que cero, hasta tres decimales y no superior al stock. Use coma decimal."
-                    : "Ingrese una cantidad entera mayor que cero y no superior al stock.");
+                MessageBox.Show(this, errorCantidad, "Revise la cantidad", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
             cantidad.BackColor = SystemColors.Window;
+
+            decimal yaComprometida = borrador
+                .Where(f => f.ProductoId == p.ProductoId && (!editando.HasValue || f.ProductoId != editando.Value))
+                .Sum(f => f.Cantidad);
+            decimal disponibleParaEstaLinea = Math.Max(0, p.StockDisponible - yaComprometida);
+            if (valor > disponibleParaEstaLinea)
+            {
+                MostrarErrorStock(p, valor, disponibleParaEstaLinea);
+                return;
+            }
+
             if (!editando.HasValue && borrador.Any(f => f.ProductoId == p.ProductoId))
             {
-                MessageBox.Show(this, "El producto ya está agregado. Selecciónelo en el borrador y use Editar cantidad.");
+                MessageBox.Show(this,
+                    $"{p.Producto} ya está en el borrador ({FormatearCantidad(yaComprometida, p.SeVendePorPeso)}). " +
+                    "Selecciónelo y use Editar cantidad para cambiar el total.",
+                    "Producto ya agregado", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
             var fila = new ProductoEmisionRemito(p.ProductoId, p.Producto, p.SeVendePorPeso, p.StockDisponible, valor);
@@ -292,21 +304,72 @@ namespace PacuIbera.UI.Common
             MessageBox.Show(this, "El producto ya no está disponible. Puede quitarlo del borrador.");
         }
 
-        private static bool IntentarLeerCantidad(ProductoDisponibleRemito producto, string texto, out decimal valor)
+        private static bool IntentarLeerCantidad(bool seVendePorPeso, string texto, out decimal valor, out string error)
         {
             valor = 0;
             texto = texto.Trim();
-            if (texto.Length == 0 || texto.Contains('.') || texto.Count(c => c == ',') > 1)
+            error = string.Empty;
+            if (texto.Length == 0)
+            {
+                error = "Ingrese una cantidad para continuar.";
                 return false;
+            }
+
+            if (texto.Contains(',') && texto.Count(c => c == ',') == 1
+                && texto.Length - texto.IndexOf(',') - 1 > 3)
+            {
+                error = "La cantidad admite como máximo tres decimales.";
+                return false;
+            }
+
+            if (!seVendePorPeso && texto.Contains(','))
+            {
+                error = "Este producto se vende por unidad. Ingrese solo una cantidad entera, sin decimales.";
+                return false;
+            }
+
+            if (texto.Contains('.') || texto.Count(c => c == ',') > 1
+                || !System.Text.RegularExpressions.Regex.IsMatch(texto, @"\A[+-]?[0-9]+(,[0-9]{1,3})?\z"))
+            {
+                error = "Formato inválido. Use formato argentino, con coma decimal (por ejemplo, 5,5); no use puntos de miles.";
+                return false;
+            }
+
             int coma = texto.IndexOf(',');
-            if (coma >= 0 && (!producto.SeVendePorPeso || texto.Length - coma - 1 is < 1 or > 3))
+            if (coma >= 0 && texto.Length - coma - 1 is < 1 or > 3)
+            {
+                error = "La cantidad admite como máximo tres decimales y debe tener dígitos después de la coma.";
                 return false;
-            return decimal.TryParse(texto, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
-                       Argentina, out valor)
-                   && valor > 0 && valor <= producto.StockDisponible
-                   && (producto.SeVendePorPeso || decimal.Truncate(valor) == valor)
-                   && decimal.Round(valor, producto.SeVendePorPeso ? 3 : 0) == valor;
+            }
+
+            if (!decimal.TryParse(texto, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
+                    Argentina, out valor))
+            {
+                error = "Formato inválido. Use números con coma decimal argentina, por ejemplo 5,5.";
+                return false;
+            }
+
+            if (valor <= 0)
+            {
+                error = "La cantidad debe ser mayor que cero.";
+                return false;
+            }
+
+            return true;
         }
+
+        private void MostrarErrorStock(ProductoDisponibleRemito producto, decimal solicitada, decimal disponible)
+        {
+            decimal faltante = Math.Max(0, solicitada - disponible);
+            MessageBox.Show(this,
+                $"{producto.Producto}. Solicitado: {FormatearCantidad(solicitada, producto.SeVendePorPeso)}.\n" +
+                $"Disponible para este remito: {FormatearCantidad(disponible, producto.SeVendePorPeso)}.\n" +
+                $"Faltante: {FormatearCantidad(faltante, producto.SeVendePorPeso)}.",
+                "Stock insuficiente", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        private static string FormatearCantidad(decimal cantidad, bool seVendePorPeso) =>
+            $"{cantidad.ToString(seVendePorPeso ? "0.###" : "0", Argentina)} {(seVendePorPeso ? "kg" : "un.")}";
 
         private void QuitarProducto()
         {

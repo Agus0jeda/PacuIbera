@@ -7,6 +7,8 @@ using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Drawing.Printing;
+using System.Globalization;
+using System.Diagnostics;
 
 namespace PacuIbera.UI.Common
 {
@@ -188,6 +190,12 @@ namespace PacuIbera.UI.Common
 
         private void BtnAnular_Click(object sender, EventArgs e)
         {
+            if (!string.Equals(SesionActiva.Rol, "Administrador", StringComparison.Ordinal))
+            {
+                MessageBox.Show("Solo un Administrador puede anular ventas.", "Acceso no permitido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dgvHistorial.CurrentRow == null)
             {
                 MessageBox.Show("Seleccione una venta de la lista para anular.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -203,11 +211,18 @@ namespace PacuIbera.UI.Common
                 return;
             }
 
-            DialogResult res = MessageBox.Show($"¿Está seguro de que desea ANULAR la Venta N° {idVenta}?\n\nAl confirmar:\n• Se marcará el ticket como anulado.\n• Se devolverá el stock exacto a la pescadería.\n\nEsta acción no se puede deshacer.",
-                                               "Confirmar Anulación Crítica", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-
-            if (res == DialogResult.Yes)
+            try
             {
+                DataTable detalle = ventaDatos.ObtenerDetalleVentaParaAnulacion(idVenta);
+                if (detalle.Rows.Count == 0)
+                {
+                    MessageBox.Show("La venta no tiene detalles válidos para anular.", "No se puede continuar", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!PedirEstadoDevolucion(detalle, out DataTable decisiones))
+                    return;
+
                 string motivo = PedirMotivoAnulacion();
 
                 if (string.IsNullOrWhiteSpace(motivo))
@@ -216,17 +231,194 @@ namespace PacuIbera.UI.Common
                     return;
                 }
 
+                DialogResult res = MessageBox.Show(
+                    $"¿Confirmar la anulación de la venta N.º {idVenta}?\n\nLa venta se anulará una sola vez. Solo se reincorporará al stock la mercadería marcada como devuelta y apta, cuyo lote siga habilitado y vigente. No se devolverá dinero automáticamente.",
+                    "Confirmar anulación", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (res != DialogResult.Yes)
+                    return;
+
+                btnAnular.Enabled = false;
                 try
                 {
-                    ventaDatos.AnularVentaConMotivo(idVenta, SesionActiva.IdUsuario, motivo);
-                    MessageBox.Show("Venta anulada con éxito.", "Operación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ventaDatos.AnularVentaConMotivo(idVenta, SesionActiva.IdUsuario, motivo, decisiones);
+                    MessageBox.Show("La venta fue anulada. El stock se actualizó solo para los detalles elegibles.", "Anulación registrada", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     CargarHistorial();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error crítico al intentar anular: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("No se pudo completar la anulación. Actualice el historial antes de intentar otra vez.\n\n" + ex.Message, "Anulación no confirmada", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    btnAnular.Enabled = true;
                 }
             }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Error al preparar la anulacion de venta:");
+                Debug.WriteLine(ex.ToString());
+                MessageBox.Show(
+                    $"No se pudo cargar el detalle para preparar la anulación. ({ex.GetType().Name})\n\n{ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private bool PedirEstadoDevolucion(DataTable detalle, out DataTable decisiones)
+        {
+            decisiones = new DataTable();
+            decisiones.Columns.Add("DetalleVentaId", typeof(int));
+            decisiones.Columns.Add("VolvioFisicamente", typeof(bool));
+            decisiones.Columns.Add("AptaParaVenta", typeof(bool));
+
+            DataTable filas = new DataTable();
+            filas.Columns.Add("DetalleVentaId", typeof(int));
+            filas.Columns.Add("Producto", typeof(string));
+            filas.Columns.Add("Lote", typeof(string));
+            filas.Columns.Add("Cantidad", typeof(string));
+            filas.Columns.Add("Vencimiento", typeof(string));
+            filas.Columns.Add("EstadoLote", typeof(string));
+            filas.Columns.Add("LoteElegible", typeof(bool));
+            filas.Columns.Add("VolvioFisicamente", typeof(bool));
+            filas.Columns.Add("AptaParaVenta", typeof(bool));
+
+            CultureInfo cultura = CultureInfo.GetCultureInfo("es-AR");
+            foreach (DataRow fila in detalle.Rows)
+            {
+                if (fila.IsNull("DetalleVentaId") || fila.IsNull("LoteId") || fila.IsNull("Producto")
+                    || fila.IsNull("Cantidad") || fila.IsNull("Activo") || fila.IsNull("SeVendePorPeso")
+                    || fila.IsNull("LoteElegible"))
+                    throw new InvalidOperationException("La consulta devolvió datos incompletos para preparar la anulación.");
+
+                bool porPeso = Convert.ToBoolean(fila["SeVendePorPeso"]);
+                decimal cantidad = Convert.ToDecimal(fila["Cantidad"]);
+                DateTime? vencimiento = fila.IsNull("FechaVencimiento") ? null : Convert.ToDateTime(fila["FechaVencimiento"]);
+                string vence = vencimiento == null || vencimiento.Value.Date == new DateTime(2099, 12, 31)
+                    ? "Sin vencimiento"
+                    : vencimiento.Value.ToString("dd/MM/yyyy", cultura);
+                bool loteActivo = Convert.ToBoolean(fila["Activo"]);
+                bool loteVencido = vencimiento.HasValue && vencimiento.Value.Date != new DateTime(2099, 12, 31)
+                    && vencimiento.Value.Date < DateTime.Today;
+                string estadoLote = loteVencido
+                    ? (loteActivo ? "Vencido" : "Inactivo y vencido")
+                    : (loteActivo ? "Habilitado" : "Inactivo; causa no identificada");
+                filas.Rows.Add(
+                    Convert.ToInt32(fila["DetalleVentaId"]),
+                    Convert.ToString(fila["Producto"]) ?? "Producto",
+                    "N.º " + Convert.ToInt32(fila["LoteId"]).ToString(cultura),
+                    cantidad.ToString(porPeso ? "0.### 'kg'" : "0 'un.'", cultura),
+                    vence,
+                    estadoLote,
+                    Convert.ToBoolean(fila["LoteElegible"]),
+                    false,
+                    false);
+            }
+
+            using Form prompt = new Form
+            {
+                Text = "Estado de la mercadería devuelta",
+                StartPosition = FormStartPosition.CenterParent,
+                FormBorderStyle = FormBorderStyle.Sizable,
+                MinimumSize = new Size(760, 420),
+                Size = new Size(900, 520),
+                MaximizeBox = true,
+                MinimizeBox = false,
+                BackColor = Color.White
+            };
+
+            var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 3, Padding = new Padding(14) };
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 54));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
+
+            var instrucciones = new Label
+            {
+                Text = "Para cada detalle indique si la mercadería volvió físicamente y está apta. Solo se reincorpora si el lote original continúa habilitado y vigente.",
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Font = new Font("Segoe UI", 9),
+                ForeColor = ColorTranslator.FromHtml("#44515A")
+            };
+
+            var grilla = new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                AutoGenerateColumns = false,
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                ReadOnly = false,
+                MultiSelect = false,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                RowHeadersVisible = false,
+                BackgroundColor = Color.White,
+                EnableHeadersVisualStyles = false,
+                ScrollBars = ScrollBars.Both
+            };
+            grilla.Columns.AddRange(
+                new DataGridViewTextBoxColumn { Name = "DetalleVentaId", DataPropertyName = "DetalleVentaId", Visible = false },
+                new DataGridViewTextBoxColumn { Name = "Producto", DataPropertyName = "Producto", HeaderText = "Producto", MinimumWidth = 150, FillWeight = 155, ReadOnly = true },
+                new DataGridViewTextBoxColumn { Name = "Lote", DataPropertyName = "Lote", HeaderText = "Lote original", MinimumWidth = 90, ReadOnly = true },
+                new DataGridViewTextBoxColumn { Name = "Cantidad", DataPropertyName = "Cantidad", HeaderText = "Vendida", MinimumWidth = 95, ReadOnly = true },
+                new DataGridViewTextBoxColumn { Name = "Vencimiento", DataPropertyName = "Vencimiento", HeaderText = "Vencimiento", MinimumWidth = 105, ReadOnly = true },
+                new DataGridViewTextBoxColumn { Name = "EstadoLote", DataPropertyName = "EstadoLote", HeaderText = "Estado del lote", MinimumWidth = 120, ReadOnly = true },
+                new DataGridViewCheckBoxColumn { Name = "LoteElegible", DataPropertyName = "LoteElegible", Visible = false },
+                new DataGridViewCheckBoxColumn { Name = "VolvioFisicamente", DataPropertyName = "VolvioFisicamente", HeaderText = "Volvió físicamente", MinimumWidth = 125 },
+                new DataGridViewCheckBoxColumn { Name = "AptaParaVenta", DataPropertyName = "AptaParaVenta", HeaderText = "Apta para reincorporar", MinimumWidth = 155 });
+            grilla.DataSource = filas;
+            grilla.ColumnHeadersDefaultCellStyle.BackColor = ColorTranslator.FromHtml("#E8F0EC");
+            grilla.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            grilla.CurrentCellDirtyStateChanged += (_, _) =>
+            {
+                if (grilla.IsCurrentCellDirty)
+                    grilla.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            };
+            grilla.CellValueChanged += (_, e) =>
+            {
+                if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+                var fila = grilla.Rows[e.RowIndex];
+                if (grilla.Columns[e.ColumnIndex].Name == "VolvioFisicamente"
+                    && !Convert.ToBoolean(fila.Cells["VolvioFisicamente"].Value ?? false))
+                    fila.Cells["AptaParaVenta"].Value = false;
+                fila.Cells["AptaParaVenta"].ReadOnly =
+                    !Convert.ToBoolean(fila.Cells["LoteElegible"].Value ?? false)
+                    || !Convert.ToBoolean(fila.Cells["VolvioFisicamente"].Value ?? false);
+            };
+            foreach (DataGridViewRow fila in grilla.Rows)
+                fila.Cells["AptaParaVenta"].ReadOnly = true;
+
+            var botones = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.RightToLeft,
+                WrapContents = false,
+                Padding = new Padding(0, 7, 0, 0)
+            };
+            var confirmar = new Button { Text = "Continuar", DialogResult = DialogResult.OK, Width = 115, Height = 32, BackColor = ColorTranslator.FromHtml("#2E8B57"), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            var cancelar = new Button { Text = "Cancelar", DialogResult = DialogResult.Cancel, Width = 100, Height = 32, FlatStyle = FlatStyle.Flat };
+            confirmar.FlatAppearance.BorderSize = 0;
+            cancelar.FlatAppearance.BorderSize = 0;
+            botones.Controls.Add(confirmar);
+            botones.Controls.Add(cancelar);
+            layout.Controls.Add(instrucciones, 0, 0);
+            layout.Controls.Add(grilla, 0, 1);
+            layout.Controls.Add(botones, 0, 2);
+            prompt.Controls.Add(layout);
+            prompt.AcceptButton = confirmar;
+            prompt.CancelButton = cancelar;
+
+            if (prompt.ShowDialog(this) != DialogResult.OK)
+                return false;
+
+            grilla.EndEdit();
+            foreach (DataRow fila in filas.Rows)
+            {
+                decisiones.Rows.Add(
+                    Convert.ToInt32(fila["DetalleVentaId"]),
+                    Convert.ToBoolean(fila["VolvioFisicamente"]),
+                    Convert.ToBoolean(fila["AptaParaVenta"]));
+            }
+            return true;
         }
 
         private string PedirMotivoAnulacion()

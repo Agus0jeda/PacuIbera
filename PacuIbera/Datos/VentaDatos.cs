@@ -141,8 +141,11 @@ namespace PacuIbera.Datos
         }
 
         // --- NUEVO: Anulación con Auditoría ---
-        public void AnularVentaConMotivo(int ventaId, int usuarioId, string motivo)
+        public void AnularVentaConMotivo(int ventaId, int usuarioId, string motivo, DataTable detallesDevolucion)
         {
+            if (detallesDevolucion == null)
+                throw new ArgumentNullException(nameof(detallesDevolucion));
+
             using (SqlConnection conexion = ObtenerConexion())
             {
                 SqlCommand cmd = new SqlCommand("sp_AnularVentaConMotivo", conexion);
@@ -150,10 +153,39 @@ namespace PacuIbera.Datos
                 cmd.Parameters.AddWithValue("@VentaId", ventaId);
                 cmd.Parameters.AddWithValue("@UsuarioId", usuarioId);
                 cmd.Parameters.AddWithValue("@Motivo", motivo);
+                SqlParameter detalles = cmd.Parameters.Add("@Detalles", SqlDbType.Structured);
+                detalles.TypeName = "dbo.VentaAnulacionDetalleEntrada";
+                detalles.Value = detallesDevolucion;
 
                 conexion.Open();
                 cmd.ExecuteNonQuery();
             }
+        }
+
+        public DataTable ObtenerDetalleVentaParaAnulacion(int ventaId)
+        {
+            DataTable tabla = new DataTable();
+            using (SqlConnection conexion = ObtenerConexion())
+            using (SqlCommand cmd = new SqlCommand(@"
+                SELECT dv.Id AS DetalleVentaId, dv.LoteId, dv.ProductoId, p.Nombre AS Producto,
+                       dv.Cantidad, l.FechaVencimiento, l.Activo, p.SeVendePorPeso,
+                       CONVERT(bit, CASE WHEN l.Activo = 1 AND dv.Cantidad > 0
+                           AND (l.FechaVencimiento IS NULL
+                                OR CONVERT(date, l.FechaVencimiento) = CONVERT(date, '20991231', 112)
+                                OR l.FechaVencimiento >= CONVERT(date, GETDATE()))
+                           THEN 1 ELSE 0 END) AS LoteElegible
+                FROM dbo.DetalleVenta dv
+                INNER JOIN dbo.Producto p ON p.Id = dv.ProductoId
+                INNER JOIN dbo.Lote l ON l.Id = dv.LoteId AND l.ProductoId = dv.ProductoId
+                WHERE dv.VentaId = @VentaId
+                ORDER BY dv.Id;", conexion))
+            {
+                cmd.Parameters.Add("@VentaId", SqlDbType.Int).Value = ventaId;
+                conexion.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                    tabla.Load(reader);
+            }
+            return tabla;
         }
 
         public DataTable ObtenerDetalleVenta(int idVenta)

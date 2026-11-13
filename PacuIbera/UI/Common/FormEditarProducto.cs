@@ -47,7 +47,7 @@ public sealed class FormEditarProducto : Form
     private readonly ErrorProvider errores=new(){BlinkStyle=ErrorBlinkStyle.NeverBlink};
     private readonly Button guardar=new(){Text="Guardar",AutoSize=true};
     private readonly Button nuevaCategoria=new(){Text="Nueva categoría",AutoSize=true};
-    private readonly TableLayoutPanel campos=new(){Dock=DockStyle.Fill,ColumnCount=2,RowCount=9,Padding=new Padding(18,12,18,8)};
+    private readonly TableLayoutPanel campos=new(){Dock=DockStyle.Fill,ColumnCount=2,RowCount=10,Padding=new Padding(18,12,18,8)};
     private bool ocupado;
     private bool resultadoIncierto;
     public int ProductoGuardadoId{get;private set;}
@@ -68,7 +68,7 @@ public sealed class FormEditarProducto : Form
             :$"Stock local registrado: {producto.StockActual.ToString(producto.SeVendePorPeso?"0.###":"0",Argentina)}. Editar esta ficha no modifica stock ni lotes.",
             Dock=DockStyle.Top,Height=48,Padding=new Padding(18,8,18,0),ForeColor=Color.DimGray};
         campos.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,210));campos.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
-        foreach(int alto in new[]{38,42,38,38,44,38,82,38,38})campos.RowStyles.Add(new RowStyle(SizeType.Absolute,alto));
+        foreach(int alto in new[]{38,42,38,38,44,38,82,38,34,34})campos.RowStyles.Add(new RowStyle(SizeType.Absolute,alto));
         void Campo(string etiqueta,Control control,int fila)
         {
             campos.Controls.Add(new Label {Text=etiqueta,AutoSize=true,MaximumSize=new Size(195,0),Margin=new Padding(3,7,8,0)},0,fila);
@@ -86,7 +86,12 @@ public sealed class FormEditarProducto : Form
         Campo("¿El producto requiere vencimiento?",vencimiento,7);
         vencimiento.Items.AddRange(new object[]{"Sí","No"});
         vencimiento.SelectedIndex=producto==null?-1:producto.ControlaVencimiento?0:1;
-        if(producto!=null)campos.Controls.Add(new Label {Text="El tipo de venta se conserva para proteger el historial.",AutoSize=true,ForeColor=Color.DimGray},1,8);
+        campos.Controls.Add(new Label
+        {
+            Text="La fecha de vencimiento se registra al recibir cada lote de mercadería.",
+            AutoSize=true, ForeColor=Color.DimGray, Margin=new Padding(3,4,3,0)
+        },1,8);
+        if(producto!=null)campos.Controls.Add(new Label {Text="El tipo de venta se conserva para proteger el historial.",AutoSize=true,ForeColor=Color.DimGray},1,9);
         categoria.DataSource=categorias.ToList();categoria.DisplayMember=nameof(CategoriaProducto.Nombre);categoria.ValueMember=nameof(CategoriaProducto.Id);
         if(producto!=null)categoria.SelectedValue=producto.CategoriaId;else categoria.SelectedIndex=-1;
         peso.Items.AddRange(new object[]{"Por unidad","Por peso"});

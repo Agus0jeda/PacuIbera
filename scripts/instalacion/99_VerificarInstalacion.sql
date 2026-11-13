@@ -14,7 +14,8 @@ INSERT @Tablas VALUES
  (N'DetallePedidoProveedor'),(N'DepositoStock'),(N'DepositoStockMinimo'),
  (N'RecepcionPedido'),(N'RecepcionDetalle'),(N'RecepcionLote'),(N'RemitoInterno'),
  (N'RemitoDetalle'),(N'RemitoLote'),(N'RecepcionRemito'),(N'RecepcionRemitoLote'),
- (N'ResolucionDiferencia'),(N'ResolucionDiferenciaDetalle'),(N'MovimientoCaja'),(N'VentaAnulacion');
+ (N'ResolucionDiferencia'),(N'ResolucionDiferenciaDetalle'),(N'MovimientoCaja'),(N'VentaAnulacion'),
+ (N'VentaAnulacionDetalle');
 
 DECLARE @Procedimientos TABLE(Nombre sysname PRIMARY KEY);
 INSERT @Procedimientos VALUES
@@ -33,12 +34,12 @@ INSERT @Procedimientos VALUES
  (N'sp_ReporteLotesVencidos'),(N'sp_ReporteMetodosPago'),(N'sp_ReporteRankingVendedores'),
  (N'sp_ReporteResumenGlobal'),(N'sp_ReporteStockCritico'),(N'sp_ReporteTopClientes'),
  (N'sp_ReporteTopProductos'),(N'sp_ResolverDiferenciaRemito'),(N'sp_ResumenCajas'),
- (N'sp_TransferirDepositoALocal'),(N'sp_VerificarCajaAbierta');
+ (N'sp_ConsultarHistorialCierresCaja'),(N'sp_TransferirDepositoALocal'),(N'sp_VerificarCajaAbierta');
 
 DECLARE @Tipos TABLE(Nombre sysname PRIMARY KEY);
 INSERT @Tipos VALUES
  (N'RecepcionDetalleEntrada'),(N'RecepcionLoteEntrada'),(N'RemitoProductoEntrada'),
- (N'RecepcionRemitoLoteEntrada'),(N'ResolucionDiferenciaEntrada');
+ (N'RecepcionRemitoLoteEntrada'),(N'ResolucionDiferenciaEntrada'),(N'VentaAnulacionDetalleEntrada');
 
 SELECT N'Tabla' AS Clase,x.Nombre,
        CASE WHEN t.object_id IS NULL THEN N'Falta' ELSE N'Existe' END AS Estado
