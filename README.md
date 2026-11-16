@@ -47,7 +47,7 @@ Para desarrollo, el archivo del repositorio está configurado como `Profile=Prue
 
 ## Instalación de la base
 
-Los scripts están en `scripts/instalacion/`. En SSMS activar **SQLCMD Mode** y usar el mismo valor de `DatabaseName` en todos los pasos:
+Los scripts están en `scripts/instalacion/`. En SSMS activar **SQLCMD Mode**. Los scripts de entrega definen internamente `DatabaseName=PacuIbera_Entrega`; respetar ese nombre y las autorizaciones manuales indicadas:
 
 1. Ejecutar `00_CrearBase_Configurable.sql` conectado a `master`. El script crea una base nueva y se detiene si el nombre ya existe o está protegido.
 2. Conectarse a la base nueva y ejecutar `01_InstalarEsquemaCompleto_Configurable.sql`.
@@ -61,6 +61,20 @@ Los scripts están en `scripts/instalacion/`. En SSMS activar **SQLCMD Mode** y 
 `01_RecuperarEsquemaYProcedimientos_Faltantes.sql` y `03_ConsultarCatalogosSemilla_PacuIberaDB_Pruebas.sql` son herramientas de revisión, no pasos de instalación. No ejecutar scripts de prueba o regularización como parte de una instalación limpia.
 
 **La instalación completa desde cero todavía no fue verificada.** El esquema requiere SQL Server 2019 o posterior y SSMS en modo SQLCMD. Validar primero el procedimiento en una instancia desechable; los scripts no deben ejecutarse sobre `PacuIberaDB` ni `PacuIberaDB_Pruebas`.
+
+## Estado de la entrega (16/11/2026)
+
+- La solución compila y se han comprobado manualmente operaciones principales de ventas, stock, caja y reportes sobre la base de pruebas.
+- El Dashboard incluye el Top 5 de productos por **cantidad vendida**. Las cantidades en kilogramos y unidades se identifican por separado: no representan la misma magnitud ni un ranking por facturación.
+- La anulación de ventas registra el motivo y la decisión de devolución por cada detalle/lote. Solo reincorpora mercadería declarada recuperada y apta cuando el lote está activo y vigente. No reactiva automáticamente lotes inactivos o vencidos.
+- **Anular una venta no registra automáticamente la devolución del dinero.** El reintegro y la conciliación de pagos siguen siendo una limitación; deben respetarse las protecciones del cierre de caja.
+- **La instalación limpia de la base `PacuIbera_Entrega` todavía no está probada de punta a punta.** Una compilación correcta y la verificación estática de SQL no sustituyen esa prueba.
+
+## Documentación para el equipo
+
+- **Instalación detallada:** [`scripts/instalacion/ORDEN_Y_PENDIENTES.md`](scripts/instalacion/ORDEN_Y_PENDIENTES.md). Allí están el orden exacto, los pasos que requieren autorización y la verificación final.
+- **Código de la aplicación:** la interfaz está en `PacuIbera/UI`, el acceso a SQL Server en `PacuIbera/Datos` y las clases compartidas en `PacuIbera/Dominio`. La configuración se prepara con `PacuIbera/appsettings.json`.
+- **Manual de usuario:** documentación de los recorridos de Administrador, Gerente y Vendedor en preparación; no se incluye como manual terminado en este repositorio.
 
 ## Material de entrega
 
