@@ -4,6 +4,8 @@
     No modifica VentaPago ni Caja. No ejecuta anulaciones.
     La aplicacion envia una decision por cada DetalleVenta/Lote original del FIFO.
 */
+:on error exit
+:setvar DatabaseName "PacuIbera_Entrega"
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 

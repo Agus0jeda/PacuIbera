@@ -14,8 +14,6 @@ namespace Datos
         public static readonly string PerfilConfigurado;
         public static readonly string BaseConfigurada;
 
-        // La aplicación solo habilita escrituras de negocio en estos dos destinos.
-        // Los scripts administrativos SQL conservan sus guardas literales propias.
         public static bool EsPerfilPruebas =>
             PerfilConfigurado.Equals("Pruebas", StringComparison.OrdinalIgnoreCase)
             && BaseConfigurada.Equals(BasePruebas, StringComparison.OrdinalIgnoreCase);
@@ -53,7 +51,7 @@ namespace Datos
                     confiarCertificado = trust.GetBoolean();
             }
 
-            // Compatibilidad para ejecuciones de desarrollo que aún no copian appsettings.json.
+
             if (string.IsNullOrWhiteSpace(perfil)
                 && Environment.GetEnvironmentVariable("PACUIBERA_DB_PRUEBAS") == "1")
             {

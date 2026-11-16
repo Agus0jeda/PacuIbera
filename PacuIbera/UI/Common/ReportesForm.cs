@@ -106,8 +106,12 @@ namespace PacuIbera.UI.Common
             chartTopProductos = new Chart { Dock = DockStyle.Fill, MinimumSize = new Size(10, 10) };
             chartTopProductos.ChartAreas.Add(new ChartArea { BackColor = Color.White });
             chartTopProductos.ChartAreas[0].AxisX.MajorGrid.Enabled = false;
+            chartTopProductos.ChartAreas[0].AxisX.Interval = 1;
+            chartTopProductos.ChartAreas[0].AxisX.LabelStyle.IsEndLabelVisible = true;
+            chartTopProductos.ChartAreas[0].AxisY.Minimum = 0;
+            chartTopProductos.ChartAreas[0].AxisY.Title = "Cantidad (kg o un.; magnitudes diferentes)";
             chartTopProductos.ChartAreas[0].AxisY.MajorGrid.LineColor = Color.LightGray;
-            Series serieProd = new Series("Ventas") { ChartType = SeriesChartType.Column, Color = ColorTranslator.FromHtml("#3498DB"), IsValueShownAsLabel = true };
+            Series serieProd = new Series("Ventas") { ChartType = SeriesChartType.Column, Color = ColorTranslator.FromHtml("#3498DB"), IsValueShownAsLabel = true, IsXValueIndexed = true, XValueType = ChartValueType.String, YValueType = ChartValueType.Double };
             serieProd["PixelPointWidth"] = "40";
             chartTopProductos.Series.Add(serieProd);
             pnlProductos.Controls.Add(chartTopProductos);
@@ -284,14 +288,24 @@ namespace PacuIbera.UI.Common
                 else { chartMetodosPago.Series[0].Points.Clear(); }
 
                 DataTable dtProd = reportesDatos.ObtenerTopProductos(desde, hasta);
-                chartTopProductos.DataSource = dtProd;
-                if (dtProd.Rows.Count > 0)
+                Series productos = chartTopProductos.Series[0];
+                productos.Points.Clear();
+                if (dtProd.Rows.Count > 0 && !dtProd.Columns.Contains("SeVendePorPeso"))
+                    throw new InvalidOperationException("Actualice sp_ReporteTopProductos con el script preparado: falta SeVendePorPeso para identificar kg y unidades.");
+                foreach (DataRow fila in dtProd.Rows)
                 {
-                    chartTopProductos.Series[0].XValueMember = "Nombre";
-                    chartTopProductos.Series[0].YValueMembers = "TotalVendido";
-                    chartTopProductos.DataBind();
+                    string nombre = Convert.ToString(fila["Nombre"]) ?? string.Empty;
+                    decimal cantidad = Convert.ToDecimal(fila["TotalVendido"]);
+                    bool porPeso = Convert.ToBoolean(fila["SeVendePorPeso"]);
+                    string unidad = porPeso ? "kg" : "un.";
+                    string etiqueta = $"{cantidad.ToString("0.###", CulturaArgentina)} {unidad}";
+                    int indice = productos.Points.AddXY(nombre, Convert.ToDouble(cantidad));
+                    DataPoint punto = productos.Points[indice];
+                    punto.AxisLabel = nombre;
+                    punto.Label = etiqueta;
+                    punto.ToolTip = $"{nombre}: {etiqueta}";
                 }
-                else { chartTopProductos.Series[0].Points.Clear(); }
+                chartTopProductos.ChartAreas[0].RecalculateAxesScale();
 
                 CargarGrillaAlertas(tabActiva);
                 datosResumenCajas = cajaDatos.ObtenerHistorialCierres(desde, hasta);
@@ -355,34 +369,37 @@ namespace PacuIbera.UI.Common
 
         private void GrillaStock_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0 && tabActiva == "Auditoria")
+            if (e.RowIndex >= 0 && e.ColumnIndex >= 0 && tabActiva == "Auditoria"
+                && grillaStock.Columns[e.ColumnIndex].Name != "ColumnaTicket")
             {
-                string motivo = grillaStock.Rows[e.RowIndex].Cells["Motivo"].Value.ToString();
-                string vendedor = grillaStock.Rows[e.RowIndex].Cells["Vendedor que Anuló"].Value.ToString();
+                if (grillaStock.Rows[e.RowIndex].DataBoundItem is not DataRowView fila) return;
+                string motivo = Convert.ToString(fila.Row["Motivo"]) ?? string.Empty;
+                string anuladoPor = Convert.ToString(fila.Row["Cajero que Anuló"]) ?? string.Empty;
 
-                MessageBox.Show($"Motivo de anulación:\n\n\"{motivo}\"", $"Anulado por {vendedor}", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Motivo de anulación:\n\n\"{motivo}\"", $"Anulado por {anuladoPor}", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
         private void grillaStock_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (tabActiva == "Auditoria" && e.RowIndex >= 0 && grillaStock.Columns[e.ColumnIndex].Name == "ColumnaTicket")
+            if (tabActiva == "Auditoria" && e.RowIndex >= 0 && e.ColumnIndex >= 0 && grillaStock.Columns[e.ColumnIndex].Name == "ColumnaTicket")
             {
                 try
                 {
-                    int idVenta = Convert.ToInt32(grillaStock.Rows[e.RowIndex].Cells["Nro Venta"].Value);
-                    string vendedor = grillaStock.Rows[e.RowIndex].Cells["Vendedor que Anuló"].Value.ToString();
-
-                    // Aseguramos que la fecha se procese correctamente
-                    string fecha = Convert.ToDateTime(grillaStock.Rows[e.RowIndex].Cells["Fecha"].Value).ToString("dd/MM/yyyy HH:mm");
-
-                    // EXTRAEMOS EL VALOR PURO SIN IMPORTAR EL SIGNO PESOS O FORMATO VISUAL
-                    decimal total = Convert.ToDecimal(grillaStock.Rows[e.RowIndex].Cells["Total"].Value);
+                    if (grillaStock.Rows[e.RowIndex].DataBoundItem is not DataRowView fila) return;
+                    // Contrato del DataTable de sp_ReporteAuditoria, independiente
+                    // del encabezado, nombre u orden visual de las columnas de la grilla.
+                    DataRow anulacion = fila.Row;
+                    int idVenta = Convert.ToInt32(anulacion["Nro Venta"]);
+                    string anuladoPor = Convert.ToString(anulacion["Cajero que Anuló"]) ?? string.Empty;
+                    string fechaAnulacion = Convert.ToDateTime(anulacion["Fecha"]).ToString("dd/MM/yyyy HH:mm");
+                    string motivo = Convert.ToString(anulacion["Motivo"]) ?? string.Empty;
+                    decimal total = Convert.ToDecimal(anulacion["Total"]);
 
                     VentaDatos vDatos = new VentaDatos();
                     DataTable detalle = vDatos.ObtenerDetalleVenta(idVenta);
 
-                    ReimprimirTicketAuditoria(idVenta, fecha, "Anulado", vendedor, total, detalle);
+                    ReimprimirTicketAuditoria(idVenta, fechaAnulacion, anuladoPor, motivo, total, detalle);
                 }
                 catch (Exception ex)
                 {
@@ -391,7 +408,7 @@ namespace PacuIbera.UI.Common
             }
         }
 
-        private void ReimprimirTicketAuditoria(int idVenta, string fecha, string estado, string vendedor, decimal total, DataTable detalle)
+        private void ReimprimirTicketAuditoria(int idVenta, string fechaAnulacion, string anuladoPor, string motivo, decimal total, DataTable detalle)
         {
             PrintDocument pd = new PrintDocument();
             pd.DefaultPageSettings.PaperSize = new PaperSize("Ticket80mm", 314, 1000);
@@ -405,9 +422,12 @@ namespace PacuIbera.UI.Common
                 int y = 20; int x = 10;
                 g.DrawString("PESCADERÍA PACÚ IBERÁ", fontTitulo, Brushes.Black, x + 20, y); y += 20;
                 g.DrawString("*** TICKET ANULADO ***", fontNormal, Brushes.DarkRed, x + 40, y); y += 30;
-                g.DrawString("Fecha original: " + fecha, fontNormal, Brushes.Black, x, y); y += 20;
+                g.DrawString("Fecha anulación: " + fechaAnulacion, fontNormal, Brushes.Black, x, y); y += 20;
                 g.DrawString("Ticket N°: " + idVenta, fontNormal, Brushes.Black, x, y); y += 20;
-                g.DrawString("Vendedor: " + vendedor, fontNormal, Brushes.Black, x, y); y += 30;
+                string auditoria = $"Anulado por: {anuladoPor}\nMotivo: {motivo}";
+                SizeF medidaAuditoria = g.MeasureString(auditoria, fontNormal, 290);
+                g.DrawString(auditoria, fontNormal, Brushes.Black, new RectangleF(x, y, 290, medidaAuditoria.Height));
+                y += (int)Math.Ceiling(medidaAuditoria.Height) + 10;
                 g.DrawString("----------------------------------------", fontNormal, Brushes.Black, x, y); y += 15;
                 g.DrawString("CANT   DESCRIPCION            SUBTOTAL", fontNormal, Brushes.Black, x, y); y += 15;
                 g.DrawString("----------------------------------------", fontNormal, Brushes.Black, x, y); y += 20;
@@ -445,6 +465,7 @@ namespace PacuIbera.UI.Common
 
         private void GrillaStock_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
             if (tabActiva == "Vencimientos" && grillaStock.Columns[e.ColumnIndex].Name == "Estado" && e.Value != DBNull.Value)
             {
                 string estado = e.Value.ToString();

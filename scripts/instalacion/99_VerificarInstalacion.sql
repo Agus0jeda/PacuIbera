@@ -73,3 +73,24 @@ SELECT (SELECT COUNT_BIG(*) FROM sys.foreign_keys WHERE is_disabled=0 AND is_not
        (SELECT COUNT_BIG(*) FROM sys.indexes WHERE is_unique=1 AND is_disabled=0 AND is_hypothetical=0) AS IndicesUnicosActivos;
 
 SELECT N'Usuarios demo deben probarse por DNI desde Login; no mostrar hashes ni secretos en esta verificación.' AS Nota;
+
+-- Contrato del Dashboard: solo describe metadatos; no ejecuta el procedimiento.
+SELECT esperado.Nombre AS ColumnaTopProductos,
+       CASE WHEN real.name IS NULL THEN N'Falta' ELSE N'Existe' END AS Estado,
+       real.system_type_name AS Tipo
+FROM (VALUES (N'ProductoId'),(N'Nombre'),(N'SeVendePorPeso'),(N'TotalVendido')) esperado(Nombre)
+LEFT JOIN sys.dm_exec_describe_first_result_set_for_object(
+    OBJECT_ID(N'dbo.sp_ReporteTopProductos'),0) real ON real.name=esperado.Nombre;
+
+SELECT N'Top 5 por identidad y unidad' AS Verificacion,
+       CASE WHEN definicion LIKE N'%TOP (5)%'
+             AND definicion LIKE N'%GROUP BY P.Id, P.Nombre, P.SeVendePorPeso%'
+             AND definicion LIKE N'%ORDER BY TotalVendido DESC, P.Id%'
+            THEN N'Coincide' ELSE N'Revisar definicion' END AS Estado
+FROM (SELECT OBJECT_DEFINITION(OBJECT_ID(N'dbo.sp_ReporteTopProductos')) AS definicion) d;
+
+SELECT N'Reporte de vencimientos con unidad' AS Verificacion,
+       CASE WHEN EXISTS (
+           SELECT 1 FROM sys.dm_exec_describe_first_result_set_for_object(
+               OBJECT_ID(N'dbo.sp_AnalisisPerdidaVencimientos'),0)
+           WHERE name=N'SeVendePorPeso') THEN N'Existe' ELSE N'Falta: revisar paso 07' END AS Estado;

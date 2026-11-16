@@ -3517,22 +3517,25 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
--- Actualizamos Top Productos para que respete el calendario
+-- Top por identidad de producto; conserva cantidades en kg o unidades.
 CREATE   PROCEDURE [dbo].[sp_ReporteTopProductos]
     @FechaDesde DATE,
     @FechaHasta DATE
 AS BEGIN
-    SELECT TOP 5
+    SET NOCOUNT ON;
+    SELECT TOP (5)
+        P.Id AS ProductoId,
         P.Nombre,
+        P.SeVendePorPeso,
         SUM(D.Cantidad) AS TotalVendido
-    FROM DetalleVenta D
-    INNER JOIN Producto P ON D.ProductoId = P.Id
-    INNER JOIN Venta V ON D.VentaId = V.Id
+    FROM dbo.DetalleVenta D
+    INNER JOIN dbo.Producto P ON D.ProductoId = P.Id
+    INNER JOIN dbo.Venta V ON D.VentaId = V.Id
     WHERE V.Estado != 'Anulada'
       AND CAST(V.FechaHora AS DATE) >= @FechaDesde
       AND CAST(V.FechaHora AS DATE) <= @FechaHasta
-    GROUP BY P.Nombre
-    ORDER BY TotalVendido DESC;
+    GROUP BY P.Id, P.Nombre, P.SeVendePorPeso
+    ORDER BY TotalVendido DESC, P.Id;
 END;
 GO
 /****** Object:  StoredProcedure [dbo].[sp_ResolverDiferenciaRemito]    Script Date: 11/11/2026 08:03:21 ******/

@@ -1,57 +1,74 @@
-# Instalación SQL de PacuIbera
+# Instalación SQL de PacuIbera — entrega revisada el 16/11/2026
 
-## Estado de entrega
+El paquete instala una base nueva `PacuIbera_Entrega`. Requiere SQL Server 2019 o posterior y SSMS con **SQLCMD Mode**. La revisión y compilación del programa no sustituyen una prueba de instalación limpia: no se ejecutó SQL durante esta preparación.
 
-El exportado original `PacuIbera_Estructura_Completa.sql` se conserva sin cambios. Se preparó una copia de instalación configurable con sus objetos, sin crear una base aquí y sin ejecutar SQL. **La instalación limpia todavía no está probada.**
+## Requisitos
 
-El esquema configurable conserva las 31 tablas, 50 procedimientos exportados, 5 tipos tabulares, claves, restricciones, índices y la propiedad extendida. `05_InstalarHistorialCierres_Configurable.sql` agrega el historial de cierres. `06_InstalarAnulacionVentaSegura_Configurable.sql` agrega la auditoría por detalle/lote y actualiza `sp_AnularVentaConMotivo`; la instalación queda con 32 tablas, 51 procedimientos y 6 tipos tabulares. Se quitaron las instrucciones de creación de la base fuente con rutas físicas, el bloque de opciones `ALTER DATABASE` ligado a la base exportada y los `USE master` de cierre. El DDL del exportado se conserva. La base destino mantiene sus opciones predeterminadas del servidor.
+Windows, SQL Server 2019 o posterior (Express es suficiente) o SQL Server Express LocalDB 2019 o posterior, y SQL Server Management Studio. LocalDB debe estar instalado y la instancia `MSSQLLocalDB` disponible bajo la misma cuenta de Windows que usará la aplicación. Para un servidor compartido usar la instancia SQL Server del compañero; LocalDB es local al usuario. La cuenta necesita permisos para crear la base e instalar tablas, tipos y procedimientos. Para ejecutar el programa se necesita .NET Desktop Runtime 8; para compilar, .NET SDK 8 o compatible con el destino `net8.0-windows`.
 
-## Archivos y orden previsto
+En SSMS activar **Consulta → Modo SQLCMD** antes de ejecutar cada archivo completo. Cada SQL del paquete define por sí mismo `:setvar DatabaseName "PacuIbera_Entrega"`; no depende de variables de una ventana anterior ni de rutas locales o archivos externos. El paso 00 crea la base desde `master`; desde el paso 01 seleccionar `PacuIbera_Entrega` en la conexión. Mantener ese nombre, que es el admitido por el perfil Entrega de la aplicación.
 
-1. En SSMS activar **SQLCMD Mode**. `:on error exit` detiene la secuencia ante una falla. `00_CrearBase_Configurable.sql`: configurar `DatabaseName` y crear una base nueva. Rechaza nombres protegidos y bases ya existentes; no las sobrescribe.
-2. Conectarse a la base creada. Ejecutar `01_InstalarEsquemaCompleto_Configurable.sql` en SQLCMD Mode con el mismo `DatabaseName`. Solo acepta una base vacía; contiene guardas de destino y requiere SQL Server 2019 o posterior por `OPTIMIZE_FOR_SEQUENTIAL_KEY`.
-3. Ejecutar `02_InsertarRolesConfirmados.sql`. Inserta idempotentemente los IDs requeridos por el origen: 0 Administrador, 1 Vendedor y 2 Gerente. El segundo registro Gerente (Id 3) del reporte no se importa. Si el destino ya tiene nombres/IDs en conflicto, el script se detiene sin corregirlos automáticamente.
-4. Los CUIT y las asociaciones proveedor-producto del reporte ya están integrados en el seed; el archivo fuente `.rpt` no forma parte de la instalación. `03_ConsultarCatalogosSemilla_PacuIberaDB_Pruebas.sql` es una consulta de solo lectura y no es requisito para instalar.
-5. `04_InsertarDatosIniciales_Configurable.sql` contiene las cuentas demo y sus hashes SHA-256 compatibles con `Seguridad.GenerarHashSHA256`. Las credenciales demo actuales son: Administrador, DNI `11111111`, clave `1234`; Gerente, DNI `33333333`, clave `1234`; Vendedor, DNI `22222222`, clave `1234`. Son credenciales ficticias para demostración; no reutilizarlas en cuentas reales. `CredencialesDemo.local.txt` está excluido de Git y no debe publicarse. El seed usa `DatabaseName`, conserva los IDs, incorpora proveedores y sus tres relaciones reales, incluye los 16 IDs de métodos de pago que los procedimientos exportados de Caja validan (C# usa 1–4 para pagos nuevos), carga los 8 productos activos con `StockActual=0`, y no crea lotes ni movimientos históricos. `@AutorizarSeed` permanece en 0; cambiarlo solo durante la instalación aprobada.
-6. En SQLCMD Mode, ejecutar `05_InstalarHistorialCierres_Configurable.sql` conectado a la base destino y con el mismo `DatabaseName`. Instala la consulta histórica de cierres para Administrador y Gerente activos; no reemplaza `sp_ResumenCajas` ni `sp_CerrarCaja`.
-7. Revisar las auditorías repetidas que informa `06_InstalarAnulacionVentaSegura_Configurable.sql`. La instalación exige revisar el archivo y cambiar manualmente `@AutorizarInstalacion` de 0 a 1. Conectarse a la base destino y ejecutarlo en SQLCMD Mode. No modifica pagos ni caja.
-8. Revisar y autorizar `07_ActualizarAnalisisVencimientos_Configurable.sql` (su autorización inicia en 0); ejecutarlo conectado a la base destino y en SQLCMD Mode. Alinea las columnas del reporte con `AnalisisForm` y excluye lotes inactivos.
-9. Ejecutar `99_VerificarInstalacion.sql` sobre la base destino con el mismo `DatabaseName`; verifica también la tabla y los tipos tabulares de auditoría de anulaciones.
+## Archivos para Google Drive
 
-`01_RecuperarEsquemaYProcedimientos_Faltantes.sql` queda como auditoría de solo lectura adicional sobre la base de pruebas, no como etapa del instalador. Si una instalación se interrumpe tras crear algunos objetos, no la reejecutes sobre esa base parcial: el guardado la rechazará; debe revisarse y descartarse manualmente la base de entrega vacía/temporal antes de comenzar de nuevo.
+Subir o reemplazar exactamente estos nueve archivos en `Base de datos/Entrega Final`, tomándolos de `scripts/instalacion`:
 
-La instalación final aún no se probó: el seed sigue desautorizado por diseño y debe habilitarse únicamente durante la instalación aprobada.
+1. `00_CrearBase_Configurable.sql`
+2. `01_InstalarEsquemaCompleto_Configurable.sql`
+3. `02_InsertarRolesConfirmados.sql`
+4. `04_InsertarDatosIniciales_Configurable.sql`
+5. `05_InstalarHistorialCierres_Configurable.sql`
+6. `06_InstalarAnulacionVentaSegura_Configurable.sql`
+7. `07_ActualizarAnalisisVencimientos_Configurable.sql`
+8. `99_VerificarInstalacion.sql`
+9. `ORDEN_Y_PENDIENTES.md`
 
-## Bloqueos pendientes
+Esta es la lista vigente del paquete. No usar los SQL antiguos del 11/11 como alternativa al instalador actualizado. No subir `CredencialesDemo.local.txt`, archivos `.rpt`, `PacuIbera_Estructura_Completa.sql`, backups, bases físicas, scripts de laboratorio o regularización ni archivos privados. Los archivos `01_RecuperarEsquemaYProcedimientos_Faltantes.sql` y `03_ConsultarCatalogosSemilla_PacuIberaDB_Pruebas.sql` son auditorías del origen, no pasos de entrega. Los scripts externos con destino exclusivo `PacuIberaDB_Pruebas` tampoco forman parte de este paquete.
 
-### Datos iniciales y bloqueos pendientes
+## Orden de instalación
 
-`04_InsertarDatosIniciales_Configurable.sql` prepara provincias 1–24, las localidades canónicas 1–88 (incluidos Corrientes/Corrientes Capital IDs 7/25 usados por C#), los 16 IDs de métodos de pago exigidos por los procedimientos de Caja exportados, cinco categorías y los ocho productos activos del reporte con sus precios, categorías, mínimos, venta por peso y control de vencimiento. Los IDs extra de localidades duplicadas no se copian. Los alias de métodos de pago sí son necesarios: los procedimientos de cierre/resumen rechazan si falta cualquiera de esos IDs. Los productos inician con stock cero; no se inventan lotes.
+Usar el mismo `DatabaseName=PacuIbera_Entrega` en todos los pasos. No ejecutar sobre las bases existentes de desarrollo o pruebas.
 
-El seed de catálogos está completo con los datos disponibles en `pacutxt2.rpt` y `PacuIbera_Proveedores.rpt`: incluye seis proveedores activos con CUIT y las tres relaciones `ProveedorProducto` reportadas.
+1. Ejecutar `00`: crea una base nueva y rechaza una base ya existente. Luego conectarse a `PacuIbera_Entrega`.
+2. Ejecutar `01`: exige una base vacía e instala el esquema y los procedimientos. No importa ventas, lotes, stock ni movimientos históricos. El Top 5 ya está corregido aquí; no requiere el parche exclusivo de pruebas.
+3. Ejecutar `02`: carga los roles con los IDs requeridos por la aplicación (0 Administrador, 1 Vendedor, 2 Gerente), rechazando conflictos.
+4. Revisar `04` antes de autorizar `@AutorizarSeed=1`. Contiene catálogos iniciales y cuentas de demostración con identidad sintética; no es un volcado de datos operativos. Conserva los IDs requeridos por los procedimientos, productos con stock cero y ningún historial de ventas o cajas. No compartir credenciales locales. Los hashes demo públicos existentes no son credenciales personales.
+5. Ejecutar `05`: instala la consulta histórica de cierres para Administrador o Gerente activo.
+6. Revisar `06`, incluidas las auditorías duplicadas informadas, y autorizar manualmente `@AutorizarInstalacion=1`. Agrega el detalle de auditoría de anulaciones y actualiza la ruta segura; instalarlo no ejecuta anulaciones ni modifica pagos o cajas. Incluye su propia variable SQLCMD y detención ante errores.
+7. Revisar y autorizar `07` de la misma manera. Corrige el reporte de vencimientos, incluye su unidad y excluye lotes inactivos, sin alterar inventario.
+8. Ejecutar `99`: consulta existencia de tablas, procedimientos, tipos y catálogos, y comprueba los metadatos del Top 5 y la unidad del reporte de vencimientos. No ejecuta procedimientos de negocio. Revisar cualquier resultado `Falta` o `Revisar definicion`; los controles textuales no prueban por sí solos el comportamiento de los procedimientos.
 
-Las tres cuentas demo están preparadas con roles 0 Administrador, 2 Gerente y 1 Vendedor, DNIs ficticios únicos, ubicación válida (Provincia 7/Localidad 25) y hashes compatibles con el login: Administrador `11111111` / `1234`, Gerente `33333333` / `1234`, Vendedor `22222222` / `1234`. La contraseña es una credencial demo pública, no apta para cuentas reales. `CredencialesDemo.local.txt` permanece excluido de Git. La autorización del seed permanece desactivada.
+No reejecutar `01` sobre una instalación parcial: su guarda la rechaza. Ante errores, detenerse y revisar el destino; este paquete no borra ni repara automáticamente bases existentes.
 
-### Conexión WinForms
+## Correcciones incluidas
 
-La conexión se lee de `appsettings.json` junto al ejecutable; no contiene credenciales y se copia al directorio de salida. El archivo del proyecto inicia en `Profile=Pruebas`, `Name=PacuIberaDB_Pruebas` y `Server` vacío (conserva la detección actual de servidor para desarrollo). Para la entrega, el profesor modifica ese archivo en la carpeta de PacuIbera, junto a `PacuIbera.exe`, y configura `Profile=Entrega`, `Name=PacuIbera_Entrega` y `Server` con su instancia SQL Server (por ejemplo `(localdb)\\MSSQLLocalDB`). Se utiliza autenticación integrada de Windows.
+El esquema base incluye movimientos administrativos de efectivo, apertura de caja protegida, registro de ventas coordinado con el cierre, cierre y resumen de caja con pagos mixtos, FIFO y remitos internos. Los pasos 05–07 completan historial de cierres, anulación segura y análisis de vencimientos. El conjunto esperado es de 32 tablas, 51 procedimientos y 6 tipos tabulares después del paso 06.
 
-El código solo acepta dos combinaciones: `Pruebas` + `PacuIberaDB_Pruebas`, o `Entrega` + `PacuIbera_Entrega`. Un nombre arbitrario, `PacuIberaDB` u otra base del sistema detiene la aplicación antes de habilitar operaciones. Las operaciones de negocio conservan sus comprobaciones de rol/usuario activo y verifican `DB_NAME()` contra la base configurada. Los scripts administrativos y de pruebas conservan sus validaciones SQL literales para `PacuIberaDB_Pruebas`; cambiar `appsettings.json` no permite ejecutarlos en otra base.
+`sp_ReporteTopProductos` devuelve `ProductoId`, `Nombre`, `SeVendePorPeso` y `TotalVendido`. Agrupa por ID, nombre y modalidad, mantiene `TOP (5)`, excluye anuladas e incluye ambos días del período seleccionado. Ordena por cantidad descendente y desempata por ID. El formulario conserva las cantidades originales, identifica kg y unidades, muestra todos los nombres y agrega tooltips. Kg y unidades son magnitudes diferentes; el ranking no es por facturación.
 
-### Procedimientos heredados
+El formulario actualizado requiere el procedimiento actualizado para identificar las unidades. `ReportesDatos.ObtenerTopProductos` devuelve las columnas adicionales sin necesitar cambios.
 
-Se preservaron las 50 definiciones del exportado tal como estaban. Entre ellas están procedimientos heredados que requieren revisión antes de habilitar su uso en la entrega, como `sp_TransferirDepositoALocal`, `sp_RecepcionarItemPedido` y `sp_ModificarProducto`, que podrían realizar movimientos fuera del flujo nuevo. El instalador no corrige ni omite objetos porque la tarea pidió conservar el exportado.
+El botón «Ver Ticket» de Anulaciones lee el registro enlazado del reporte y conserva el ID de venta original. Identifica al autor de la anulación, su fecha y motivo; no confunde esa fecha con la fecha original de venta. El usuario confirmó manualmente que abre correctamente desde el rol Gerente una anulación realizada por Administrador. Esta confirmación no equivale a validar una instalación limpia.
 
-### Anulación segura de ventas
+## Configuración y validación pendiente
 
-La aplicación transmite una decisión por cada detalle/lote original. SQL repone stock solo si el Administrador confirma devolución física y aptitud, y el lote sigue activo y vigente. Un lote inactivo, incluido uno agotado por FIFO, queda auditado sin reincorporarse en esta etapa. `sp_AnularVenta` no se deshabilita hasta revisar sus dependencias externas.
+Configurar `appsettings.json` junto a `PacuIbera.exe` con `Database.Profile=Entrega`, `Database.Name=PacuIbera_Entrega`, el servidor del destinatario y autenticación integrada de Windows. La aplicación acepta únicamente los perfiles Pruebas y Entrega con sus bases correspondientes. No distribuir configuraciones privadas del equipo de desarrollo.
 
-## Bloqueos restantes para la entrega
+Ejemplo público para LocalDB (crear o editar el archivo en el equipo destinatario):
 
-- No se probó el paquete en una instalación limpia. Hace falta una instancia desechable para validar el orden completo y el primer inicio de sesión.
-- Antes de usar la entrega, configurar `appsettings.json` junto al ejecutable con el servidor del profesor y `Profile=Entrega`, `Name=PacuIbera_Entrega`.
-- Las definiciones exportadas conservan procedimientos heredados (`sp_TransferirDepositoALocal`, `sp_RecepcionarItemPedido`, `sp_ModificarProducto`); revisar su habilitación antes de usar esas operaciones en la entrega.
+```json
+{
+  "Database": {
+    "Profile": "Entrega",
+    "Server": "(localdb)\\MSSQLLocalDB",
+    "Name": "PacuIbera_Entrega",
+    "IntegratedSecurity": true,
+    "TrustServerCertificate": true
+  }
+}
+```
 
-## Confirmación de instalación
+Para Express, reemplazar únicamente `Server` por la instancia real, por ejemplo `EQUIPO\\SQLEXPRESS` en JSON. El archivo del repositorio inicia en perfil Pruebas: copiarlo sin adaptarlo no configura la entrega. No agregar usuarios ni contraseñas SQL; la aplicación exige autenticación integrada.
 
-No se ejecutó ni probó una instalación limpia. La revisión hecha fue estática: conteos de objetos, inspección de referencias de base/ruta y orden DDL. Debe validarse en una instancia desechable antes de presentarlo como instalación reproducible.
+La instalación se considera completada solo después de que los pasos 00, 01, 02, 04, 05, 06 y 07 terminen sin errores y con sus autorizaciones revisadas, y que 99 informe todos los objetos y columnas como `Existe`, la definición Top 5 como `Coincide`, los tres roles y los catálogos esperados (5 categorías, 6 proveedores activos y 8 productos activos). En una base recién instalada esos productos tienen stock cero: los gráficos de ventas vacíos son normales. El verificador no muestra secretos ni valida los hashes de inicio de sesión. Después debe probarse el login y cada flujo previsto desde la aplicación; cualquier resultado faltante o error significa que aún no se completó la instalación.
+
+La compatibilidad de destino y los contratos se revisaron estáticamente. Sigue pendiente probar una instalación limpia en una instancia desechable, el inicio de sesión y los flujos funcionales con datos creados expresamente para esa validación. Los procedimientos heredados como `sp_TransferirDepositoALocal`, `sp_RecepcionarItemPedido`, `sp_ModificarProducto` y `sp_AnularVenta` permanecen en el esquema; revisar sus dependencias antes de habilitar rutas externas. No se introdujeron funcionalidades nuevas en esta preparación.
